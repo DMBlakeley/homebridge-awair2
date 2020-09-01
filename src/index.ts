@@ -15,7 +15,7 @@ import {
 
 import { onlyAwairPlatformConfig, DeviceConfig} from "./configTypes";
 import fetch from "node-fetch";
-import * as packageJSON from ".package.json";
+import * as packageJSON from "../package.json";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -122,7 +122,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 		// Get array of your Awair device information from Awair servers
 		const response = fetch(deviceURL, options);
-		
+
 		let devices: any[] = response.devices;
 
 		return devices;
@@ -175,7 +175,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	removeAccessories(accessories: Array<PlatformAccessory>): void {
     accessories.forEach(accessory => {
-      this.log(accessory.name + ' is removed from HomeBridge.');
+      this.log(accessory.context.name + ' is removed from HomeBridge.');
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       this.accessories.splice(this.accessories.indexOf(accessory), 1);
     });
@@ -282,7 +282,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		};
 
 		const response = fetch(dataURL, options);
-		
+
 		if(!response) {
       this.log("Awair: unable to query device data.");
       return;
@@ -531,6 +531,5 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		if(this.config.logging){this.log("[" + accessory.context.serial + "] array: " + JSON.stringify(aqiArray))};
 		return Math.max(...aqiArray);
 	}
-
-
+  
 }
