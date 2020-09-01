@@ -4,6 +4,13 @@
   "displayName": "Homebridge Awair2",
   "description": "HomeKit integration of Awair air purifier as Dynamic Platform.",
   "main": "dist/index.js",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build",
+    "postpublish": "npm run clean",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "keywords": [
     "homebridge",
     "homebridge-plugin",
@@ -52,8 +59,7 @@
   },
   "dependencies": {
     "@types/node-fetch": "^2.5.7",
-    "node-fetch": "^2.6.0",
-    "request": "2.88.0",
-		"request-promise": "4.2.2"
+    "@types/request-promise": "^4.1.46",
+    "node-fetch": "^2.6.0"
   }
 }

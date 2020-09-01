@@ -1,21 +1,21 @@
 import {
   API,
   APIEvent,
-//  CharacteristicEventTypes,
-//  CharacteristicSetCallback,
-//  CharacteristicValue,
+  CharacteristicEventTypes,
+  CharacteristicSetCallback,
+  CharacteristicValue,
   DynamicPlatformPlugin,
   HAP,
   Logging,
-//  NodeCallback,
+  NodeCallback,
   PlatformAccessory,
   PlatformAccessoryEvent,
   PlatformConfig,
 } from "homebridge";
 
 import { onlyAwairPlatformConfig, DeviceConfig} from "./configTypes";
-import { request } from "request-promise";
-import * as packageJSON from "package.json";
+import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
+import * as packageJSON from ".package.json";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -121,8 +121,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		};
 
 		// Get array of your Awair device information from Awair servers
-		const response = request(options);
-
+		const response = this.fetch(options);
+		
 		let devices: any[] = response.devices;
 
 		return devices;
@@ -139,10 +139,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
   	  const uuid = hap.uuid.generate(data.deviceUUID);
     	accessory = new Accessory(data.name, uuid);
 
-	    // Using 'context' property of PlatformAccessory saves information to accessory cache
 			accessory.context.name = data.name;
 			accessory.context.serial = data.macAddress;
 			accessory.context.deviceType = data.deviceType;
+	    // Using 'context' property of PlatformAccessory saves information to accessory cache
 			accessory.context.deviceUUID = data.deviceUUID;
 			accessory.context.deviceId = data.deviceId;
 
@@ -181,7 +181,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
     });
 	}
 
-	addServices(accessory: PlatformAccessory): void {
+	// add Services and Characteristics to each Accessory
+  addServices(accessory: PlatformAccessory): void {
 
 		accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
       this.log(accessory.context.name + ' identify requested!');
@@ -280,8 +281,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			this.log("[" + accessory.context.serial + "] dataURL: " + dataURL);
 		};
 
-		const response = request(options);
-
+		const response = this.fetch(options);
+		
 		if(!response) {
       this.log("Awair: unable to query device data.");
       return;
