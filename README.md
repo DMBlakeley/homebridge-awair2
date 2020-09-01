@@ -1,0 +1,72 @@
+# homebridge-awair2
+This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) and based on the Awair plugin developed by Dean L. Young (https://github.com/deanlyoung/homebridge-awair#readme). It will fetch current sensor conditions from an Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit.
+
+You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+
+It will get new data once every 15 minutes (default), but it can be customized in `config.json`.
+
+Acknowledgment to @Sunoo for the homebridge-philips-air (https://github.com/Sunoo/homebridge-philips-air) plugin which was used as a reference for implementation of the Awair Dynamic Platform TypeScript plugin.
+
+# Installation
+
+1. Install homebridge using: `[sudo] npm install -g homebridge`
+2. Install this plugin using: `[sudo] npm install -g DMBlakley/homebridge-awair2`
+3. Update your configuration file. See the sample below.
+
+The Awair2 plugin queries your Awair account to determine devices that you have registered. This is the same informaton that you have entered via the Awair app on your iOS dev ice.
+
+You weill need to request access to the [Awair Developer Console](https://developer.getawair.com) to obtain your Developer Token (`token`).
+
+The [Awair Developer API Documentation](https://docs.developer.getawair.com) explains the inner workings of the Awair Developer API, but for the most part is not necessary to use this plugin.
+
+# Configuration
+
+Configuration sample:
+
+See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/master/config-sample.json)
+
+```
+	"platforms": [{
+		"platform": "Awair2",
+		"token": "AAA.AAA.AAA",
+		"userType": "users/self",
+		"airQualityMethod": "awair-score",
+		"endpoint": "15-min-avg",
+		"polling_interval": 900,
+		"limit": 12,
+		"logging": false,
+		"carbonDioxideThreshold": 1200,
+		"carbonDioxideThresholdOff": 900,
+	}]
+```
+
+## Descriptions
+```
+	     `platform`	=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
+		 `token`	=> Developer Token (REQUIRED, see [Installation](#installation))
+		 `userType`	=> The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
+		 `air_quality_method`	=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
+		 `endpoint`	=> The `/air-data` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw`, or `latest`)
+		 `polling_interval`	=> The frequency (OPTIONAL, default = `900` (15 minutes), units: seconds, that you would like to update the data in HomeKit)
+		 `limit`	=> Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)
+		 `logging`	=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
+`carbonDioxideThreshold`	=> (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
+`carbonDioxideThresholdOff`	=> (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
+```
+
+# API Response
+
+See response.sample.json
+
+# Resources
+
+- Awair API: https://docs.developer.getawair.com/
+- Homebridge: https://github.com/nfarina/homebridge
+- Homebridge API: https://developers.homebridge.io/#/
+- Homebridge examples: https://github.com/homebridge/homebridge-examples
+- Homebridge plugin development: http://blog.theodo.fr/2017/08/make-siri-perfect-home-companion-devices-not-supported-apple-homekit/
+- List of Services and conventions: https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js
+- Another Awair plugin: https://github.com/henrypoydar/homebridge-awair-glow
+- Reference AQ plugin: https://github.com/toto/homebridge-airrohr
+- Refenerce temperature plugin: https://github.com/metbosch/homebridge-http-temperature
+- AQI Calculation NPM package: https://www.npmjs.com/package/aqi-bot
