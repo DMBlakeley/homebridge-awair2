@@ -26,7 +26,7 @@
     "awair 2nd edition",
     "awair element"
   ],
-  "author": "Douglas M. Blakeley & Dean L. Young",
+  "author": "Douglas M. Blakeley",
   "engines": {
     "node": ">=10",
     "homebridge": ">=1.0.0"
@@ -60,7 +60,6 @@
   "dependencies": {
     "@types/node-fetch": "^2.5.7",
     "@types/request-promise": "^4.1.46",
-    "node-fetch": "^2.6.0",
     "request": "2.88.0",
     "request-promise": "4.2.2"
   }
