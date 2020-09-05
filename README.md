@@ -42,14 +42,14 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
 
 ## Descriptions
 ```
-	     `platform`	=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
-		 `token`	=> Developer Token (REQUIRED, see [Installation](#installation))
-		 `userType`	=> The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-		 `air_quality_method`	=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
-		 `endpoint`	=> The `/air-data` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw`, or `latest`)
-		 `polling_interval`	=> The frequency (OPTIONAL, default = `900` (15 minutes), units: seconds, that you would like to update the data in HomeKit)
-		 `limit`	=> Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)
-		 `logging`	=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
+`platform`			=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
+`token`				=> Developer Token (REQUIRED, see [Installation](#installation))
+`userType`			=> The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
+`air_quality_method`		=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
+`endpoint`			=> The `/air-data` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw`, or `latest`)
+`polling_interval`		=> The frequency (OPTIONAL, default = `900` (15 minutes), units: seconds, that you would like to update the data in HomeKit)
+`limit`				=> Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)
+`logging`			=> Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
 `carbonDioxideThreshold`	=> (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff`	=> (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
 ```
