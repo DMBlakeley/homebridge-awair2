@@ -43,7 +43,7 @@
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
-        "default": 1,
+        "default": 12,
         "description": "Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)"
       },
       "logging": {
@@ -58,7 +58,7 @@
         "description": "The CO2 level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`. Default = `0`."
       },
       "carbonDioxideThresholdOff": {
-        "title": "Carbon Dioxide Threshold",
+        "title": "Carbon Dioxide Threshold Off",
         "type": "integer",
         "placeholder": 0,
         "description": "The CO2 level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`. Default = 0."
