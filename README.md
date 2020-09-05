@@ -64,7 +64,9 @@ See response.sample.json
 - Homebridge: https://github.com/nfarina/homebridge
 - Homebridge API: https://developers.homebridge.io/#/
 - Homebridge examples: https://github.com/homebridge/homebridge-examples
+- Homebridge Platform Plugin Template: https://github.com/homebridge/homebridge-plugin-template
 - Homebridge plugin development: http://blog.theodo.fr/2017/08/make-siri-perfect-home-companion-devices-not-supported-apple-homekit/
+- Using async-await and npm-promise with TypeScript: https://github.com/patdaburu/request-promise-typescript-example
 - List of Services and conventions: https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js
 - Another Awair plugin: https://github.com/henrypoydar/homebridge-awair-glow
 - Reference AQ plugin: https://github.com/toto/homebridge-airrohr
