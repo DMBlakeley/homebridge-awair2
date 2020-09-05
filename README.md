@@ -26,18 +26,18 @@ Configuration sample:
 See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/master/config-sample.json)
 
 ```
-	"platforms": [{
-		"platform": "Awair2",
-		"token": "AAA.AAA.AAA",
-		"userType": "users/self",
-		"airQualityMethod": "awair-score",
-		"endpoint": "15-min-avg",
-		"polling_interval": 900,
-		"limit": 12,
-		"logging": false,
-		"carbonDioxideThreshold": 1200,
-		"carbonDioxideThresholdOff": 900,
-	}]
+"platforms": [{
+	"platform": "Awair2",
+	"token": "AAA.AAA.AAA",
+	"userType": "users/self",
+	"airQualityMethod": "awair-score",
+	"endpoint": "15-min-avg",
+	"polling_interval": 900,
+	"limit": 12,
+	"logging": false,
+	"carbonDioxideThreshold": 1200,
+	"carbonDioxideThresholdOff": 900,
+}]
 ```
 
 ## Descriptions
