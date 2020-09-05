@@ -290,7 +290,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accInfo
 	      .updateCharacteristic(hap.Characteristic.Manufacturer, this.manufacturer);
 	    accInfo
-	      .updateCharacteristic(hap.Characteristic.Model, accessory.context.devType);
+	      .updateCharacteristic(hap.Characteristic.Model, accessory.context.deviceType);
 	    accInfo
 	      .updateCharacteristic(hap.Characteristic.SerialNumber, accessory.context.serial);
 	    accInfo
