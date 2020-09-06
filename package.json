@@ -30,8 +30,8 @@
   ],
   "author": "Douglas M. Blakeley",
   "engines": {
-    "node": ">=10",
-    "homebridge": ">=1.0.0"
+    "node": ">=10.17.0",
+    "homebridge": ">0.4.53"
   },
   "license": "ISC",
   "files": [

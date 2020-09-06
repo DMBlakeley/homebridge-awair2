@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-case-declarations */
-/* eslint-disable eqeqeq */
 /* eslint-disable no-mixed-spaces-and-tabs */
 import {
   API,
@@ -154,7 +153,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.log('Initializing platform accessory ' + data.name + '...');
 
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return cachedAccessory.context.serial == data.macAddress;
+	    return cachedAccessory.context.serial === data.macAddress;
 	  });
 
 	  if (!accessory) {  // accessory does not exist in cache, initialze as new
@@ -172,11 +171,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.addService(hap.Service.TemperatureSensor, data.name + ' Temp');
 	    accessory.addService(hap.Service.HumiditySensor, data.name + ' Humidity');
 
-	    if (data.deviceType != 'awair-mint' && data.deviceType != 'awair-glow-c') {
+	    if (data.deviceType !== 'awair-mint' && data.deviceType !== 'awair-glow-c') {
 	      accessory.addService(hap.Service.CarbonDioxideSensor, data.name + ' CO2');
 	    }
 
-	    if (data.deviceType == 'awair-omni' || data.deviceType == 'awair-mint') {
+	    if (data.deviceType === 'awair-omni' || data.deviceType === 'awair-mint') {
 	      accessory.addService(hap.Service.LightSensor, data.name + ' Light');
 	    }
 
@@ -213,11 +212,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Add Air Quality Service
 	  const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	  if (airQualityService) {
-	    if (accessory.context.devType == 'awair-glow' || accessory.context.devType == 'awair-glow-c') {
+	    if (accessory.context.devType === 'awair-glow' || accessory.context.devType === 'awair-glow-c') {
 	      airQualityService
 	        .setCharacteristic(hap.Characteristic.AirQuality, '--')
 	        .setCharacteristic(hap.Characteristic.VOCDensity, '--');
-	    } else if (accessory.context.devType == 'awair') {
+	    } else if (accessory.context.devType === 'awair') {
 	      airQualityService
 	        .setCharacteristic(hap.Characteristic.AirQuality, '--')
 	        .setCharacteristic(hap.Characteristic.VOCDensity, '--')
@@ -256,7 +255,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  // Add Carbon Dioxide Service
-	  if (accessory.context.devType != 'awair-mint' && accessory.context.devType != 'awair-glow-c') {
+	  if (accessory.context.devType !== 'awair-mint' && accessory.context.devType !== 'awair-glow-c') {
 	    const carbonDioxideService = accessory.getService(hap.Service.CarbonDioxideSensor);
 	    if (carbonDioxideService) {
 	      carbonDioxideService
@@ -265,7 +264,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  // Add Light Sensor Service
-	  if (accessory.context.devType == 'awair-omni' || accessory.context.devType == 'awair-mint') {
+	  if (accessory.context.devType === 'awair-omni' || accessory.context.devType === 'awair-mint') {
 	    const lightLevelService = accessory.getService(hap.Service.LightSensor);
 	    if (lightLevelService) {
 	      lightLevelService
@@ -328,7 +327,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	      const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	      if (airQualityService) {
-	        if (this.config.airQualityMethod == 'awair-aqi') {
+	        if (this.config.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
 	        } else {
@@ -405,24 +404,24 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	              }
 		
 	              // Prevent sending a Carbon Dioxide detected update if one has not occured
-	              if ((co2Before == 0) && (co2Detected == 0)) {
+	              if ((co2Before === 0) && (co2Detected === 0)) {
 	                // CO2 low already, don't send
 	                if(this.config.logging){
 	                  this.log('Carbon Dioxide already low.');
 	                }
-	              } else if ((co2Before == 0) && (co2Detected == 1)) {
+	              } else if ((co2Before === 0) && (co2Detected === 1)) {
 	                // CO2 low to high, send it!
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
 	                if(this.config.logging){
 	                  this.log('Carbon Dioxide low to high.');
 	                }
-	              } else if ((co2Before == 1) && (co2Detected == 1)) {
+	              } else if ((co2Before === 1) && (co2Detected === 1)) {
 	                // CO2 high to not-quite-low-enough-yet, don't send
 	                if(this.config.logging){
 	                  this.log('Carbon Dioxide already elevated.');
 	                }
-	              } else if ((co2Before == 1) && (co2Detected == 0)) {
+	              } else if ((co2Before === 1) && (co2Detected === 0)) {
 	                // CO2 low to high, send it!
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
