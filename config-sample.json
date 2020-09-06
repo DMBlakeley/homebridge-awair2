@@ -6,7 +6,7 @@
 		"pin": "031-45-154"
 	},
 
-	"description": "An example Homebridge config.json for Awair.",
+	"description": "An example Homebridge config.json for Awair2.",
 
 	"platforms": [{
 		"platform": "Awair2",
