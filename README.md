@@ -1,11 +1,11 @@
 # homebridge-awair2
 This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) and based on the Awair plugin developed by Dean L. Young (https://github.com/deanlyoung/homebridge-awair#readme).
 
-The Awair2 plugin will query your Awair account to determine the Awair devices and their details which you have setup. It will fetch current sensor conditions from an Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit.
+The Awair2 plugin will query your Awair account as setup by the Awair app on your iOS device to determine the Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit.
 
 You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
-It will get new data once every 15 minutes (default), but it can be customized in `config.json`.
+The plugin will fetch new data once every 15 minutes (default), but it can be customized in `config.json`.
 
 Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as a reference for implementation of the Awair Dynamic Platform TypeScript plugin.
 
@@ -47,7 +47,7 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
 `platform`			=> The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
 `token`				=> Developer Token (REQUIRED, see [Installation](#installation))
 `userType`			=> The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-`air_quality_method`		=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
+`airQualityMethod`		=> Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-score`, options: `awair-score`, `aqi`, `nowcast-aqi`)
 `endpoint`			=> The `/air-data` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw`, or `latest`)
 `polling_interval`		=> The frequency (OPTIONAL, default = `900` (15 minutes), units: seconds, that you would like to update the data in HomeKit)
 `limit`				=> Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)
