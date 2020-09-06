@@ -1,5 +1,5 @@
 {
-  "private": true,
+  "private": false,
   "displayName": "Homebridge Awair2",
   "name": "homebridge-awair2",
   "version": "5.0.0",
