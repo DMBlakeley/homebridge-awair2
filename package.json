@@ -44,12 +44,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/DMBlakeley/homebridge-awair2.git"
+    "url": "git://github.com/homebridge-awair2.git"
   },
   "bugs": {
-    "url": "https://github.com/DMBlakeley/homebridge-awair2/issues"
+    "url": "https://github.com/homebridge-awair2/issues"
   },
-  "homepage": "https://github.com/DMBlakeley/homebridge-awair2#readme",
+  "homepage": "https://github.com/homebridge-awair2#readme",
   "devDependencies": {
     "@types/node": "^14.6.3",
     "@typescript-eslint/eslint-plugin": "^4.0.1",

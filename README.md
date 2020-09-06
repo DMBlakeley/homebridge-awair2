@@ -12,7 +12,7 @@ Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as
 # Installation
 
 1. Install homebridge using: `[sudo] npm install -g homebridge`
-2. Install this plugin using: `[sudo] npm install -g DMBlakley/homebridge-awair2`
+2. Install this plugin using: `[sudo] npm install -g homebridge-awair2`
 3. Update your configuration file. See the sample below.
 
 The Awair2 plugin queries your Awair account to determine devices that you have registered. This is the same informaton that you have entered via the Awair app on your iOS dev ice.
