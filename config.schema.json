@@ -2,8 +2,8 @@
   "pluginAlias": "Awair2",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair API. Reference [Installation Instructions](https://github.com/DMBlakeley/homebridge-awair2#readme) for details on determining 'Developer Token'.",
-  "footerDisplay": "If you have multiple Awair devices, use those IDs to create individual accessories. Be sure to uniquely 'name' each device.",
+  "headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair API.",
+  "footerDisplay": "Reference [Installation Instructions](https://github.com/DMBlakeley/homebridge-awair2#readme) for details on determining 'Developer Token'.",
   "schema": {
     "type": "object",
     "properties": {
@@ -12,7 +12,7 @@
         "type": "string",
         "placeholder": "AAA.AAA.AAA",
         "required": true,
-        "description": "Reference Installation Instructions - link provided above."
+        "description": "Reference Installation Instructions - link provided in footer."
       },
       "userType": {
         "title": "The type of user account",
@@ -23,14 +23,14 @@
       "airQualityMethod": {
         "title": "Air quality calculation method",
         "type": "string",
-        "placeholder": "None",
+        "placeholder": "awair-score",
         "enum": ["awair-score", "aqi"],
         "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = `awair-score`, Options: 'awair-score' and `aqi`."
       },
       "endpoint": {
         "title": "The `air-data` endpoint",
         "type": "string",
-        "placeholder": "None",
+        "placeholder": "15-min-avg",
         "enum": ["15-min-avg", "5-min-avg", "raw", "latest"],
         "description": "The `air-data` endpoint to use. Default = '15-min-avg', Options: '15-min-avg', `5-min-avg`, `raw`, or `latest`."
       },
@@ -43,13 +43,8 @@
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
-        "default": 12,
+        "placeholder": 12,
         "description": "Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)"
-      },
-      "logging": {
-        "title": "Whether to output logs to the Homebridge logs",
-        "type": "boolean",
-        "default": false
       },
       "carbonDioxideThreshold": {
         "title": "Carbon Dioxide Threshold",
@@ -62,6 +57,11 @@
         "type": "integer",
         "placeholder": 0,
         "description": "The CO2 level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`. Default = 0."
+      },
+      "logging": {
+        "title": "Whether to output logs to the Homebridge logs",
+        "type": "boolean",
+        "default": false
       }
     }
   },
@@ -71,13 +71,21 @@
       "flex-flow": "row wrap",
       "items": ["token"]
     },
-    "userType",
-    "airQualityMethod",
-    "endpoint",
-    "polling_interval",
-    "limit",
-    "logging",
-    "carbonDioxideThreshold",
-    "carbonDioxideThresholdOff"
+    {
+      "type": "fieldset",
+      "title": "Optional Configuration Settings",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "userType",
+        "airQualityMethod",
+        "endpoint",
+        "polling_interval",
+        "limit",
+        "carbonDioxideThreshold",
+        "carbonDioxideThresholdOff",
+      "logging"
+      ]
+    }
   ]
 }

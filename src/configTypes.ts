@@ -1,4 +1,4 @@
-export type onlyAwairPlatformConfig = {
+export type AwairPlatformConfig = {
   platform: string;
   token: string;
   userType: string;
@@ -9,7 +9,6 @@ export type onlyAwairPlatformConfig = {
   logging: boolean;
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
-  numDevices: number;
 };
 
 export type DeviceConfig = {
@@ -27,25 +26,3 @@ export type DeviceConfig = {
   locationName: string;
 };
 
-/*
-export type AwairPlatformConfig = {
-  name: string;
-  token: string;
-  manufacturer: string;
-  model: string;
-  devType: string;
-  devId: string;
-  serial: string;
-  deviceUUID: string;
-  carbonDioxideThreshold: number;
-  carbonDioxideThresholdOff: number;
-  vocMw: number;
-  airQualityMethod: string;
-  endpoint: string;
-  polling_interval: number;
-  userType: string;
-  limit: number;
-  logging: boolean;
-  numDevice: number;
-};
-*/

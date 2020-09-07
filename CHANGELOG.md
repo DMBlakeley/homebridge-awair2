@@ -6,3 +6,9 @@ All notable changes to this project will be documented in this file. This projec
   ## Changes
 
   * First version of awair2 plugin in TypeScript format implementing Homebridge dynamic platform.
+
+## v5.1.0
+  ## Changes
+
+  * Update to correctly handle default configuration values plus general cleanup of code. 
+  * Files updated: README.md, src/index.ts, src/configType.ts, config.schema.json, package.json, package-lock.json, CHANGLOG.md.

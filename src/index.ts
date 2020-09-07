@@ -12,7 +12,7 @@ import {
   PlatformConfig,
 } from 'homebridge';
 
-import { onlyAwairPlatformConfig, DeviceConfig} from './configTypes';
+import { AwairPlatformConfig, DeviceConfig } from './configTypes';
 import request = require('request-promise');
 import * as packageJSON from '../package.json';
 
@@ -33,16 +33,23 @@ export = (api: API): void => {
 class AwairPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
 	private readonly api: API;
-	private readonly config: onlyAwairPlatformConfig;
+	private readonly config: AwairPlatformConfig;
 	private readonly manufacturer: string = 'Awair';
 	private readonly vocMw: number = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
+	private readonly carbonDioxideThreshold: number = 0;
+	private readonly carbonDioxideThresholdOff: number = 0;
+	private readonly airQualityMethod: unknown;
+	private readonly userType: unknown;
+	private readonly polling_interval: number = 900;
+	private readonly limit: number = 12;
+	private readonly endpoint: unknown;
+	
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
-	private timeout = 0; // loop timer
 	
 	constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
-	  this.config = config as unknown as onlyAwairPlatformConfig;
+	  this.config = config as unknown as AwairPlatformConfig;
 	  this.api = api;
 
 	  // We need Developer token or we're not starting.
@@ -50,14 +57,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log('Awair Developer token not specified. Reference installation instructions.');
 	    return;
 	  }
-
-	  // initialize timer
-	  if (this.config.polling_interval) {
-	    this.timeout = this.config.polling_interval * 1000;
-	  } else {
-	    this.timeout = 900 * 1000; // 15 minutes is default
-	  }
 		
+	  // set defaults
+	  this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold) || 0;
+	  this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThresholdOff) || Number(this.config.carbonDioxideThreshold);
+	  this.airQualityMethod = this.config.airQualityMethod || 'awair-score';
+	  this.userType = this.config.userType || 'users/self'; 
+	  this.polling_interval = this.config.polling_interval || 900;
+	  this.limit = this.config.limit || 12;
+	  this.endpoint = this.config.endpoint || '15-min-avg';
+
 	  // Create array of Awair accessories
 	  this.accessories = [];
 
@@ -118,7 +127,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	}
 
 	async getAwairDevices(): Promise<void> {
-	  const deviceURL = 'https://developer-apis.awair.is/v1/' + this.config.userType + '/devices';
+	  const deviceURL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
 
 	  const options = {
 	    method: 'GET',
@@ -299,8 +308,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	async updateStatus(accessory: PlatformAccessory): Promise<void> {
 	  // Update status for accessory of deviceId
-	  const dataURL = 'https://developer-apis.awair.is/v1/' + this.config.userType + '/devices/' + accessory.context.deviceType + '/' 
-			+ accessory.context.deviceId + '/air-data/' + this.config.endpoint + '?limit=' + this.config.limit + '&desc=true';
+	  const dataURL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
+			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
 	  const options = {
 	    method: 'GET',
 	    url: dataURL,
@@ -327,7 +336,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	      const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	      if (airQualityService) {
-	        if (this.config.airQualityMethod === 'awair-aqi') {
+	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
 	        } else {
@@ -340,7 +349,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      const atmos = 1;
 		
 	      if(this.config.logging){
-	        this.log('[' + accessory.context.serial + '] ' + this.config.endpoint + ': ' + JSON.stringify(sensors) + ', score: ' + score);
+	        this.log('[' + accessory.context.serial + '] ' + this.endpoint + ': ' + JSON.stringify(sensors) + ', score: ' + score);
 	      }
 
 	      for (const sensor in sensors) {
@@ -375,24 +384,24 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	              // Logic to determine if Carbon Dioxide should trip a change in Detected state
 	              carbonDioxideService
 	                .updateCharacteristic(hap.Characteristic.CarbonDioxideLevel, parseFloat(sensors[sensor]));
-	              if ((this.config.carbonDioxideThreshold > 0) && (co2 >= this.config.carbonDioxideThreshold)) {
+	              if ((this.carbonDioxideThreshold > 0) && (co2 >= this.carbonDioxideThreshold)) {
 	                // threshold set and CO2 HIGH
 	                co2Detected = 1;
 	                if(this.config.logging){
-	                  this.log('[' + accessory.context.serial + '] CO2 HIGH: ' + co2 + ' > ' + this.config.carbonDioxideThreshold);
+	                  this.log('[' + accessory.context.serial + '] CO2 HIGH: ' + co2 + ' > ' + this.carbonDioxideThreshold);
 	                }
-	              } else if ((this.config.carbonDioxideThreshold > 0) && (co2 < this.config.carbonDioxideThresholdOff)) {
+	              } else if ((this.carbonDioxideThreshold > 0) && (co2 < this.carbonDioxideThresholdOff)) {
 	                // threshold set and CO2 LOW
 	                co2Detected = 0;
 	                if(this.config.logging){
-	                  this.log('[' + accessory.context.serial + '] CO2 NORMAL: ' + co2 + ' < ' + this.config.carbonDioxideThresholdOff);
+	                  this.log('[' + accessory.context.serial + '] CO2 NORMAL: ' + co2 + ' < ' + this.carbonDioxideThresholdOff);
 	                }
-	              } else if ((this.config.carbonDioxideThreshold > 0) && (co2 < this.config.carbonDioxideThreshold) 
-														&& (co2 > this.config.carbonDioxideThresholdOff)) {
+	              } else if ((this.carbonDioxideThreshold > 0) && (co2 < this.carbonDioxideThreshold) 
+														&& (co2 > this.carbonDioxideThresholdOff)) {
 	                // the inbetween...
 	                if(this.config.logging){
-	                  this.log('[' + accessory.context.serial + '] CO2 INBETWEEN: ' + this.config.carbonDioxideThreshold 
-															+ ' > [[[' + co2 + ']]] > ' + this.config.carbonDioxideThresholdOff);
+	                  this.log('[' + accessory.context.serial + '] CO2 INBETWEEN: ' + this.carbonDioxideThreshold 
+															+ ' > [[[' + co2 + ']]] > ' + this.carbonDioxideThresholdOff);
 	                }
 	                co2Detected = co2Before;
 	              } else {
@@ -503,7 +512,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.accessories.forEach(accessory => {
 	      this.updateStatus(accessory);
 	    });
-	  }, this.timeout);
+	  }, this.polling_interval * 1000);
 	}
 
 	// Conversion functions
