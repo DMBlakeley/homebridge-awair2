@@ -34,15 +34,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
 	private readonly api: API;
 	private readonly config: AwairPlatformConfig;
-	private readonly manufacturer: string = 'Awair';
-	private readonly vocMw: number = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
-	private readonly carbonDioxideThreshold: number = 0;
-	private readonly carbonDioxideThresholdOff: number = 0;
-	private readonly airQualityMethod: unknown;
-	private readonly userType: unknown;
-	private readonly polling_interval: number = 900;
-	private readonly limit: number = 12;
-	private readonly endpoint: unknown;
+	private readonly manufacturer = 'Awair';
+	private readonly vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
+	private carbonDioxideThreshold = 0; // default
+	private carbonDioxideThresholdOff = 0; // default
+	private airQualityMethod = 'awair-score'; // default
+	private userType = 'users/self'; // default
+	private polling_interval = 900; // default
+	private limit = 12; // default
+	private endpoint = '15-min-avg'; // default
 	
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
@@ -58,15 +58,37 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    return;
 	  }
 		
-	  // set defaults
-	  this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold) || 0;
-	  this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThresholdOff) || Number(this.config.carbonDioxideThreshold);
-	  this.airQualityMethod = this.config.airQualityMethod || 'awair-score';
-	  this.userType = this.config.userType || 'users/self'; 
-	  this.polling_interval = this.config.polling_interval || 900;
-	  this.limit = this.config.limit || 12;
-	  this.endpoint = this.config.endpoint || '15-min-avg';
-
+	  // check for optonal parrameters entries in config.json
+	  if (this.config.carbonDioxideThreshold){
+	    this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold);
+	  }
+	  
+	  if (this.config.carbonDioxideThresholdOff) {
+	    this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThresholdOff);
+	  } else {
+	    this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThreshold);
+	  }
+	  
+	  if (this.config.airQualityMethod) {
+	    this.airQualityMethod = this.config.airQualityMethod;
+	  }
+	  
+	  if (this.config.userType) {
+	    this.userType = this.config.userType;
+	  }
+	  
+	  if (this.config.polling_interval) {
+	    this.polling_interval = this.config.polling_interval;
+	  }
+	  
+	  if (this.config.limit) {
+	    this.limit = this.config.limit;
+	  }
+	  
+	  if (this.config.endpoint) {
+	    this.endpoint = this.config.endpoint;
+	  }
+	  
 	  // Create array of Awair accessories
 	  this.accessories = [];
 
