@@ -84,7 +84,7 @@
         "limit",
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
-      "logging"
+        "logging"
       ]
     }
   ]

@@ -36,13 +36,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly config: AwairPlatformConfig;
 	private readonly manufacturer = 'Awair';
 	private readonly vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
-	private carbonDioxideThreshold = 0; // default
-	private carbonDioxideThresholdOff = 0; // default
-	private airQualityMethod = 'awair-score'; // default
-	private userType = 'users/self'; // default
-	private polling_interval = 900; // default
-	private limit = 12; // default
-	private endpoint = '15-min-avg'; // default
+	
+	// default values when not defined in config.json
+	private carbonDioxideThreshold = 0;
+	private carbonDioxideThresholdOff = 0;
+	private airQualityMethod = 'awair-score';
+	private userType = 'users/self';
+	private polling_interval = 900;
+	private limit = 12;
+	private endpoint = '15-min-avg';
 	
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
@@ -58,7 +60,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    return;
 	  }
 		
-	  // check for optonal parrameters entries in config.json
+	  // check for Optional entries in config.json
 	  if (this.config.carbonDioxideThreshold){
 	    this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold);
 	  }

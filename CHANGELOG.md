@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file. This projec
   * Files updated: README.md, src/index.ts, src/configType.ts, config.schema.json, package.json, package-lock.json, CHANGLOG.md.
 
 ## v5.1.1
-## Changes
+  ## Changes
 
-* Update of Class declarations to remove Readonly for changeable variables and provide default values. Added check for presence of optional parameteres in config.json to override defaults.
+  * Update of Class declarations to remove Readonly for changeable variables and provide default values. Added check for presence of optional parameteres in config.json to override defaults.
+
+## v5.1.2
+  ## Changes
+
+  * Cleanup of comments in index.js code (no functional changes). Files updated: README.md, src/index.ts, package.json, package-lock.json, CHANGLOG.md.
