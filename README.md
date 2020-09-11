@@ -1,7 +1,7 @@
 # homebridge-awair2
 This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) and based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
 
-The Awair2 plugin will query your Awair account as setup by the Awair app on your iOS device to determine your registered Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit. Battery charge level and charging status are also provided for Awair Mint.
+The Awair2 plugin will query your Awair account as setup by the Awair app on your iOS device to determine your registered Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit. Battery charge level and charging status are also provided for Awair Omni.
 
 You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 

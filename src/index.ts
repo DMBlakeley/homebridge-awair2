@@ -145,6 +145,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // get initial status
 	  this.updateStatus(accessory);
+	  if (accessory.context.deviceType === 'awair-omni') {
+	    this.getBatteryStatus(accessory);
+	  }
 		
 	  // start collecting data, loooping according to config settings
 	  this.dataLoop(); 
@@ -317,7 +320,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // *** Add Mint battery service
-	  if (accessory.context.devType === 'awair-mint') {
+	  if (accessory.context.devType === 'awair-omni') {
 	    const batteryService = accessory.getService(hap.Service.BatteryService);
 	    if (batteryService) {
 	      batteryService
@@ -586,7 +589,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  setInterval(() => {
 	    this.accessories.forEach(accessory => {
 	      this.updateStatus(accessory);
-	      if (accessory.context.deviceType === 'awair-mint') {
+	      if (accessory.context.deviceType === 'awair-omni') {
 	        this.getBatteryStatus(accessory);
 	      }
 	    });

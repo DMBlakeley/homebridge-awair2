@@ -27,3 +27,8 @@ All notable changes to this project will be documented in this file. This projec
   ## Changes
 
   * Added (beta) battery support for Awair Mint. Updates to README.md and config.schema.json.
+
+## v5.2.1
+  ## Changes
+
+  * Awair Onmi has battery, not Awair Mint. Updates to README.md and indes.ts files.
