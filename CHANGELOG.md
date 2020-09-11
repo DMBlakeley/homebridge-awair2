@@ -22,3 +22,8 @@ All notable changes to this project will be documented in this file. This projec
   ## Changes
 
   * Cleanup of comments in index.js code (no functional changes). Files updated: README.md, src/index.ts, package.json, package-lock.json, CHANGLOG.md.
+
+## v5.2.0
+  ## Changes
+
+  * Added (beta) battery support for Awair Mint. Updates to README.md and config.schema.json.

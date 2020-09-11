@@ -212,6 +212,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.addService(hap.Service.LightSensor, data.name + ' Light');
 	    }
 
+	    // *** Add Mint battery service
+	    if (data.deviceType === 'awair-mint') {
+	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
+	    }
+			
 	    this.addServices(accessory);
 
 	    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -308,6 +313,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          minValue: 0,
 	          maxValue: 64000,
 	        });
+	    }
+	  }
+		
+	  // *** Add Mint battery service
+	  if (accessory.context.devType === 'awair-mint') {
+	    const batteryService = accessory.getService(hap.Service.BatteryService);
+	    if (batteryService) {
+	      batteryService
+	        .setCharacteristic(hap.Characteristic.BatteryLevel, '--'); // 0 -> 100%
+	      batteryService
+	        .setCharacteristic(hap.Characteristic.ChargingState, '--'); // NOT_CHARGING, CHARGING, NOT_CHARBEABLE
 	    }
 	  }
 
@@ -531,10 +547,48 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
+	// *** Add Mint battery service
+	async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
+	  const batteryURL = 'https://developer-apis.awair.is/v1/devices/' + accessory.context.deviceType + '/' 
+			+ accessory.context.deviceId + '/power-status';
+
+	  const options = {
+	    method: 'GET',
+	    url: batteryURL,
+	    json: true, // Automatically parses the JSON string in the response
+	    headers: {
+	      Authorization: 'Bearer ' + this.config.token,
+	    },
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      const batteryLevel: number = response.percentage;
+	      const batteryPlugged: boolean = response.plugged;				
+
+	      const batteryService = accessory.getService(hap.Service.BatteryService);
+	      if (batteryService) {
+	        batteryService
+	          .updateCharacteristic(hap.Characteristic.BatteryLevel, batteryLevel); // 0 -> 100%
+	        batteryService
+	          .updateCharacteristic(hap.Characteristic.ChargingState, batteryPlugged); // NOT_CHARGING=0, CHARGING=1, NOT_CHARBEABLE=2
+	      }
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getBatteryStatus error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
 	dataLoop(): void {
 	  setInterval(() => {
 	    this.accessories.forEach(accessory => {
 	      this.updateStatus(accessory);
+	      if (accessory.context.deviceType === 'awair-mint') {
+	        this.getBatteryStatus(accessory);
+	      }
 	    });
 	  }, this.polling_interval * 1000);
 	}
