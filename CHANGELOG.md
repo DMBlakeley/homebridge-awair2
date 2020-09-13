@@ -32,3 +32,9 @@ All notable changes to this project will be documented in this file. This projec
   ## Changes
 
   * Awair Onmi has battery, not Awair Mint. Updates to README.md and indes.ts files.
+
+## v5.2.2
+  ## Changes
+
+  * Limit battery status check frequency to every 4th data check.
+

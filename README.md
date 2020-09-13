@@ -42,7 +42,7 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
    "limit": 12,
    "logging": false,
    "carbonDioxideThreshold": 1200,
-   "carbonDioxideThresholdOff": 900,
+   "carbonDioxideThresholdOff": 800,
 }]
 ```
 

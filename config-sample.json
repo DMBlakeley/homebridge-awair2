@@ -18,7 +18,7 @@
 		"limit": 12,
 		"logging": false,
 		"carbonDioxideThreshold": 1200,
-		"carbonDioxideThresholdOff": 600
+		"carbonDioxideThresholdOff": 800
 		}]
 	}]
 }

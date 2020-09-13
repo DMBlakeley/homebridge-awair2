@@ -215,8 +215,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.addService(hap.Service.LightSensor, data.name + ' Light');
 	    }
 
-	    // *** Add Mint battery service
-	    if (data.deviceType === 'awair-mint') {
+	    // *** Add Omni battery service
+	    if (data.deviceType === 'awair-omni') {
 	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
 	    }
 			
@@ -319,7 +319,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
-	  // *** Add Mint battery service
+	  // *** Add Omni battery service
 	  if (accessory.context.devType === 'awair-omni') {
 	    const batteryService = accessory.getService(hap.Service.BatteryService);
 	    if (batteryService) {
@@ -585,13 +585,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	dataLoop(): void {
+	dataLoop(): void { // will loop until reboot or error
 	  setInterval(() => {
+	    let battCheck = 0; // only check battery every 4th loop so not to exceed Tier Quota for GET_POWER_STATUS
 	    this.accessories.forEach(accessory => {
 	      this.updateStatus(accessory);
-	      if (accessory.context.deviceType === 'awair-omni') {
+	      if (accessory.context.deviceType === 'awair-omni' && battCheck <= 3) {
 	        this.getBatteryStatus(accessory);
 	      }
+	      battCheck = battCheck++ % 4;
 	    });
 	  }, this.polling_interval * 1000);
 	}
