@@ -7,7 +7,7 @@ The plugin will fetch new data once every 15 minutes (default), but it can be cu
 
 With iOS14, the icons and status have been refined for HomeKit. Air quality, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screen shots below). If you touch and hold this icon a screen opens with all of the Climate devices in your HomeKit home (second screen shot).
 
-![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/image.png)
+![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
 
 For Awair Omni, battery charge level, charging status and low battery are also provided for Awair Omni. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
 
