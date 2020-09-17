@@ -1,11 +1,16 @@
 # homebridge-awair2
-This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) and based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
+This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
 
-The Awair2 plugin will query your Awair account as setup by the Awair app on your iOS device to determine your registered Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit. Battery charge level and charging status are also provided for Awair Omni.
+The Awair2 plugin will query your Awair account as setup through the Awair app on your iOS device to determine your registered Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
-You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+The plugin will fetch new data once every 15 minutes (default), but it can be customized via the Homebridge Config UI X plugin or directly by editing the homebridge `config.json` file.
 
-The plugin will fetch new data once every 15 minutes (default), but it can be customized in `config.json`.
+With iOS14, the icons and status have been refined for HomeKit. Air quality, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screen shots below). If you touch and hold this icon a screen opens with all of the Climate devices in your HomeKit home (second screen shot).
+
+![Status](screenshots/image.jpeg)
+
+For Awair Omni, battery charge level, charging status and low battery are also provided for Awair Omni. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
+
 
 Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as a reference for implementation of the Awair Dynamic Platform TypeScript plugin.
 

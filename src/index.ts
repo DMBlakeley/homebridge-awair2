@@ -5,6 +5,9 @@ import {
   API,
   APIEvent,
   DynamicPlatformPlugin,
+  // CharacteristicEventTypes,
+  // CharacteristicSetCallback,
+  // CharacteristicValue,
   HAP,
   Logging,
   PlatformAccessory,
@@ -219,7 +222,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (data.deviceType === 'awair-omni') {
 	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
 	    }
-			
+						
 	    this.addServices(accessory);
 
 	    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -324,12 +327,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    const batteryService = accessory.getService(hap.Service.BatteryService);
 	    if (batteryService) {
 	      batteryService
-	        .setCharacteristic(hap.Characteristic.BatteryLevel, '--'); // 0 -> 100%
+	        .setCharacteristic(hap.Characteristic.BatteryLevel, 50); // 0 -> 100%
 	      batteryService
-	        .setCharacteristic(hap.Characteristic.ChargingState, '--'); // NOT_CHARGING, CHARGING, NOT_CHARBEABLE
+	        .setCharacteristic(hap.Characteristic.ChargingState, 0); // NOT_CHARGING = 0, CHARGING = 1, NOT_CHARBEABLE = 2
+	      batteryService
+	        .setCharacteristic(hap.Characteristic.StatusLowBattery, 0); // Normal = 0, Low = 1 
 	    }
 	  }
-
+		
 	  this.log('[' + accessory.context.serial + '] addServices completed');
 
 	  this.accessories.push(accessory);
@@ -550,7 +555,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// *** Add Mint battery service
+	// *** Add Omni battery service
 	async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const batteryURL = 'https://developer-apis.awair.is/v1/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/power-status';
@@ -567,7 +572,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  await request(options)
     	.then((response) => {
 	      const batteryLevel: number = response.percentage;
-	      const batteryPlugged: boolean = response.plugged;				
+	      const batteryPlugged: boolean = response.plugged;
+	      const lowBattery: boolean = (batteryLevel < 30) ? true : false;
 
 	      const batteryService = accessory.getService(hap.Service.BatteryService);
 	      if (batteryService) {
@@ -575,6 +581,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          .updateCharacteristic(hap.Characteristic.BatteryLevel, batteryLevel); // 0 -> 100%
 	        batteryService
 	          .updateCharacteristic(hap.Characteristic.ChargingState, batteryPlugged); // NOT_CHARGING=0, CHARGING=1, NOT_CHARBEABLE=2
+	        batteryService
+	          .updateCharacteristic(hap.Characteristic.StatusLowBattery, lowBattery);
 	      }
 	    })
     	.catch((err) => {
@@ -584,6 +592,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    });
 	  return;
 	}
+
 
 	dataLoop(): void { // will loop until reboot or error
 	  setInterval(() => {

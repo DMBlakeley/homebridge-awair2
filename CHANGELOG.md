@@ -38,3 +38,8 @@ All notable changes to this project will be documented in this file. This projec
 
   * Limit battery status check frequency to every 4th data check.
 
+## v5.2.3
+  ## Changes
+
+  * Added low battery alert (<30%) for Omni. Battery status shows up on all 4 sensors (Air Quality, CO2, Humidity & Temperature).
+  * Updated README.md with battery status details and added screenshot example for iOS14.
