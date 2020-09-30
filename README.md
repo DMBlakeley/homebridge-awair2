@@ -1,7 +1,7 @@
 # homebridge-awair2
-This is a second generation Homebridge Dynamic Platform plugin implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge) based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
+This is a second generation Homebridge Dynamic Platform plugin for the Awair family of air quality sensors implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge). The Awair2 plugin is based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
 
-The Awair2 plugin will query your Awair account as setup through the Awair app on your iOS device to determine your registered Awair devices and details. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide available sensor readings (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) information for HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+The Awair2 plugin will query your Awair account using a Developer Token to determine your registered Awair devices setup through the Awair app on your iOS device. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition or Awair Element) and provide sensor status and value (e.g. temperature, humidity, carbon dioxide, TVOC, and dust/PM2.5/PM10) to HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
 The plugin will fetch new data once every 15 minutes (default), but it can be customized via the Homebridge Config UI X plugin or directly by editing the homebridge `config.json` file.
 
@@ -9,8 +9,9 @@ With iOS14, the icons and status have been refined for HomeKit. Air quality, tem
 
 ![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
 
-For Awair Omni, battery charge level, charging status and low battery are also provided for Awair Omni. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
+For Awair Omni, battery charge level, charging status and low battery are also provided. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
 
+<b>NOTE:</b> If you are setting up an Awair unit for the first time, it is recommended that you allow 12 to 24 hours after adding to the iOS Awair App for the unit to calibrate, update firmware if necessary and establish connection to the Awair API cloud.
 
 Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as a reference for implementation of the Awair Dynamic Platform TypeScript plugin.
 

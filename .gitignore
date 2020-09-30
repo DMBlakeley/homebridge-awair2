@@ -3,6 +3,9 @@ dist
 
 # ------------- Defaults ------------- #
 
+# Apple macOS operating system files
+.DS_Store
+
 # Logs
 logs
 *.log

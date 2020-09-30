@@ -103,11 +103,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
      * after this event was fired, in order to ensure they weren't added to homebridge already.
      * This event can also be used to start discovery of new accessories.
      */
-	  api.on(APIEvent.DID_FINISH_LAUNCHING, this.discoverDevices.bind(this));				
+	  api.on(APIEvent.DID_FINISH_LAUNCHING, this.didFinishLaunching.bind(this));				
 	}
 
-	// Start discovery of new accessories.
-	async discoverDevices(): Promise<void> {
+	async didFinishLaunching(): Promise<void> {
 
 	  // Get Awair devices from your account defined by token
 	  await this.getAwairDevices();
@@ -134,10 +133,36 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.accessories.forEach(accessory => {
 	    this.addAccInfo(accessory);
 	  });
+		
+	  // get initial status
+	  this.accessories.forEach(accessory => {
+	    if (this.config.logging) {
+	      this.log('Getting initial status... ', accessory.context.deviceUUID);
+	    }
+	    this.updateStatus(accessory);
+	    if (accessory.context.deviceType === 'awair-omni') {
+	      this.getBatteryStatus(accessory);
+	    }	      
+	  });
+
+	  // start status looping according to polling_interval settings, Omni battery every 4th time
+	  let battCheck = 0; 
+	  setInterval(() => {
+	    this.accessories.forEach(accessory => {
+	      if (this.config.logging) {
+	        this.log('Updating status... ', accessory.context.deviceUUID);
+	      }
+	      this.updateStatus(accessory);
+	      if (accessory.context.deviceType === 'awair-omni' && battCheck <= 3) {
+	        this.getBatteryStatus(accessory);
+	        battCheck = battCheck++ % 4;
+	      }	      
+	    });
+	  }, this.polling_interval * 1000);
 	}
 
 	/*
-   * This function is invoked when homebridge restores cached accessories from disk at startup.
+   * This function is invoked when homebridge restores EACH cached accessory from disk at startup.
    * It should be used to setup event handlers for characteristics and update respective values.
    */
 	configureAccessory(accessory: PlatformAccessory): void {
@@ -145,15 +170,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  // add the restored accessory to the accessories cache so we can track if it has already been registered
 	  this.accessories.push(accessory);
-		
-	  // get initial status
-	  this.updateStatus(accessory);
-	  if (accessory.context.deviceType === 'awair-omni') {
-	    this.getBatteryStatus(accessory);
-	  }
-		
-	  // start collecting data, loooping according to config settings
-	  this.dataLoop(); 
 	}
 
 	async getAwairDevices(): Promise<void> {
@@ -335,7 +351,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
-	  this.log('[' + accessory.context.serial + '] addServices completed');
+	  if(this.config.logging) {
+	    this.log('[' + accessory.context.serial + '] addServices completed');
+	  }
 
 	  this.accessories.push(accessory);
 	}
@@ -574,6 +592,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      const batteryLevel: number = response.percentage;
 	      const batteryPlugged: boolean = response.plugged;
 	      const lowBattery: boolean = (batteryLevel < 30) ? true : false;
+				
+	      if(this.config.logging) {
+	        this.log('[' + accessory.context.serial + '] batteryLevel: ', batteryLevel, ' batteryPlugged: ', batteryPlugged);
+	      }
 
 	      const batteryService = accessory.getService(hap.Service.BatteryService);
 	      if (batteryService) {
@@ -591,20 +613,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    });
 	  return;
-	}
-
-
-	dataLoop(): void { // will loop until reboot or error
-	  setInterval(() => {
-	    let battCheck = 0; // only check battery every 4th loop so not to exceed Tier Quota for GET_POWER_STATUS
-	    this.accessories.forEach(accessory => {
-	      this.updateStatus(accessory);
-	      if (accessory.context.deviceType === 'awair-omni' && battCheck <= 3) {
-	        this.getBatteryStatus(accessory);
-	      }
-	      battCheck = battCheck++ % 4;
-	    });
-	  }, this.polling_interval * 1000);
 	}
 
 	// Conversion functions
