@@ -48,7 +48,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private polling_interval = 900;
 	private limit = 12;
 	private endpoint = '15-min-avg';
-	
+
+	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
+	private userTier = 'Hobbyist';
+	private fifteenMin = 300;
+	private fiveMin = 300;
+	private raw = 500;
+	private latest = 300;
+	private getPowerStatus = 300;
+	private getTimeZone = 300;
+	private secondsPerDay = 60 * 60 * 24;
+		
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
 	
@@ -86,8 +96,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.polling_interval = this.config.polling_interval;
 	  }
 	  
-	  if (this.config.limit) {
+	  // config.limit used for averaging of 'raw' data, most recent sample used for 'latest', '5-min' and '15-min'
+	  if (this.config.limit && this.config.endpoint === 'raw') {
 	    this.limit = this.config.limit;
+	  } else {
+	    this.limit = 1;
 	  }
 	  
 	  if (this.config.endpoint) {
@@ -108,7 +121,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	async didFinishLaunching(): Promise<void> {
 
-	  // Get Awair devices from your account defined by token
+	  // Get Developer User Info
+	  await this.getUserInfo();
+
+	  // Get Awair devices from your account defined by Developer Access Token
 	  await this.getAwairDevices();
 		
 	  const serNums: string[] = []; // array to keep track of devices
@@ -129,35 +145,43 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 	  this.removeAccessories(badAccessories);
 
-	  // Add accessory info to each accessory
+	  // Add Accessory Info to each accessory
 	  this.accessories.forEach(accessory => {
 	    this.addAccInfo(accessory);
 	  });
 		
-	  // get initial status
-	  this.accessories.forEach(accessory => {
+	  // get initial API usage
+	  await this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
-	      this.log('Getting initial status... ', accessory.context.deviceUUID);
+	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
+	    }
+	  });
+		
+	  // get initial AirData
+	  await this.accessories.forEach(accessory => {
+	    if (this.config.logging) {
+	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
 	    this.updateStatus(accessory);
 	    if (accessory.context.deviceType === 'awair-omni') {
 	      this.getBatteryStatus(accessory);
 	    }	      
 	  });
+		
 
-	  // start status looping according to polling_interval settings, Omni battery every 4th time
+	  // start AirData collection according to polling_interval settings, Omni battery every 4th time
 	  let battCheck = 0; 
 	  setInterval(() => {
 	    this.accessories.forEach(accessory => {
 	      if (this.config.logging) {
-	        this.log('Updating status... ', accessory.context.deviceUUID);
+	        this.log('[' + accessory.context.serial + '] Updating status...' + accessory.context.deviceUUID);
 	      }
 	      this.updateStatus(accessory);
-	      if (accessory.context.deviceType === 'awair-omni' && battCheck <= 3) {
+	      if (accessory.context.deviceType === 'awair-omni' && battCheck === 0) {
 	        this.getBatteryStatus(accessory);
-	        battCheck = battCheck++ % 4;
-	      }	      
+	      }
 	    });
+	    battCheck = ++battCheck % 4; 
 	  }, this.polling_interval * 1000);
 	}
 
@@ -172,6 +196,92 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.accessories.push(accessory);
 	}
 
+	// get User Info profile from your Awair development account
+	async getUserInfo(): Promise<void> {
+	  const userInfoURL = 'https://developer-apis.awair.is/v1/' + this.config.userType;
+
+	  const options = {
+	    method: 'GET',
+	    url: userInfoURL,
+	    json: true, // Automatically parses the JSON string in the response
+	    headers: {
+	      Authorization: 'Bearer ' + this.config.token,
+	    },
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      if(this.config.logging && this.config.verbose) {
+	        this.log('userInfo: ' + JSON.stringify(response));
+	      }
+				
+	      this.userTier = response.tier;
+
+	      const permissions: any[] = response.permissions;
+								
+	      for (let i = 0; i < permissions.length; i++) {
+	        switch (permissions[i].scope){
+					  case 'FIFTEEN_MIN':
+	            this.fifteenMin = parseFloat(permissions[i].quota);
+	            break;
+
+	          case 'FIVE_MIN':
+	            this.fiveMin = parseFloat(permissions[i].quota);
+	            break;
+
+	          case 'RAW':
+	            this.raw = parseFloat(permissions[i].quota);
+	            break;
+						
+	          case 'LATEST':
+	            this.latest = parseFloat(permissions[i].quota);
+	            break;
+						
+	          default:
+	            break;
+	        }
+	      }
+	      
+	      switch (this.endpoint) {
+	        case '15-min-avg': // practical minimum is 15-min or 900 seconds
+	          this.polling_interval = Math.round(this.secondsPerDay / this.fifteenMin);
+	          this.polling_interval = (this.polling_interval < 900 ? 900 : this.polling_interval);
+	          break;
+
+	        case '5-min-avg': // practical minimum is 5-min or 300
+	          this.polling_interval = Math.round(this.secondsPerDay / this.fiveMin);
+	          this.polling_interval = (this.polling_interval < 300 ? 300 : this.polling_interval);
+	          break;
+						
+	        case 'raw': // minimum is (this.limit * 10 seconds), 200 min for "Hobbyist"
+	          this.polling_interval = Math.round(this.secondsPerDay / this.raw);
+	          if (this.userTier === 'Hobbyist') {
+	            this.polling_interval = ((this.limit * 10) < 200 ? 200 : (this.limit * 10));
+	          } else {
+	            this.polling_interval = (this.polling_interval < (this.limit * 10) ? (this.limit * 10) : this.polling_interval);
+	          }
+	          break;
+						
+	        case 'latest': // latest is updated every 10 seconds on device, 300 min for "Hobbyist"
+	          this.polling_interval = Math.round(this.secondsPerDay / this.latest);
+	          if (this.userTier === 'Hobbyist') {
+	            this.polling_interval = (this.polling_interval < 300 ? 300 : this.polling_interval);
+	          } else {
+	            this.polling_interval = (this.polling_interval < 60 ? 60 : this.polling_interval);
+	          }
+	          break;
+	      }
+				
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getUserInfo error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
+	// get devices registered in your Awair account
 	async getAwairDevices(): Promise<void> {
 	  const deviceURL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
 
@@ -191,7 +301,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      	this.log('getAwairDevices: number discovered: ' + this.devices.length);
 	      }
 	      for (let i = 0; i < this.devices.length; i++) {
-	        if(this.config.logging){
+	        if(this.config.logging && this.config.verbose){
 	          this.log('getAwairDevices: discovered device: [' + i + '] ' + JSON.stringify(this.devices[i]));
 	        }
 	      }
@@ -204,9 +314,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
+	// add single Accessory to Platform
 	addAccessory(data: DeviceConfig): void {
-	  this.log('Initializing platform accessory ' + data.name + '...');
-
+	  if (this.config.logging) {
+	    this.log('Initializing platform accessory ' + data.name + '...');
+	  }
 	  let accessory = this.accessories.find(cachedAccessory => {
 	    return cachedAccessory.context.serial === data.macAddress;
 	  });
@@ -218,6 +330,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    // Using 'context' property of PlatformAccessory saves information to accessory cache
 	    accessory.context.name = data.name;
 	    accessory.context.serial = data.macAddress;
+	    accessory.context.timezone = data.timezone;
 	    accessory.context.deviceType = data.deviceType;
 	    accessory.context.deviceUUID = data.deviceUUID;
 	    accessory.context.deviceId = data.deviceId;
@@ -254,6 +367,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	}
 
+	// remove no longer used Accessories from Platform
 	removeAccessories(accessories: Array<PlatformAccessory>): void {
 	  accessories.forEach(accessory => {
 	    this.log(accessory.context.name + ' is removed from HomeBridge.');
@@ -338,7 +452,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
-	  // *** Add Omni battery service
+	  // Add Omni battery service
 	  if (accessory.context.devType === 'awair-omni') {
 	    const batteryService = accessory.getService(hap.Service.BatteryService);
 	    if (batteryService) {
@@ -358,6 +472,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.accessories.push(accessory);
 	}
 
+	// add Accessory Information to each Accessory
 	addAccInfo(accessory: PlatformAccessory): void {
 	  const accInfo = accessory.getService(hap.Service.AccessoryInformation);
 	  if (accInfo) {
@@ -372,6 +487,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	}
 
+	// update AirData for 'accessory'
 	async updateStatus(accessory: PlatformAccessory): Promise<void> {
 	  // Update status for accessory of deviceId
 	  const dataURL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
@@ -396,9 +512,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          a[b.comp] = a[b.comp] ? 0.5*(a[b.comp] + b.value) : b.value; return a;
 	        }, {});
 
-	      const score = data.reduce((a: any, b: any) => {
-	        return a + b.score;
-	      }, 0) / data.length;
+	      // determine average score over data samples
+	      const score = data.reduce((a: any, b: any) => a + b.score, 0) / data.length;
 
 	      const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	      if (airQualityService) {
@@ -414,7 +529,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      const temp: number = sensors.temp;
 	      const atmos = 1;
 		
-	      if(this.config.logging){
+	      if(this.config.logging && this.config.verbose){
 	        this.log('[' + accessory.context.serial + '] ' + this.endpoint + ': ' + JSON.stringify(sensors) + ', score: ' + score);
 	      }
 
@@ -573,7 +688,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// *** Add Omni battery service
+	// Add Omni battery service
 	async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const batteryURL = 'https://developer-apis.awair.is/v1/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/power-status';
@@ -591,10 +706,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then((response) => {
 	      const batteryLevel: number = response.percentage;
 	      const batteryPlugged: boolean = response.plugged;
+	      const batteryTimeStamp: string = response.timestamp;
 	      const lowBattery: boolean = (batteryLevel < 30) ? true : false;
 				
-	      if(this.config.logging) {
-	        this.log('[' + accessory.context.serial + '] batteryLevel: ', batteryLevel, ' batteryPlugged: ', batteryPlugged);
+	      if(this.config.logging && this.config.verbose) {
+	        this.log('[' + accessory.context.serial + '] batteryLevel: ' + batteryLevel + ' batteryPlugged: ' + batteryPlugged 
+						+ ' timeStamp: ' + batteryTimeStamp);
 	      }
 
 	      const batteryService = accessory.getService(hap.Service.BatteryService);
@@ -610,6 +727,35 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.catch((err) => {
 	      if(this.config.logging){
 	        this.log('getBatteryStatus error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
+	// get User API usage for a device from your Awair development account
+	async getApiUsage(accessory: PlatformAccessory): Promise<void> {
+	  const apiUsageURL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
+		+ accessory.context.deviceId + '/api-usages';
+
+
+	  const options = {
+	    method: 'GET',
+	    url: apiUsageURL,
+	    json: true, // Automatically parses the JSON string in the response
+	    headers: {
+	      Authorization: 'Bearer ' + this.config.token,
+	    },
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      if(this.config.logging && this.config.verbose) {
+	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response));
+	      }
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getApiUsage error: ' + err);
 	      }
 	    });
 	  return;

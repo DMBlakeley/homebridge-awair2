@@ -34,17 +34,11 @@
         "enum": ["15-min-avg", "5-min-avg", "raw", "latest"],
         "description": "The `air-data` endpoint to use. Default = '15-min-avg', Options: '15-min-avg', `5-min-avg`, `raw`, or `latest`."
       },
-      "polling_interval": {
-        "title": "Polling frequency",
-        "type": "integer",
-        "placeholder": 900,
-        "description": "The frequency (units: seconds) that you would like to update the data in HomeKit. Default = `900` [15 minutes]. Recommended minimum is 900 for '15-min-avg', 300 for '5-min-avg' or 'latest', and 180 for 'raw'."
-      },
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
         "placeholder": 12,
-        "description": "Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `/raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average)"
+        "description": "Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average). Defaults to 1 for other endpoints."
       },
       "carbonDioxideThreshold": {
         "title": "Carbon Dioxide Threshold",
@@ -59,7 +53,12 @@
         "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`. Default = 0."
       },
       "logging": {
-        "title": "Whether to output logs to the Homebridge logs",
+        "title": "Whether to output logs to the Homebridge logs.",
+        "type": "boolean",
+        "default": false
+      },
+      "verbose": {
+        "title": "Whether to include API data call results when logging is enabled.",
         "type": "boolean",
         "default": false
       }
@@ -80,11 +79,11 @@
         "userType",
         "airQualityMethod",
         "endpoint",
-        "polling_interval",
         "limit",
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
-        "logging"
+        "logging",
+        "verbose"
       ]
     }
   ]

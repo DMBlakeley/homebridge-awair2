@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.2.5
+  * Added `getUserInfo` and `getApiUsage` functions.
+  * `polling_interval` now based on `userType` and `endpoint`.
+  * Added `UserInfoConfig` to `configTypes.ts`.
+  * Corrected logic in `setInterval` to fetch Omni battery status on 4th `updateStatus` check.
+  * Updated use of `limit` in config.json to only apply to `raw` endpoint. Defaults to 1 for other endpoints.
+  * Added `verbose` logging flag which will log results from API data calls.
+  * Updates to config.schema.json for `limit` description and removal of `polling_interval`.
+  * Update to `config-sample.json` to remove `polling_interval`.
+  * Updates to README.md.
+
 ## v5.2.4
   * Updates from testing multiple Awair units. Base functionality confirmed for Awair, Awair-r2, Awair Element, Awair Glow C and Awair Omni.
   * Corrected data sampling when multiple units are configured.

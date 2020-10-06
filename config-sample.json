@@ -14,9 +14,9 @@
 		"userType": "users/self",
 		"airQualityMethod": "awair-score",
 		"endpoint": "15-min-avg",
-		"polling_interval": 900,
 		"limit": 12,
 		"logging": false,
+		"verbose": false,
 		"carbonDioxideThreshold": 1200,
 		"carbonDioxideThresholdOff": 800
 		}]

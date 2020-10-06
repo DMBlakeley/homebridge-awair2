@@ -7,6 +7,7 @@ export type AwairPlatformConfig = {
   polling_interval: number;
   limit: number;
   logging: boolean;
+  verbose: boolean;
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
 };
@@ -26,3 +27,12 @@ export type DeviceConfig = {
   locationName: string;
 };
 
+export type UserInfoConfig = {
+  userTier: string;
+  fifteenMin: number;
+	fiveMin: number;
+	raw: number;
+	latest: number;
+	getPowerStatus: number;
+	getTimeZone: number;
+};
