@@ -10,6 +10,7 @@ export type AwairPlatformConfig = {
   verbose: boolean;
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
+  ignoredDevices: [string];
 };
 
 export type DeviceConfig = {

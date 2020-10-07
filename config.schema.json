@@ -61,6 +61,19 @@
         "title": "Whether to include API data call results when logging is enabled.",
         "type": "boolean",
         "default": false
+      },
+      "ignoredDevices": {
+        "title": "Ignored Devices",
+        "description": "Awair account devices you wish to hide in Homekit.",
+        "type": "array",
+        "maxItems": 0,
+        "items": {
+          "title": "macAddress from back or bottom of Awair device:",
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 12,
+          "placeholder": "70886B10xxxx (Example)"
+        }
       }
     }
   },
@@ -84,6 +97,15 @@
         "carbonDioxideThresholdOff",
         "logging",
         "verbose"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Ignored Devices",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "ignoredDevices[]"
       ]
     }
   ]

@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge Awair2",
   "name": "homebridge-awair2",
-  "version": "5.2.7",
+  "version": "5.3.0",
   "description": "HomeKit integration of Awair air purifier as Dynamic Platform.",
   "main": "dist/index.js",
   "scripts": {

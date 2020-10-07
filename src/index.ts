@@ -61,6 +61,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
+	private ignoredDevices: string [] = [];
 	
 	constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
@@ -106,7 +107,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if (this.config.endpoint) {
 	    this.endpoint = this.config.endpoint;
 	  }
-	  
+		
+	  if (this.config.ignoredDevices) {
+	    this.ignoredDevices = this.config.ignoredDevices;
+	  }
+
 	  // Create array of Awair accessories
 	  this.accessories = [];
 
@@ -132,18 +137,20 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Add accessory for each Awair device
 	  for (let i = 0; i < this.devices.length; i++) {
 	    const device = this.devices[i];
-	    this.addAccessory.bind(this, device)();
+	    if (!this.ignoredDevices.includes(device.macAddress)) {
+	      await this.addAccessory.bind(this, device)();
+	    }
 	    serNums.push(device.macAddress);
 	  }
-
- 		// Remove old/no longer used accessories
+		
+	  // Remove old, no longer used or ignored devices
 	  const badAccessories: Array<PlatformAccessory> = [];
 	  this.accessories.forEach(cachedAccessory => {
-	    if (!serNums.includes(cachedAccessory.context.serial)) {
+	    if (!serNums.includes(cachedAccessory.context.serial) || this.ignoredDevices.includes(cachedAccessory.context.serial)) {
 	      badAccessories.push(cachedAccessory);
 	    }
 	  });
-	  this.removeAccessories(badAccessories);
+	  await this.removeAccessories(badAccessories);
 
 	  // Add Accessory Info to each accessory
 	  this.accessories.forEach(accessory => {
@@ -151,14 +158,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 		
 	  // get initial API usage
-	  await this.accessories.forEach(accessory => {
+	  this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
 	    }
 	  });
 		
 	  // get initial AirData
-	  await this.accessories.forEach(accessory => {
+	  this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
@@ -315,14 +322,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	}
 
 	// add single Accessory to Platform
-	addAccessory(data: DeviceConfig): void {
+	async addAccessory(data: DeviceConfig): Promise<void> {
+
 	  if (this.config.logging) {
 	    this.log('Initializing platform accessory ' + data.name + '...');
 	  }
+		
 	  let accessory = this.accessories.find(cachedAccessory => {
 	    return cachedAccessory.context.serial === data.macAddress;
 	  });
-
+		
 	  if (!accessory) {  // accessory does not exist in cache, initialze as new
   	  const uuid = hap.uuid.generate(data.deviceUUID);
     	accessory = new Accessory(data.name, uuid);
@@ -368,7 +377,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	}
 
 	// remove no longer used Accessories from Platform
-	removeAccessories(accessories: Array<PlatformAccessory>): void {
+	async removeAccessories(accessories: Array<PlatformAccessory>): Promise<void> {
 	  accessories.forEach(accessory => {
 	    this.log(accessory.context.name + ' is removed from HomeBridge.');
 	    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

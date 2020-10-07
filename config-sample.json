@@ -8,17 +8,21 @@
 
 	"description": "An example Homebridge config.json for Awair2.",
 
-	"platforms": [{
-		"platform": "Awair2",
-		"token": "AAA.AAA.AAA",
-		"userType": "users/self",
-		"airQualityMethod": "awair-score",
-		"endpoint": "15-min-avg",
-		"limit": 12,
-		"logging": false,
-		"verbose": false,
-		"carbonDioxideThreshold": 1200,
-		"carbonDioxideThresholdOff": 800
-		}]
-	}]
+	"platforms": [
+		{
+			"platform": "Awair2",
+			"token": "AAA.AAA.AAA",
+			"userType": "users/self",
+			"airQualityMethod": "awair-score",
+			"endpoint": "15-min-avg",
+			"limit": 12,
+			"logging": false,
+			"verbose": false,
+			"carbonDioxideThreshold": 1200,
+			"carbonDioxideThresholdOff": 800,
+			"ignoredDevices": [
+				"70886B10xxxx"
+			]
+		}
+	]
 }

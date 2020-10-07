@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.3.0
+  * Add option to define Awair account devices to be ignored and not be published in HomeKit.
+  * Updates to index.ts, configTypes.ts, config.schema.json, config-sample.json, package.json, and package-lock.json to support ignoredDevices funcionality.
+
 ## v5.2.7
   * Republish of v5.2.5 due to v5.2.6 error.
 

@@ -7,7 +7,9 @@ The plugin will fetch new data based on selected `endpoint` and User Account tie
 
 With iOS14, the icons and status have been refined for HomeKit. Air quality, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screen shots below). If you touch this icon a screen opens with all of the Climate devices in your HomeKit home (second screen shot).
 
-![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
+![iOS14 Screenshots](screenshots/Image.png)
+
+For those with multiple Awair devices, you can optionally list the macAddress of the device (found on the back or bottom of the device) which you want to exclude from HomeKit.
 
 For Awair Omni, battery charge level, charging status and low battery are also provided. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
 
@@ -38,18 +40,24 @@ Configuration sample:
 See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/master/config-sample.json)
 
 ```
-"platforms": [{
-   "platform": "Awair2",
-   "token": "AAA.AAA.AAA",
-   "userType": "users/self",
-   "airQualityMethod": "awair-score",
-   "endpoint": "15-min-avg",
-   "limit": 12,
-   "logging": false,
-   "verbose": false,
-   "carbonDioxideThreshold": 1200,
-   "carbonDioxideThresholdOff": 800,
-}]
+"platforms": [
+		{
+			"platform": "Awair2",
+			"token": "AAA.AAA.AAA",
+			"userType": "users/self",
+			"airQualityMethod": "awair-score",
+			"endpoint": "15-min-avg",
+			"limit": 12,
+			"logging": false,
+			"verbose": false,
+			"carbonDioxideThreshold": 1200,
+			"carbonDioxideThresholdOff": 800,
+			"ignoredDevices": [
+				"70886B10xxxx"
+			]
+		}
+	]
+}
 ```
 
 ## Descriptions
@@ -66,6 +74,7 @@ Parameter | Description
 `verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
 `carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff` | (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
+`ignoredDevices` | Array of Awair device macAddresses to be excluded from HomeKit (OPTIONAL).
 
 
 # Resources
