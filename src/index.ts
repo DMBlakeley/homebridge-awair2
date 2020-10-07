@@ -51,7 +51,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
 	private userTier = 'Hobbyist';
-	private fifteenMin = 300;
+	private fifteenMin = 100;
 	private fiveMin = 300;
 	private raw = 500;
 	private latest = 300;

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.2.7
+  * Republish of v5.2.5 due to v5.2.6 error.
+
+## v5.2.6
+  * Version published in error and removed from npm.
+
 ## v5.2.5
   * Added `getUserInfo` and `getApiUsage` functions.
   * `polling_interval` now based on `userType` and `endpoint`.
