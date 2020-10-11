@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.4.0
+  * Add support for Omni to use LocalAPI capability for battery-charge, battery-plugged, lux and spl_a (spl_a not currently supported in HomeKit).
+  
 ## v5.3.0
   * Add option to define Awair account devices to be ignored and not be published in HomeKit.
   * Updates to index.ts, configTypes.ts, config.schema.json, config-sample.json, package.json, and package-lock.json to support ignoredDevices funcionality.

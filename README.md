@@ -11,7 +11,9 @@ With iOS14, the icons and status have been refined for HomeKit. Air quality, tem
 
 For those with multiple Awair devices, you can optionally list the macAddress of the device (found on the back or bottom of the device) which you want to exclude from HomeKit.
 
-For Awair Omni, battery charge level, charging status and low battery are also provided. Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
+For Awair Omni, battery charge level, charging status, low battery and light level are also provided using the Local Sensors capability which is configured in the Awair App (reference screenshot below). Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status (see 3rd and 4th screen shots).
+
+![iOS14 Screenshots](screenshots/Image2.png)
 
 <b>NOTE:</b> If you are setting up an Awair unit for the first time, it is recommended that you allow 6 to 12 hours after adding to the iOS Awair App for the unit to calibrate, update firmware if necessary and establish connection to the Awair API cloud.
 
@@ -41,23 +43,22 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
 
 ```
 "platforms": [
-		{
-			"platform": "Awair2",
-			"token": "AAA.AAA.AAA",
-			"userType": "users/self",
-			"airQualityMethod": "awair-score",
-			"endpoint": "15-min-avg",
-			"limit": 12,
-			"logging": false,
-			"verbose": false,
-			"carbonDioxideThreshold": 1200,
-			"carbonDioxideThresholdOff": 800,
-			"ignoredDevices": [
-				"70886B10xxxx"
-			]
-		}
-	]
-}
+  {
+    "platform": "Awair2",
+    "token": "AAA.AAA.AAA",
+    "userType": "users/self",
+    "airQualityMethod": "awair-score",
+    "endpoint": "15-min-avg",
+    "limit": 12,
+    "logging": false,
+    "verbose": false,
+    "carbonDioxideThreshold": 1200,
+    "carbonDioxideThresholdOff": 800,
+    "ignoredDevices": [
+      "70886B10xxxx"
+    ]
+  }
+]
 ```
 
 ## Descriptions
