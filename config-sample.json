@@ -13,15 +13,15 @@
 			"platform": "Awair2",
 			"token": "AAA.AAA.AAA",
 			"userType": "users/self",
-			"airQualityMethod": "awair-score",
+			"airQualityMethod": "awair-aqi",
 			"endpoint": "15-min-avg",
-			"limit": 12,
+			"limit": 1,
 			"logging": false,
 			"verbose": false,
 			"carbonDioxideThreshold": 1200,
 			"carbonDioxideThresholdOff": 800,
 			"ignoredDevices": [
-				"70886B10xxxx"
+				"70886Bxxxxxx"
 			]
 		}
 	]

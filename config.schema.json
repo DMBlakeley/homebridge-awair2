@@ -18,39 +18,39 @@
         "title": "The type of user account",
         "type": "string",
         "placeholder": "users/self",
-        "description": "The type of user account. Default = 'users/self', Options: 'users/self' or `orgs/###`, where ### is the Awair Organization `orgId'."
+        "description": "The type of user account. Default = 'users/self', Options: 'users/self' or 'orgs/###', where ### is the Awair Organization 'orgId'."
       },
       "airQualityMethod": {
         "title": "Air quality calculation method",
         "type": "string",
         "placeholder": "awair-score",
-        "enum": ["awair-score", "aqi"],
-        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = `awair-score`, Options: 'awair-score' and `aqi`."
+        "enum": ["awair-score", "awair-aqi"],
+        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-score' and 'awair-aqi'."
       },
       "endpoint": {
-        "title": "The `air-data` endpoint",
+        "title": "The 'air-data' endpoint",
         "type": "string",
         "placeholder": "15-min-avg",
         "enum": ["15-min-avg", "5-min-avg", "raw", "latest"],
-        "description": "The `air-data` endpoint to use. Default = '15-min-avg', Options: '15-min-avg', `5-min-avg`, `raw`, or `latest`."
+        "description": "The 'air-data' endpoint to use. Default = '15-min-avg', Options: '15-min-avg', '5-min-avg', 'raw', or 'latest'."
       },
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
         "placeholder": 12,
-        "description": "Number of consecutive 10 second data points returned per request, used for custom averaging of sensor values from `raw` endpoint (OPTIONAL, default = `12` i.e. 2 minute average). Defaults to 1 for other endpoints."
+        "description": "Number of consecutive data points returned per request. For example, used for custom averaging of sensor values from 'raw' endpoint (OPTIONAL, default = '1' i.e. one '15-min-avg')."
       },
       "carbonDioxideThreshold": {
         "title": "Carbon Dioxide Threshold",
         "type": "integer",
         "placeholder": 0,
-        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = `0`."
+        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = '0'."
       },
       "carbonDioxideThresholdOff": {
         "title": "Carbon Dioxide Threshold Off",
         "type": "integer",
         "placeholder": 0,
-        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`. Default = 0."
+        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = 0."
       },
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
@@ -72,7 +72,7 @@
           "type": "string",
           "minLength": 12,
           "maxLength": 12,
-          "placeholder": "70886B10xxxx (Example)"
+          "placeholder": "70886Bxxxxxx (Example)"
         }
       }
     }

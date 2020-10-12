@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.4.1
+  * Fixed minor typos
+  * Fixed typo on Air Quality conversion for method `aqi` to `awair-aqi`
+  * Corrected Awair 1st Edition `dust` convertAwairAqi thresholds
+  * Reverted `limit` behavior for `5-min-avg` and `15-min-avg` endpoints, but not `latest`
+  * Changed default `limit` to `1` and default `endpoint` to `15-min-avg`
+  * Added more thorough description of `limit` behavior to README.md
+
 ## v5.4.0
   * Add support for Omni to use LocalAPI capability for battery-charge, battery-plugged, lux and spl_a (spl_a not currently supported in HomeKit).
   
