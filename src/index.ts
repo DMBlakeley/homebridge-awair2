@@ -5,9 +5,6 @@ import {
   API,
   APIEvent,
   DynamicPlatformPlugin,
-  // CharacteristicEventTypes,
-  // CharacteristicSetCallback,
-  // CharacteristicValue,
   HAP,
   Logging,
   PlatformAccessory,
@@ -84,16 +81,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThreshold);
 	  }
 	  
+	  if (this.config.vocMw) {
+	    this.vocMw = this.config.vocMw;
+	  }
+	  
 	  if (this.config.airQualityMethod) {
 	    this.airQualityMethod = this.config.airQualityMethod;
 	  }
 	  
 	  if (this.config.userType) {
 	    this.userType = this.config.userType;
-	  }
-	  
-	  if (this.config.vocMw) {
-	    this.vocMw = this.config.vocMw;
 	  }
 	  
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
@@ -171,11 +168,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
-	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
-	      this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
-	    }
 	    if (accessory.context.deviceType === 'awair-omni') {
 	      this.getOmniBatteryStatus(accessory);
+	    }
+	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
+	      this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a' 
 	    }			
 	    this.updateStatus(accessory);   
 	  });
@@ -186,11 +183,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      if (this.config.logging) {
 	        this.log('[' + accessory.context.serial + '] Updating status...' + accessory.context.deviceUUID);
 	      }
-	      if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
-	        this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
-	      }
 	      if (accessory.context.deviceType === 'awair-omni') {
 	        this.getOmniBatteryStatus(accessory);
+	      }
+	      if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
+	        this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
 	      }			
 	      this.updateStatus(accessory);
 	    });
@@ -210,11 +207,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	// get User Info profile from your Awair development account
 	async getUserInfo(): Promise<void> {
-	  const userInfoURL = 'https://developer-apis.awair.is/v1/' + this.config.userType;
+	  const URL = 'https://developer-apis.awair.is/v1/' + this.config.userType;
 
 	  const options = {
 	    method: 'GET',
-	    url: userInfoURL,
+	    url: URL,
 	    json: true, // Automatically parses the JSON string in the response
 	    headers: {
 	      Authorization: 'Bearer ' + this.config.token,
@@ -685,7 +682,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// Omni & Mint battery level and charging status via localAPI (must enable in Awair App, firmware v1.3.0 and below)
+	// Omni battery level and charging status via localAPI (must enable in Awair App, firmware v1.3.0 and below)
 	async getOmniBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 	  const options = {
@@ -725,7 +722,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// get Omni local API lux & spl_a data
+	// get Omni localAPI lux & spl_a data
 	async getOmniLocalData(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
@@ -739,7 +736,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then((response) => {
 
 	      const omniLux: number = response.lux;
-	      const omniSpl_a: number = response.spl_a;
+	      const omniSpl_a: number = response.spl_a; // spl_a only available on Omni
 				
 	      if(this.config.logging && this.config.verbose) {	
 	        this.log('Local data for ' + accessory.context.deviceType + ': lux: ' + omniLux + ' spl_a: ' + omniSpl_a);

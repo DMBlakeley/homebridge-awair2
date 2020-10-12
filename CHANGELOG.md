@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.4.3
+  * General code review for consistency.
+  * Removed Mint battery check as this function only applies to Omni.
+
 ## v5.4.2
   * Revise Omni battery check to include Mint. Applies to v1.3.0 firmware and below.
   * Re-implemented 'vocMw' as an optional configuration in the settings
