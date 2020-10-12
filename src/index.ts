@@ -102,7 +102,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    // no 'limit' applied to 'latest' endpoint, produces exactly one value
 	    this.limit = 1;
 	  } else {
-	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used for AQI calculation) would be easier with the '15-min'avg' endpoint
+	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
+	    // for AQI calculation) would be easier with the '15-min'avg' endpoint
 	    this.limit = this.config.limit;
 	  }
 	  
