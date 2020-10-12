@@ -39,14 +39,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly config: AwairPlatformConfig;
 	private readonly manufacturer = 'Awair';
 	private readonly vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
+	// ToDo: re-implement 'vocMw' as an optional configuration in the settings
 	
 	// default values when not defined in config.json
 	private carbonDioxideThreshold = 0;
 	private carbonDioxideThresholdOff = 0;
-	private airQualityMethod = 'awair-score';
+	private airQualityMethod = 'awair-aqi'; // ToDo: NowCast AQI
 	private userType = 'users/self';
 	private polling_interval = 900;
-	private limit = 12;
+	private limit = 1;
 	private endpoint = '15-min-avg';
 
 	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
@@ -67,6 +68,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.api = api;
 
 	  // We need Developer token or we're not starting.
+	  // ToDo: how would this handle local-only? i.e. merging homebridge-awair and homebridge-awair-local into a single plugin
 	  if(!this.config.token) {
 	    this.log('Awair Developer token not specified. Reference installation instructions.');
 	    return;
@@ -95,11 +97,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.polling_interval = this.config.polling_interval;
 	  }
 	  
-	  // config.limit used for averaging of 'raw' data, most recent sample used for 'latest', '5-min' and '15-min'
-	  if (this.config.limit && this.config.endpoint === 'raw') {
-	    this.limit = this.config.limit;
-	  } else {
+	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
+	  if (this.config.limit && this.config.endpoint === 'latest') {
+	    // no 'limit' applied to 'latest' endpoint, produces exactly one value
 	    this.limit = 1;
+	  } else {
+	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used for AQI calculation) would be easier with the '15-min'avg' endpoint
+	    this.limit = this.config.limit;
 	  }
 	  
 	  if (this.config.endpoint) {
@@ -119,7 +123,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
      * after this event was fired, in order to ensure they weren't added to homebridge already.
      * This event can also be used to start discovery of new accessories.
      */
-	  api.on(APIEvent.DID_FINISH_LAUNCHING, this.didFinishLaunching.bind(this));				
+	  api.on(APIEvent.DID_FINISH_LAUNCHING, this.didFinishLaunching.bind(this));
 	}
 
 	async didFinishLaunching(): Promise<void> {
@@ -465,7 +469,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      batteryService
 	        .setCharacteristic(hap.Characteristic.BatteryLevel, 50); // 0 -> 100%
 	      batteryService
-	        .setCharacteristic(hap.Characteristic.ChargingState, 0); // NOT_CHARGING = 0, CHARGING = 1, NOT_CHARBEABLE = 2
+	        .setCharacteristic(hap.Characteristic.ChargingState, 0); // NOT_CHARGING = 0, CHARGING = 1, NOT_CHARGEABLE = 2
 	      batteryService
 	        .setCharacteristic(hap.Characteristic.StatusLowBattery, 0); // Normal = 0, Low = 1 
 	    }
@@ -895,11 +899,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        let aqiDust = parseFloat(sensors[sensor]);
 	        if (aqiDust >= 0 && aqiDust < 50) {
 	          aqiDust = 1; // EXCELLENT
-	        } else if (aqiDust >= 100 && aqiDust < 50) {
+	        } else if (aqiDust >= 50 && aqiDust < 100) {
 	          aqiDust = 2; // GOOD
-	        } else if (aqiDust >= 150 && aqiDust < 100) {
+	        } else if (aqiDust >= 100 && aqiDust < 150) {
 	          aqiDust = 3; // FAIR
-	        } else if (aqiDust >= 250 && aqiDust < 150) {
+	        } else if (aqiDust >= 150 && aqiDust < 250) {
 	          aqiDust = 4; // INFERIOR
 	        } else if (aqiDust >= 250) {
 	          aqiDust = 5; // POOR
