@@ -38,12 +38,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly api: API;
 	private readonly config: AwairPlatformConfig;
 	private readonly manufacturer = 'Awair';
-	private readonly vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
-	// ToDo: re-implement 'vocMw' as an optional configuration in the settings
 	
 	// default values when not defined in config.json
 	private carbonDioxideThreshold = 0;
 	private carbonDioxideThresholdOff = 0;
+	private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	private airQualityMethod = 'awair-aqi'; // ToDo: NowCast AQI
 	private userType = 'users/self';
 	private polling_interval = 900;
@@ -93,8 +92,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.userType = this.config.userType;
 	  }
 	  
-	  if (this.config.polling_interval) {
-	    this.polling_interval = this.config.polling_interval;
+	  if (this.config.vocMw) {
+	    this.vocMw = this.config.vocMw;
 	  }
 	  
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
@@ -172,10 +171,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
-	    if (accessory.context.deviceType === 'awair-omni') {
+	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
 	      this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
-	      this.getOmniBatteryStatus(accessory);
 	    }
+	    if (accessory.context.deviceType === 'awair-omni') {
+	      this.getOmniBatteryStatus(accessory);
+	    }			
 	    this.updateStatus(accessory);   
 	  });
 		
@@ -185,10 +186,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      if (this.config.logging) {
 	        this.log('[' + accessory.context.serial + '] Updating status...' + accessory.context.deviceUUID);
 	      }
-	      if (accessory.context.deviceType === 'awair-omni') {
+	      if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
 	        this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
-	        this.getOmniBatteryStatus(accessory);
 	      }
+	      if (accessory.context.deviceType === 'awair-omni') {
+	        this.getOmniBatteryStatus(accessory);
+	      }			
 	      this.updateStatus(accessory);
 	    });
 	  }, this.polling_interval * 1000);
@@ -682,7 +685,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// Omni battery level and charging status via localAPI (must enable in Awair App)
+	// Omni & Mint battery level and charging status via localAPI (must enable in Awair App, firmware v1.3.0 and below)
 	async getOmniBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 	  const options = {
@@ -722,7 +725,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// get Omni local API device data
+	// get Omni local API lux & spl_a data
 	async getOmniLocalData(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		

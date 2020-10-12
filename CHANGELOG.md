@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.4.2
+  * Revise Omni battery check to include Mint. Applies to v1.3.0 firmware and below.
+  * Re-implemented 'vocMw' as an optional configuration in the settings
+
 ## v5.4.1
   * Fixed minor typos
   * Fixed typo on Air Quality conversion for method `aqi` to `awair-aqi`

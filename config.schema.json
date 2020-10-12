@@ -52,6 +52,12 @@
         "placeholder": 0,
         "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = 0."
       },
+      "vocMw": {
+				"title": "Reference Gas Molecular Weight",
+				"type": "number",
+				"placeholder": 72.66578273019740,
+				"description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3."
+			},
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
         "type": "boolean",
@@ -95,6 +101,7 @@
         "limit",
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
+        "vocMw",
         "logging",
         "verbose"
       ]

@@ -54,6 +54,7 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
     "verbose": false,
     "carbonDioxideThreshold": 1200,
     "carbonDioxideThresholdOff": 800,
+    "vocMw": 72.66578273019740,
     "ignoredDevices": [
       "70886Bxxxxxx"
     ]
@@ -75,6 +76,7 @@ Parameter | Description
 `verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
 `carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff` | (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
+`vocMw` | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3 (OPTIONAL, default = `72.66578273019740`)
 `ignoredDevices` | Array of Awair device macAddresses to be excluded from HomeKit (OPTIONAL).
 
 
