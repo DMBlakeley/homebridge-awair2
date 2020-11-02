@@ -133,14 +133,23 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  // Get Awair devices from your account defined by Developer Access Token
 	  await this.getAwairDevices();
-		
+
 	  const serNums: string[] = []; // array to keep track of devices
 
 	  // Add accessory for each Awair device
 	  for (let i = 0; i < this.devices.length; i++) {
 	    const device = this.devices[i];
-	    if (!this.ignoredDevices.includes(device.macAddress)) {
+	    if (!this.ignoredDevices.includes(device.macAddress) && device.macAddress.includes('70886B')) {
+	      
+	      // must NOT be on ignored list AND must contain the Awair OUI "70886B", the NIC can be any hexadecimal string
 	      await this.addAccessory.bind(this, device)();
+	    } else {
+	      if (this.config.logging) {
+	        
+	        // both conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
+	        this.log('[' + accessory.context.serial + '] Error with Serial...' + device.macAddress + ' On ignore list or does not match Awair OUI "70886B"');
+	      }
+	      
 	    }
 	    serNums.push(device.macAddress);
 	  }
