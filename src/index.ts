@@ -37,14 +37,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly manufacturer = 'Awair';
 	
 	// default values when not defined in config.json
-	private carbonDioxideThreshold = 0;
-	private carbonDioxideThresholdOff = 0;
 	private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	private airQualityMethod = 'awair-aqi'; // ToDo: NowCast AQI
 	private userType = 'users/self';
 	private polling_interval = 900;
 	private limit = 1;
 	private endpoint = '15-min-avg';
+	private carbonDioxideThreshold = 0;
+	private carbonDioxideThresholdOff = 0;
+	private occupancyDetectedLevel = 60;
+	private occupancyNotDetectedLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
 
 	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
 	private userTier = 'Hobbyist';
@@ -54,9 +56,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private latest = 300;
 	private secondsPerDay = 60 * 60 * 24;
 
+	// PlaftformAccessory defaults
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
-	private ignoredDevices: string [] = [];
+	private ignoredDevices: string [] = []; // array of ignored Awair devices
+	private omniDetected = false; // flag that Omni device exists, used to allow occupancy detection loop
 	
 	constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
@@ -83,6 +87,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  
 	  if (this.config.vocMw) {
 	    this.vocMw = this.config.vocMw;
+	  }
+	  
+	  if (this.config.occupancyDetectedLevel) {
+	    this.occupancyDetectedLevel = this.config.occupancyDetectedLevel;
+	  }
+	  
+	  if (this.config.occupancyNotDetectedLevel) {
+	    this.occupancyNotDetectedLevel = this.config.occupancyNotDetectedLevel;
 	  }
 	  
 	  if (this.config.airQualityMethod) {
@@ -134,10 +146,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const serNums: string[] = []; // array to keep track of devices
 
 	  // Add accessory for each Awair device
+	  // *** Todo - add support for deviceUUID for test devices
 	  for (let i = 0; i < this.devices.length; i++) {
 	    const device = this.devices[i];
-	    if (!this.ignoredDevices.includes(device.macAddress)) {
+	    // must NOT be on ignored list AND must contain the Awair OUI "70886B", the NIC can be any hexadecimal string
+	    if (!this.ignoredDevices.includes(device.macAddress) && device.macAddress.includes('70886B')) {
 	      await this.addAccessory.bind(this, device)();
+	    } else {
+	      if (this.config.logging) {
+	        // both conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
+	        this.log(`Error with Serial ${device.macAddress} on ignore list or does not match Awair OUI "70886B"`);
+	      }
 	    }
 	    serNums.push(device.macAddress);
 	  }
@@ -157,27 +176,30 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 		
 	  // get initial API usage
+	  // *** Todo - add check to make sure daily limits will not be exceeded
 	  this.accessories.forEach(accessory => {
+	    this.getApiUsage(accessory);
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
 	    }
 	  });
 		
-	  // get initial AirData
+	  // get initial Air and Local data
 	  this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
 	    if (accessory.context.deviceType === 'awair-omni') {
+	      this.getOmniOccupancyStatus(accessory);
 	      this.getOmniBatteryStatus(accessory);
 	    }
 	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
-	      this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a' 
+	      this.getOmniMintLightLevel(accessory); // fetch 'lux' and 'spl_a' 
 	    }			
-	    this.updateStatus(accessory);   
+	    this.updateAirData(accessory);   
 	  });
 		
-	  // start AirData collection according to polling_interval settings
+	  // start Device Air and Local data collection according to polling_interval settings
 	  setInterval(() => {
 	    this.accessories.forEach(accessory => {
 	      if (this.config.logging) {
@@ -187,11 +209,22 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.getOmniBatteryStatus(accessory);
 	      }
 	      if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
-	        this.getOmniLocalData(accessory); // fetch 'lux' and 'spl_a'
+	        this.getOmniMintLightLevel(accessory); // fetch averaged 'lux' value (Omni/Mint updates value every 10 seconds)
 	      }			
-	      this.updateStatus(accessory);
+	      this.updateAirData(accessory);
 	    });
 	  }, this.polling_interval * 1000);
+		
+	  // if Omni device exists, start loop to test for Omni occupancy status
+	  if(this.omniDetected) {
+	    setInterval(() => {
+	      this.accessories.forEach(accessory => {
+	        if (accessory.context.deviceType === 'awair-omni') {
+	          this.getOmniOccupancyStatus(accessory);
+	        }
+	      });
+	    }, 10000); // 10 seconds is updata interval for LocalAPI data, spl_a is 'smoothed' value
+	  }
 	}
 
 	/*
@@ -325,7 +358,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	// add single Accessory to Platform
 	async addAccessory(data: DeviceConfig): Promise<void> {
-
 	  if (this.config.logging) {
 	    this.log('Initializing platform accessory ' + data.name + '...');
 	  }
@@ -354,13 +386,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.addService(hap.Service.CarbonDioxideSensor, data.name + ' CO2');
 	    }
 
+	    // Add Omni and Mint Light Sensor service
 	    if (data.deviceType === 'awair-omni' || data.deviceType === 'awair-mint') {
 	      accessory.addService(hap.Service.LightSensor, data.name + ' Light');
 	    }
 
-	    // *** Add Omni battery service
+	    // Add Omni Battery and Occupancy service
 	    if (data.deviceType === 'awair-omni') {
 	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
+	      accessory.addService(hap.Service.OccupancySensor, data.name + ' Occupancy');
+	      this.omniDetected = true; // set flag for Occupancy detected loop
 	    }
 						
 	    this.addServices(accessory);
@@ -376,6 +411,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.context.deviceUUID = data.deviceUUID;
 	    accessory.context.deviceId = data.deviceId;
 	  }
+	  return;
 	}
 
 	// remove no longer used Accessories from Platform
@@ -385,6 +421,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 	    this.accessories.splice(this.accessories.indexOf(accessory), 1);
 	  });
+	  return;
 	}
 
 	// add Services and Characteristics to each Accessory
@@ -394,7 +431,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log(accessory.context.name + ' identify requested!');
 	  });
 
-	  // Add Air Quality Service
+	  // Air Quality Service
 	  const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	  if (airQualityService) {
 	    if (accessory.context.devType === 'awair-glow' || accessory.context.devType === 'awair-glow-c') {
@@ -420,7 +457,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      });
 	  }
 
-	  // Add Temperature Service
+	  // Temperature Service
 	  const temperatureService = accessory.getService(hap.Service.TemperatureSensor);
 	  if (temperatureService) {
 	    temperatureService
@@ -432,14 +469,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        maxValue: 100,
 	      });
 	  }
-	  // Add Humidity Service
+	  // Humidity Service
 	  const humidityService = accessory.getService(hap.Service.HumiditySensor);
 	  if (humidityService) {
 	    humidityService
 	      .setCharacteristic(hap.Characteristic.CurrentRelativeHumidity, '--');
 	  }
 
-	  // Add Carbon Dioxide Service
+	  // Carbon Dioxide Service
 	  if (accessory.context.devType !== 'awair-mint' && accessory.context.devType !== 'awair-glow-c') {
 	    const carbonDioxideService = accessory.getService(hap.Service.CarbonDioxideSensor);
 	    if (carbonDioxideService) {
@@ -448,7 +485,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 
-	  // Add Light Sensor Service
+	  // Omni & Mint Ambient Light Service
 	  if (accessory.context.devType === 'awair-omni' || accessory.context.devType === 'awair-mint') {
 	    const lightLevelSensor = accessory.getService(hap.Service.LightSensor);
 	    if (lightLevelSensor) {
@@ -463,7 +500,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
-	  // Add Omni battery service
+	  // Omni Battery Service
 	  if (accessory.context.devType === 'awair-omni') {
 	    const batteryService = accessory.getService(hap.Service.BatteryService);
 	    if (batteryService) {
@@ -476,10 +513,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
+	  // Omni Occupancy Sensor Service
+	  if (accessory.context.devType === 'awair-omni') {
+	    const occupancyService = accessory.getService(hap.Service.OccupancySensor);
+	    if (occupancyService) {
+	      occupancyService
+	        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // Not occupied
+	    }
+	  }
+		
 	  if(this.config.logging) {
 	    this.log('[' + accessory.context.serial + '] addServices completed');
-	  }
-
+	  }		
 	  this.accessories.push(accessory);
 	}
 
@@ -498,8 +543,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	}
 
-	// update AirData for 'accessory'
-	async updateStatus(accessory: PlatformAccessory): Promise<void> {
+	// update AirData using CloudAPI for 'accessory'
+	async updateAirData(accessory: PlatformAccessory): Promise<void> {
 	  // Update status for accessory of deviceId
 	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
@@ -515,13 +560,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  await request.get(options)
     	.then((response) => {
 	      const data: any[] = response.data;
-				
 	      const sensors: any = data
 	        .map(sensor => sensor.sensors)
 	        .reduce((a: any, b: any) => a.concat(b))
 	        .reduce((a: any, b: any) => {
 	          a[b.comp] = a[b.comp] ? 0.5*(a[b.comp] + b.value) : b.value; return a;
 	        }, {});
+
+	      if(this.config.logging && this.config.verbose){
+	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response));
+	      }
 
 	      // determine average score over data samples
 	      const score = data.reduce((a: any, b: any) => a + b.score, 0) / data.length;
@@ -676,13 +724,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
     		})
 	    .catch((err) => {
 	      if(this.config.logging){
-	        this.log('updateStatus error: ' + err);
+	        this.log('updateAirData error: ' + err);
 	      }
 	    });
 	  return;
 	}
 
-	// Omni battery level and charging status via localAPI (must enable in Awair App, firmware v1.3.0 and below)
+	// get Omni battery level and charging status using LocalAPI (must enable in Awair App, firmware v1.3.0 and below)
+	// *** TO DO - for Omni firmware v1.3.1, directory structure is '/settings/data'
 	async getOmniBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 	  const options = {
@@ -722,24 +771,75 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return;
 	}
 
-	// get Omni localAPI lux & spl_a data
-	async getOmniLocalData(accessory: PlatformAccessory): Promise<void> {
+	// get Omni Montion Sensor Status using spl_a level via LocalAPI
+	async getOmniOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
+	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
+	  const options = {
+	    method: 'GET',
+	    url: URL,
+	    json: true,
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      const omniSpl_a: number = response.spl_a;
+	      if(this.config.logging && this.config.verbose) {	
+	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
+	      }
+			
+	      const occupancyService = accessory.getService(hap.Service.OccupancySensor);
+				
+	      if (occupancyService) {
+	        // get current Occupancy state
+	        let occupancyStatus: any = occupancyService.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
+
+	        if (omniSpl_a >= this.occupancyDetectedLevel) { 
+	          // occupancy detected
+	          occupancyStatus = 1;
+	          if(this.config.logging){
+	            this.log('[' + accessory.context.serial + '] Occupied: ' + omniSpl_a + 'dBA > ' + this.occupancyDetectedLevel + 'dBA');
+	          }
+	        } else if (omniSpl_a <= this.occupancyNotDetectedLevel) { 
+	          // unoccupied
+	          occupancyStatus = 0;
+	          if(this.config.logging){
+	            // eslint-disable-next-line max-len
+	            this.log('[' + accessory.context.serial + '] Not Occupied: ' + omniSpl_a + 'dBA < ' + this.occupancyNotDetectedLevel + 'dBA');
+	          }
+	        } else if ((omniSpl_a > this.occupancyNotDetectedLevel) && (omniSpl_a < this.occupancyDetectedLevel)) {
+	          // inbetween ... no change, use current state
+	          if(this.config.logging){
+	            this.log('[' + accessory.context.serial + '] Occupancy Inbetween: ' + this.occupancyNotDetectedLevel + 'dBA < ' 
+									+ omniSpl_a + ' < ' + this.occupancyDetectedLevel + 'dBA');
+	          }
+	        }
+	        occupancyService
+	          .updateCharacteristic(hap.Characteristic.OccupancyDetected, occupancyStatus);
+	      }
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getOmniOccupancyStatus error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
+	// get Omni & Mint lux using LocalAPI
+	async getOmniMintLightLevel(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
 	  const options = {
 	    method: 'GET',
 	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
+	    json: true, //  parses the JSON string in the response
 	  };
 
 	  await request(options)
     	.then((response) => {
-
-	      const omniLux: number = response.lux;
-	      const omniSpl_a: number = response.spl_a; // spl_a only available on Omni
-				
+	      const omniLux: number = response.lux; // lux is 'latest' value averaged by Omni/Mint over 10 seconds
 	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local data for ' + accessory.context.deviceType + ': lux: ' + omniLux + ' spl_a: ' + omniSpl_a);
+	        this.log('LocalAPI lux data for ' + accessory.context.deviceType + ': ' + omniLux);
 	      }
 			
 	      const lightLevelSensor = accessory.getService(hap.Service.LightSensor);
@@ -751,82 +851,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.catch((err) => {
 	      if(this.config.logging){
 	        this.log('getOmniLocalData error: ' + err);
-	      }
-	    });
-	  return;
-	}
-
-	// get local API device data
-	async getLocalData(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
-		
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	  };
-
-	  await request(options)
-    	.then((response) => {
-	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local data for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
-	      }
-	    })
-    	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getLocalData error: ' + err);
-	      }
-	    });
-	  return;
-	}
-
-	// get localAPI device data
-	async getLocalConfig(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
-		
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	  };
-
-	  await request(options)
-    	.then((response) => {
-	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local config for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
-	      }
-	    })
-    	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getLocalConfig error: ' + err);
-	      }
-	    });
-	  return;
-	}
-
-	// get User API usage for a device from your Awair development account
-	async getApiUsage(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
-		+ accessory.context.deviceId + '/api-usages';
-
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
-	    },
-	  };
-
-	  await request(options)
-    	.then((response) => {
-	      if(this.config.logging && this.config.verbose) {
-	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response));
-	      }
-	    })
-    	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getApiUsage error: ' + err);
 	      }
 	    });
 	  return;
@@ -927,4 +951,82 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return Math.max(...aqiArray);
 	}
   
+	// *** NOT CURRENTLY USED FUNCTIONS ***
+
+	// get Device data using LocalAPI -> use for more general localAPI implementation
+	async getLocalData(accessory: PlatformAccessory): Promise<void> {
+	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
+		
+	  const options = {
+	    method: 'GET',
+	    url: URL,
+	    json: true, // Automatically parses the JSON string in the response
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      if(this.config.logging && this.config.verbose) {	
+	        this.log('Local data for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
+	      }
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getLocalData error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
+	// get device configuration using LocalAPI -> use for more general localAPI implementation
+	async getLocalConfig(accessory: PlatformAccessory): Promise<void> {
+	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
+		
+	  const options = {
+	    method: 'GET',
+	    url: URL,
+	    json: true, // Automatically parses the JSON string in the response
+	  };
+
+	  await request(options)
+    	.then((response) => {
+	      if(this.config.logging && this.config.verbose) {	
+	        this.log('Local config for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
+	      }
+	    })
+    	.catch((err) => {
+	      if(this.config.logging){
+	        this.log('getLocalConfig error: ' + err);
+	      }
+	    });
+	  return;
+	}
+
+	// get CloudAPI usage for a Device -> not currently used as polling_interval being set to not exceed API usage limits
+	async getApiUsage(accessory: PlatformAccessory): Promise<void> {
+	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
+			+ accessory.context.deviceId + '/api-usages';
+	
+	  const options = {
+	    method: 'GET',
+	    url: URL,
+	    json: true, // Automatically parses the JSON string in the response
+	    headers: {
+	      Authorization: 'Bearer ' + this.config.token,
+	    },
+	  };
+	
+	  await request(options)
+	    .then((response) => {
+	      if(this.config.logging && this.config.verbose) {
+	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response));
+	      }
+	    })
+	    .catch((err) => {
+	      if(this.config.logging){
+	        this.log('getApiUsage error: ' + err);
+	      }
+	    });
+	  return;
+	}	
+
 }

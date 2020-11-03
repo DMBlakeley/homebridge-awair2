@@ -9,9 +9,10 @@
       "ES2018",
       "dom"
     ],
+    "baseUrl": ".",
     "sourceMap": true,
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "allowJs": true,
     "resolveJsonModule": true,
 

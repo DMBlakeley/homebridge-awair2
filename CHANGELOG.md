@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.0
+  * Add Omni occupancy detection based on sound pressure level.
+  * Check that Awair MAC contains Awair OUI "70886B".
+  * Rename "updateStatus" to "updateAirData" to better reflect intent of function.
+  * Update comments to provide additional information.
+  * Update README.md, config-sample.json, config-schema.json for these changes.
+
 ## v5.4.3
   * General code review for consistency.
   * Removed Mint battery check as this function only applies to Omni.

@@ -37,7 +37,7 @@
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
-        "placeholder": 12,
+        "placeholder": 1,
         "description": "Number of consecutive data points returned per request. For example, used for custom averaging of sensor values from 'raw' endpoint (OPTIONAL, default = '1' i.e. one '15-min-avg')."
       },
       "carbonDioxideThreshold": {
@@ -57,6 +57,18 @@
 				"type": "number",
 				"placeholder": 72.66578273019740,
 				"description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3."
+			},
+      "occupancyDetectedLevel": {
+				"title": "Omni - Occupancy Threshold",
+				"type": "number",
+				"placeholder": 60,
+				"description": "Omni only - sound pressure level that indicates occupancy."
+			},
+      "occupancyNotDetectedLevel": {
+				"title": "Omni - Occupancy Threshold Off",
+				"type": "number",
+				"placeholder": 55,
+				"description": "Omni only - sound pressure level that indicates unoccupied."
 			},
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
@@ -102,6 +114,8 @@
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
         "vocMw",
+        "occupancyDetectedLevel",
+        "occupancyNotDetectedLevel",
         "logging",
         "verbose"
       ]

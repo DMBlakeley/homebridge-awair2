@@ -8,9 +8,11 @@ export type AwairPlatformConfig = {
   limit: number;
   logging: boolean;
   verbose: boolean;
+  vocMw: number;
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
-  vocMw: number;
+  occupancyDetectedLevel: number;
+  occupancyNotDetectedLevel: number;
   ignoredDevices: [string];
 };
 

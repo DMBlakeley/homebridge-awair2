@@ -21,6 +21,8 @@
 			"carbonDioxideThreshold": 1200,
 			"carbonDioxideThresholdOff": 800,
 			"vocMw": 72.66578273019740,
+			"occupancyDetectedLevel": 60,
+			"occupancyNotDetectedLevel": 55,
 			"ignoredDevices": [
 				"70886Bxxxxxx"
 			]
