@@ -80,6 +80,11 @@
         "type": "boolean",
         "default": false
       },
+      "development": {
+        "title": "Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
+        "type": "boolean",
+        "default": false
+      },
       "ignoredDevices": {
         "title": "Ignored Devices",
         "description": "Awair account devices you wish to hide in Homekit.",
@@ -117,7 +122,8 @@
         "occupancyDetectedLevel",
         "occupancyNotDetectedLevel",
         "logging",
-        "verbose"
+        "verbose",
+        "development"
       ]
     },
     {

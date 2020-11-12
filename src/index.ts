@@ -60,7 +60,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
 	private ignoredDevices: string [] = []; // array of ignored Awair devices
-	private omniDetected = false; // flag that Omni device exists, used to allow occupancy detection loop
+	private omniDetected = false; // flag that Awair account contains Omni device(s), used to allow occupancy detection loop
 	
 	constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
@@ -75,6 +75,28 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // check for Optional entries in config.json
+	  if (this.config.userType) {
+	    this.userType = this.config.userType;
+	  }
+	  
+	  if (this.config.airQualityMethod) {
+	    this.airQualityMethod = this.config.airQualityMethod;
+	  }
+	  
+	  if (this.config.endpoint) {
+	    this.endpoint = this.config.endpoint;
+	  }
+		
+	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
+	  if (this.config.limit && this.config.endpoint === 'latest') {
+	    // no 'limit' applied to 'latest' endpoint, produces exactly one value
+	    this.limit = 1;
+	  } else {
+	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
+	    // for AQI calculation) would be easier with the '15-min'avg' endpoint
+	    this.limit = this.config.limit;
+	  }
+	  
 	  if (this.config.carbonDioxideThreshold){
 	    this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold);
 	  }
@@ -97,28 +119,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.occupancyNotDetectedLevel = this.config.occupancyNotDetectedLevel;
 	  }
 	  
-	  if (this.config.airQualityMethod) {
-	    this.airQualityMethod = this.config.airQualityMethod;
-	  }
-	  
-	  if (this.config.userType) {
-	    this.userType = this.config.userType;
-	  }
-	  
-	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
-	  if (this.config.limit && this.config.endpoint === 'latest') {
-	    // no 'limit' applied to 'latest' endpoint, produces exactly one value
-	    this.limit = 1;
-	  } else {
-	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
-	    // for AQI calculation) would be easier with the '15-min'avg' endpoint
-	    this.limit = this.config.limit;
-	  }
-	  
-	  if (this.config.endpoint) {
-	    this.endpoint = this.config.endpoint;
-	  }
-		
 	  if (this.config.ignoredDevices) {
 	    this.ignoredDevices = this.config.ignoredDevices;
 	  }
@@ -140,22 +140,24 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Get Developer User Info
 	  await this.getUserInfo();
 
-	  // Get Awair devices from your account defined by Developer Access Token
+	  // Get registered Awair devices from your account using Developer Access Token
 	  await this.getAwairDevices();
 		
 	  const serNums: string[] = []; // array to keep track of devices
 
 	  // Add accessory for each Awair device
-	  // *** Todo - add support for deviceUUID for test devices
 	  for (let i = 0; i < this.devices.length; i++) {
 	    const device = this.devices[i];
-	    // must NOT be on ignored list AND must contain the Awair OUI "70886B", the NIC can be any hexadecimal string
+	    // 'end user' device must NOT be on ignored list AND must contain the Awair OUI "70886B", the NIC can be any hexadecimal string
 	    if (!this.ignoredDevices.includes(device.macAddress) && device.macAddress.includes('70886B')) {
+	      await this.addAccessory.bind(this, device)();
+	    // 'test' device must NOT be on ignored list AND will contain '000000', Development enabled to use
+	    } else if(!this.ignoredDevices.includes(device.macAddress) && device.macAddress.includes('000000') && this.config.development) {
 	      await this.addAccessory.bind(this, device)();
 	    } else {
 	      if (this.config.logging) {
-	        // both conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
-	        this.log(`Error with Serial ${device.macAddress} on ignore list or does not match Awair OUI "70886B"`);
+	        // conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
+	        this.log(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or not Test device`);
 	      }
 	    }
 	    serNums.push(device.macAddress);
@@ -176,12 +178,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 		
 	  // get initial API usage
-	  // *** Todo - add check to make sure daily limits will not be exceeded
+	  // *** ToDo - add check to make sure daily limits will not be exceeded
 	  this.accessories.forEach(accessory => {
-	    this.getApiUsage(accessory);
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
 	    }
+	    this.getApiUsage(accessory);
 	  });
 		
 	  // get initial Air and Local data
@@ -189,6 +191,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting initial status...' + accessory.context.deviceUUID);
 	    }
+	    this.updateAirData(accessory);   
 	    if (accessory.context.deviceType === 'awair-omni') {
 	      this.getOmniOccupancyStatus(accessory);
 	      this.getOmniBatteryStatus(accessory);
@@ -196,7 +199,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
 	      this.getOmniMintLightLevel(accessory); // fetch 'lux' and 'spl_a' 
 	    }			
-	    this.updateAirData(accessory);   
 	  });
 		
 	  // start Device Air and Local data collection according to polling_interval settings
@@ -205,17 +207,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      if (this.config.logging) {
 	        this.log('[' + accessory.context.serial + '] Updating status...' + accessory.context.deviceUUID);
 	      }
+	      this.updateAirData(accessory);
 	      if (accessory.context.deviceType === 'awair-omni') {
 	        this.getOmniBatteryStatus(accessory);
 	      }
 	      if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
 	        this.getOmniMintLightLevel(accessory); // fetch averaged 'lux' value (Omni/Mint updates value every 10 seconds)
 	      }			
-	      this.updateAirData(accessory);
 	    });
 	  }, this.polling_interval * 1000);
 		
-	  // if Omni device exists, start loop to test for Omni occupancy status
+	  // if Omni device exists in account, start 30 second loop to test for Omni occupancy status
 	  if(this.omniDetected) {
 	    setInterval(() => {
 	      this.accessories.forEach(accessory => {
@@ -223,7 +225,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          this.getOmniOccupancyStatus(accessory);
 	        }
 	      });
-	    }, 10000); // 10 seconds is updata interval for LocalAPI data, spl_a is 'smoothed' value
+	    }, 30000); // check every 30 seconds, 10 seconds is updata interval for LocalAPI data, spl_a is 'smoothed' value
 	  }
 	}
 
@@ -343,6 +345,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      	this.log('getAwairDevices: number discovered: ' + this.devices.length);
 	      }
 	      for (let i = 0; i < this.devices.length; i++) {
+	        if(!this.devices[i].macAddress.includes('70886B')) { // check if 'end user' or 'test' device
+	          const devMac = '000000000000' + this.devices[i].deviceId; // if 'test' device, create MAC based on deviceId
+	      		this.devices[i].macAddress = devMac.substring(devMac.length - 12); // get last 12 characters
+	        }
 	        if(this.config.logging && this.config.verbose){
 	          this.log('getAwairDevices: discovered device: [' + i + '] ' + JSON.stringify(this.devices[i]));
 	        }
@@ -373,11 +379,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    // Using 'context' property of PlatformAccessory saves information to accessory cache
 	    accessory.context.name = data.name;
 	    accessory.context.serial = data.macAddress;
-	    accessory.context.timezone = data.timezone;
 	    accessory.context.deviceType = data.deviceType;
 	    accessory.context.deviceUUID = data.deviceUUID;
 	    accessory.context.deviceId = data.deviceId;
-
+			
 	    accessory.addService(hap.Service.AirQualitySensor, data.name);
 	    accessory.addService(hap.Service.TemperatureSensor, data.name + ' Temp');
 	    accessory.addService(hap.Service.HumiditySensor, data.name + ' Humidity');
@@ -408,6 +413,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.context.name = data.name;
 	    accessory.context.serial = data.macAddress;
 	    accessory.context.deviceType = data.deviceType;
+	    if (data.deviceType === 'awair-omni') {
+	      this.omniDetected = true; // set flag for Occupancy detected loop
+	    }
 	    accessory.context.deviceUUID = data.deviceUUID;
 	    accessory.context.deviceId = data.deviceId;
 	  }

@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## v5.5.0
   * Add Omni occupancy detection based on sound pressure level.
-  * Check that Awair MAC contains Awair OUI "70886B".
+  * Check that Awair MAC contains Awair OUI "70886B" for 'end user' devices.
+  * Add "Development" mode to allow use of 'test' devices.
+  * Define MAC addresses for unregistered 'test' devices based on deviceId. Will begin with '000000'.
   * Rename "updateStatus" to "updateAirData" to better reflect intent of function.
   * Update comments to provide additional information.
   * Update README.md, config-sample.json, config-schema.json for these changes.
