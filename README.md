@@ -11,7 +11,7 @@ With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home 
 
 For those with multiple Awair devices, you can optionally list the macAddress of the device (found on the back or bottom of the device) which you want to exclude from HomeKit.
 
-For Awair Omni, battery charge level, charging status, low battery and light level are also provided using the Local Sensors capability which is configured in the Awair App (reference screenshot below). Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status section (see third and fourth screenshots).
+For Awair Omni, battery charge level, charging status, low battery, light level and motion detection based on ambient sound level are also provided using the Local Sensors capability which is configured in the Awair App (reference screenshot below). Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status section (see third and fourth screenshots).
 
 ![iOS14 Screenshots](screenshots/Image2.png)
 
@@ -50,11 +50,14 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
     "airQualityMethod": "awair-aqi",
     "endpoint": "15-min-avg",
     "limit": 1,
-    "logging": false,
-    "verbose": false,
     "carbonDioxideThreshold": 1200,
     "carbonDioxideThresholdOff": 800,
     "vocMw": 72.66578273019740,
+    "occupancyDetectedLevel": 60,
+    "occupancyNotDetectedLevel": 55,
+    "logging": false,
+    "verbose": false,
+    "development": false,
     "ignoredDevices": [
       "70886Bxxxxxx"
     ]
@@ -72,11 +75,14 @@ Parameter | Description
 `airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-score`, `awair-aqi`)
 `endpoint` | The `/air-data/` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Number of consecutive data points returned per request, used for custom averaging of sensor values (OPTIONAL, default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
-`logging` | Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
-`verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
 `carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
 `carbonDioxideThresholdOff` | (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
 `vocMw` | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3 (OPTIONAL, default = `72.66578273019740`)
+`occupancyDetectedLevel` | (OPTIONAL - Omni only, default = `60`, the level at which HomeKit will indicate room Occupancy is detected based on room sound level in dBA)
+`occupancyDetectedNotLevel` | (OPTIONAL - Omni only, default = `55`, the level at which HomeKit will indicate room Occupancy is not detected based on room sound level in dBA)
+`logging` | Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
+`verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
+`development` | Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.
 `ignoredDevices` | Array of Awair device macAddresses to be excluded from HomeKit (OPTIONAL).
 
 

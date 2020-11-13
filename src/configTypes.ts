@@ -6,11 +6,14 @@ export type AwairPlatformConfig = {
   endpoint: string;
   polling_interval: number;
   limit: number;
-  logging: boolean;
-  verbose: boolean;
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
   vocMw: number;
+  occupancyDetectedLevel: number;
+  occupancyNotDetectedLevel: number;
+  logging: boolean;
+  verbose: boolean;
+  development: boolean;
   ignoredDevices: [string];
 };
 

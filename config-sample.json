@@ -16,11 +16,14 @@
 			"airQualityMethod": "awair-aqi",
 			"endpoint": "15-min-avg",
 			"limit": 1,
-			"logging": false,
-			"verbose": false,
 			"carbonDioxideThreshold": 1200,
 			"carbonDioxideThresholdOff": 800,
 			"vocMw": 72.66578273019740,
+			"occupancyDetectedLevel": 60,
+			"occupancyNotDetectedLevel": 55,
+			"logging": false,
+			"verbose": false,
+			"development": false,
 			"ignoredDevices": [
 				"70886Bxxxxxx"
 			]
