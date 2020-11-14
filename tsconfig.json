@@ -10,12 +10,11 @@
       "dom"
     ],
     "baseUrl": ".",
-    "rootDir": "src",
+//    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
     "allowJs": true,
     "resolveJsonModule": true,
-
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
