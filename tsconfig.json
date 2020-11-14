@@ -10,7 +10,6 @@
       "dom"
     ],
     "baseUrl": ".",
-//    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
     "allowJs": true,
