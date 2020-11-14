@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
-## v5.5.1
+## v5.5.1 & v5.5.2
   * Update to address build error TS6059: File 'package.json' is not under 'rootDir' '/homebridge-awair2/src'. 'rootDir' is expected to contain all source files.
 
 ## v5.5.0
