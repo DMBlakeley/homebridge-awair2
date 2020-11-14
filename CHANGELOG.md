@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.1
+  * Update to address build error TS6059: File 'package.json' is not under 'rootDir' '/homebridge-awair2/src'. 'rootDir' is expected to contain all source files.
+
 ## v5.5.0
   * Add Omni occupancy detection based on sound pressure level.
   * Check that Awair MAC contains Awair OUI "70886B" for 'end user' devices.
