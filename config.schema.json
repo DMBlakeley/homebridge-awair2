@@ -58,17 +58,22 @@
 				"placeholder": 72.66578273019740,
 				"description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3."
 			},
+      "autoOccupancy": {
+        "title": "Whether to enable auto Occupancy detection based on minimum sound level.",
+        "type": "boolean",
+        "default": false
+      },
       "occupancyDetectedLevel": {
 				"title": "Omni - Occupancy Threshold",
 				"type": "number",
 				"placeholder": 60,
-				"description": "Omni only - sound pressure level that indicates occupancy."
+				"description": "Omni only - initial sound pressure level that indicates occupancy."
 			},
       "occupancyNotDetectedLevel": {
 				"title": "Omni - Occupancy Threshold Off",
 				"type": "number",
 				"placeholder": 55,
-				"description": "Omni only - sound pressure level that indicates unoccupied."
+				"description": "Omni only - initial sound pressure level that indicates unoccupied."
 			},
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
@@ -119,6 +124,7 @@
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
         "vocMw",
+        "autoOccupancy",
         "occupancyDetectedLevel",
         "occupancyNotDetectedLevel",
         "logging",

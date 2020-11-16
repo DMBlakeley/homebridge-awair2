@@ -9,6 +9,7 @@ export type AwairPlatformConfig = {
   carbonDioxideThreshold: number;
   carbonDioxideThresholdOff: number;
   vocMw: number;
+  autoOccupancy: boolean;
   occupancyDetectedLevel: number;
   occupancyNotDetectedLevel: number;
   logging: boolean;

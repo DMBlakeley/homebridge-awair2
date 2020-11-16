@@ -8,8 +8,8 @@ jobs:
 
     strategy:
       matrix:
-        # the Node.js versions to build on
-        node-version: [10.x, 12.x, 13.x, 14.x]
+        # the Node.js versions to build on (homebridge only supports even-numbered releases)
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2

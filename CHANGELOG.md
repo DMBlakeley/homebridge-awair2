@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.3
+  * Update build.yml to only include even numbered releases of node.js [10.x, 12.x, 14.x]
+  * Update README.MD to provide additional details on adding 'test' devices to 'exclude' list.
+  * Add experimental support for Omni auto occupancy detection base on minimum sound level detected.
+
 ## v5.5.1 & v5.5.2
   * Update to address build error TS6059: File 'package.json' is not under 'rootDir' '/homebridge-awair2/src'. 'rootDir' is expected to contain all source files.
 

@@ -401,6 +401,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
 	      accessory.addService(hap.Service.OccupancySensor, data.name + ' Occupancy');
 	      this.omniDetected = true; // set flag for Occupancy detected loop
+	      accessory.context.minsoundlevel = this.occupancyNotDetectedLevel; // context value to track minimum sound level detected
 	    }
 						
 	    this.addServices(accessory);
@@ -415,6 +416,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.context.deviceType = data.deviceType;
 	    if (data.deviceType === 'awair-omni') {
 	      this.omniDetected = true; // set flag for Occupancy detected loop
+	      accessory.context.minsoundlevel = this.occupancyNotDetectedLevel; // context value to track minimum sound level detected
 	    }
 	    accessory.context.deviceUUID = data.deviceUUID;
 	    accessory.context.deviceId = data.deviceId;
@@ -793,6 +795,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      const omniSpl_a: number = response.spl_a;
 	      if(this.config.logging && this.config.verbose) {	
 	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
+	      }
+				
+	      if((omniSpl_a < accessory.context.minsoundlevel) && this.config.autoOccupancy) {
+	        accessory.context.minsoundlevel = omniSpl_a;
+	        this.occupancyDetectedLevel = accessory.context.minsoundlevel + 1;
+	        this.occupancyNotDetectedLevel = accessory.context.minsoundlevel + 0.5;
+	        if(this.config.logging) {
+	          this.log('[' + accessory.context.serial + '] notDetectedLevel: ' + this.occupancyNotDetectedLevel 
+							+ 'dBA, DetectedLevel: ' + this.occupancyDetectedLevel + 'dBA');
+	        }
 	      }
 			
 	      const occupancyService = accessory.getService(hap.Service.OccupancySensor);

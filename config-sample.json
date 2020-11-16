@@ -19,6 +19,7 @@
 			"carbonDioxideThreshold": 1200,
 			"carbonDioxideThresholdOff": 800,
 			"vocMw": 72.66578273019740,
+			"autoOccupancy": false,
 			"occupancyDetectedLevel": 60,
 			"occupancyNotDetectedLevel": 55,
 			"logging": false,
