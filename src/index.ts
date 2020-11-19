@@ -45,8 +45,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private endpoint = '15-min-avg';
 	private carbonDioxideThreshold = 0;
 	private carbonDioxideThresholdOff = 0;
-	private occupancyDetectedLevel = 60;
-	private occupancyNotDetectedLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
+	private occupancyOffset = 2.0;
+	private occDetectedNotLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
+	private occDetectedLevel = 60;
 
 	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
 	private userTier = 'Hobbyist';
@@ -60,7 +61,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private readonly accessories: PlatformAccessory[] = [];
 	private devices: any[] = []; // array of Awair devices
 	private ignoredDevices: string [] = []; // array of ignored Awair devices
-	private omniDetected = false; // flag that Awair account contains Omni device(s), used to allow occupancy detection loop
+	private omniPresent = false; // flag that Awair account contains Omni device(s), used to allow occupancy detection loop
 	
 	constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
@@ -111,12 +112,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.vocMw = this.config.vocMw;
 	  }
 	  
-	  if (this.config.occupancyDetectedLevel) {
-	    this.occupancyDetectedLevel = this.config.occupancyDetectedLevel;
-	  }
-	  
-	  if (this.config.occupancyNotDetectedLevel) {
-	    this.occupancyNotDetectedLevel = this.config.occupancyNotDetectedLevel;
+	  if (this.config.occupancyOffset) {
+	    this.occupancyOffset = this.config.occupancyOffset;
 	  }
 	  
 	  if (this.config.ignoredDevices) {
@@ -157,7 +154,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    } else {
 	      if (this.config.logging) {
 	        // conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
-	        this.log(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or not Test device`);
+	        this.log(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or is ` 
+						+ 'test device (requires development mode enabled to use).');
 	      }
 	    }
 	    serNums.push(device.macAddress);
@@ -193,8 +191,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	    this.updateAirData(accessory);   
 	    if (accessory.context.deviceType === 'awair-omni') {
-	      this.getOmniOccupancyStatus(accessory);
 	      this.getOmniBatteryStatus(accessory);
+	    }
+	    if ((accessory.context.deviceType === 'awair-omni') && this.config.occupancyDetection) {
+	      this.getOmniOccupancyStatus(accessory);
 	    }
 	    if (accessory.context.deviceType === 'awair-omni' || accessory.context.deviceType === 'awair-mint') {
 	      this.getOmniMintLightLevel(accessory); // fetch 'lux' and 'spl_a' 
@@ -217,8 +217,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    });
 	  }, this.polling_interval * 1000);
 		
-	  // if Omni device exists in account, start 30 second loop to test for Omni occupancy status
-	  if(this.omniDetected) {
+	  // if Omni device exists in account & detection enabled, start 30 second loop to test for Omni occupancy status
+	  if(this.omniPresent && this.config.occupancyDetection) {
 	    setInterval(() => {
 	      this.accessories.forEach(accessory => {
 	        if (accessory.context.deviceType === 'awair-omni') {
@@ -235,7 +235,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
    */
 	configureAccessory(accessory: PlatformAccessory): void {
 	  this.log('Loading accessory from cache:', accessory.displayName);
-
+		
 	  // add the restored accessory to the accessories cache so we can track if it has already been registered
 	  this.accessories.push(accessory);
 	}
@@ -400,8 +400,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    if (data.deviceType === 'awair-omni') {
 	      accessory.addService(hap.Service.BatteryService, data.name + ' Battery');
 	      accessory.addService(hap.Service.OccupancySensor, data.name + ' Occupancy');
-	      this.omniDetected = true; // set flag for Occupancy detected loop
-	      accessory.context.minsoundlevel = this.occupancyNotDetectedLevel; // context value to track minimum sound level detected
+	      this.omniPresent = true; // set flag for Occupancy detected loop
+	      accessory.context.occDetectedLevel = this.occDetectedLevel; // use context to track occupancy for each Omni device
+	      accessory.context.occDetectedNotLevel = this.occDetectedNotLevel;
+	      accessory.context.minSoundLevel = this.occDetectedNotLevel;
 	    }
 						
 	    this.addServices(accessory);
@@ -411,15 +413,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.accessories.push(accessory);
 
 	  } else { // acessory exists, use data from cache
-	    accessory.context.name = data.name;
-	    accessory.context.serial = data.macAddress;
-	    accessory.context.deviceType = data.deviceType;
-	    if (data.deviceType === 'awair-omni') {
-	      this.omniDetected = true; // set flag for Occupancy detected loop
-	      accessory.context.minsoundlevel = this.occupancyNotDetectedLevel; // context value to track minimum sound level detected
+	    if (this.config.logging) {
+	      this.log(accessory.context.name + ' exists, using data from cache');
+	    }	
+	    if (accessory.context.deviceType === 'awair-omni') {
+	      this.omniPresent = true; // set flag for Occupancy detected loop
 	    }
-	    accessory.context.deviceUUID = data.deviceUUID;
-	    accessory.context.deviceId = data.deviceId;
 	  }
 	  return;
 	}
@@ -797,13 +796,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
 	      }
 				
-	      if((omniSpl_a < accessory.context.minsoundlevel) && this.config.autoOccupancy) {
-	        accessory.context.minsoundlevel = omniSpl_a;
-	        this.occupancyDetectedLevel = accessory.context.minsoundlevel + 1;
-	        this.occupancyNotDetectedLevel = accessory.context.minsoundlevel + 0.5;
+	      if(omniSpl_a < accessory.context.minSoundLevel) { // use context to track occupancy status for each Omni device
+	        accessory.context.minSoundLevel = omniSpl_a;
+	        accessory.context.occDetectedLevel = accessory.context.minSoundLevel + this.occupancyOffset + 0.5; // dBA
+	        accessory.context.occDetectedNotLevel = accessory.context.minSoundLevel + this.occupancyOffset; // dBA
 	        if(this.config.logging) {
-	          this.log('[' + accessory.context.serial + '] notDetectedLevel: ' + this.occupancyNotDetectedLevel 
-							+ 'dBA, DetectedLevel: ' + this.occupancyDetectedLevel + 'dBA');
+	          this.log('[' + accessory.context.serial + '] min spl_a: ' + omniSpl_a + 'dBA -> notDetectedLevel: ' 
+							+ accessory.context.occDetectedNotLevel + 'dBA, DetectedLevel: ' 
+							+ accessory.context.occDetectedLevel + 'dBA');
 	        }
 	      }
 			
@@ -813,24 +813,27 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        // get current Occupancy state
 	        let occupancyStatus: any = occupancyService.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
 
-	        if (omniSpl_a >= this.occupancyDetectedLevel) { 
+	        if (omniSpl_a >= accessory.context.occDetectedLevel) { 
 	          // occupancy detected
 	          occupancyStatus = 1;
 	          if(this.config.logging){
-	            this.log('[' + accessory.context.serial + '] Occupied: ' + omniSpl_a + 'dBA > ' + this.occupancyDetectedLevel + 'dBA');
+	            this.log('[' + accessory.context.serial + '] Occupied: ' + omniSpl_a + 'dBA > ' 
+								+ accessory.context.occDetectedLevel + 'dBA');
 	          }
-	        } else if (omniSpl_a <= this.occupancyNotDetectedLevel) { 
+	        } else if (omniSpl_a <= accessory.context.occDetectedNotLevel) { 
 	          // unoccupied
 	          occupancyStatus = 0;
 	          if(this.config.logging){
 	            // eslint-disable-next-line max-len
-	            this.log('[' + accessory.context.serial + '] Not Occupied: ' + omniSpl_a + 'dBA < ' + this.occupancyNotDetectedLevel + 'dBA');
+	            this.log('[' + accessory.context.serial + '] Not Occupied: ' + omniSpl_a + 'dBA < ' 
+								+ accessory.context.occDetectedNotLevel + 'dBA');
 	          }
-	        } else if ((omniSpl_a > this.occupancyNotDetectedLevel) && (omniSpl_a < this.occupancyDetectedLevel)) {
+	        } else if ((omniSpl_a > accessory.context.occDetectedNotLevel) && (omniSpl_a < accessory.context.occDetectedLevel)) {
 	          // inbetween ... no change, use current state
 	          if(this.config.logging){
-	            this.log('[' + accessory.context.serial + '] Occupancy Inbetween: ' + this.occupancyNotDetectedLevel + 'dBA < ' 
-									+ omniSpl_a + ' < ' + this.occupancyDetectedLevel + 'dBA');
+	            this.log('[' + accessory.context.serial + '] Occupancy Inbetween: ' 
+								+ accessory.context.occDetectedNotLevel + 'dBA < ' + omniSpl_a + ' < ' 
+								+ accessory.context.occDetectedLevel + 'dBA');
 	          }
 	        }
 	        occupancyService
