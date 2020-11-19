@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.4
+  * Omni occupancy detection improvments. Now based on minimum detected sound level + user defined offset.
+  * Correct existing device recovery from cache on Homebridge restart. 
+
 ## v5.5.3
   * Update build.yml to only include even numbered releases of node.js [10.x, 12.x, 14.x]
   * Update README.MD to provide additional details on adding 'test' devices to 'exclude' list.
