@@ -21,6 +21,7 @@
 			"vocMw": 72.66578273019740,
 			"occupancyDetection": false,
 			"occupancyOffset": 2,
+			"occupancyRestart": false,
 			"logging": false,
 			"verbose": false,
 			"development": false,

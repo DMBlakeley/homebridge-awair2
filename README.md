@@ -55,6 +55,7 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
     "vocMw": 72.66578273019740,
     "occupancyDetection": false,
     "occupancyOffset": 2,
+    "occupancyRestart": false,
     "logging": false,
     "verbose": false,
     "development": false,
@@ -80,6 +81,7 @@ Parameter | Description
 `vocMw` | (OPTIONAL, default = `72.66578273019740`) The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3
 `occupancyDetection` | (OPTIONAL - Omni only, default = `false`) Enables Omni occupancy detection based on minimum environmental sound level detected.
 `occupancyOffset` | (OPTIONAL - Omni only, default = `2`) Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher.
+`occupancyRestart` | (OPTIONAL - Omni only, default = `false`, use historical data) `true` enables restart of occupancy detection algorithm on Homebridge reboot.
 `logging` | Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
 `verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
 `development` | Enables Development mode to allow use of `test` Awair devices lacking `end user`/Awair OUI formatted Serial numbers.
@@ -88,7 +90,8 @@ Parameter | Description
 
 # Resources
 
-- Awair API: https://docs.developer.getawair.com/
+- Awair Cloud API: https://docs.developer.getawair.com/
+- Awair Local API: https://docs.google.com/document/d/1001C-ro_ig7aEyz0GiWUiiJn0M6DLj47BYWj31acesg/edit
 - Homebridge: https://github.com/nfarina/homebridge
 - Homebridge API: https://developers.homebridge.io/#/
 - Homebridge examples: https://github.com/homebridge/homebridge-examples
@@ -97,6 +100,6 @@ Parameter | Description
 - Using async-await and npm-promise with TypeScript: https://github.com/patdaburu/request-promise-typescript-example
 - Another Awair plugin: https://github.com/henrypoydar/homebridge-awair-glow
 - Reference AQ plugin: https://github.com/toto/homebridge-airrohr
-- Refenerce temperature plugin: https://github.com/metbosch/homebridge-http-temperature
+- Reference temperature plugin: https://github.com/metbosch/homebridge-http-temperature
 - AQI Calculation NPM package: https://www.npmjs.com/package/aqi-bot
 - Homebridge-philips-air plugin: https://github.com/Sunoo/homebridge-philips-air

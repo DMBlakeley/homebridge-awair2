@@ -415,9 +415,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
 	      this.log(accessory.context.name + ' exists, using data from cache');
-	    }	
+	    }
 	    if (accessory.context.deviceType === 'awair-omni') {
 	      this.omniPresent = true; // set flag for Occupancy detected loop
+	    }
+	    // use Omni cache data unless 'occupancyRestart' enabled
+	    if ((accessory.context.deviceType === 'awair-omni') && this.config.occupancyRestart) {
+	      accessory.context.occDetectedLevel = this.occDetectedLevel;
+	      accessory.context.occDetectedNotLevel = this.occDetectedNotLevel;
+	      accessory.context.minSoundLevel = this.occDetectedNotLevel;
 	    }
 	  }
 	  return;
@@ -796,8 +802,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
 	      }
 				
-	      if(omniSpl_a < accessory.context.minSoundLevel) { // use context to track occupancy status for each Omni device
-	        accessory.context.minSoundLevel = omniSpl_a;
+	      if(omniSpl_a > 47.0 && omniSpl_a < accessory.context.minSoundLevel) { // 50dBA (±3) baseline set by dust sensor fan noise 
+	        accessory.context.minSoundLevel = omniSpl_a; // use 'context' to track occupancy status for each Omni device
 	        accessory.context.occDetectedLevel = accessory.context.minSoundLevel + this.occupancyOffset + 0.5; // dBA
 	        accessory.context.occDetectedNotLevel = accessory.context.minSoundLevel + this.occupancyOffset; // dBA
 	        if(this.config.logging) {

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.5
+  * Omni occupancy detection improvments. Minimum sound level set to 47dBA based on dust sensor fan noise as guard for spurious low reading. Provide option to restart detection algorithm on Homebridge restart.
+
 ## v5.5.4
   * Omni occupancy detection improvments. Now based on minimum detected sound level + user defined offset.
   * Correct existing device recovery from cache on Homebridge restart. 

@@ -59,7 +59,7 @@
 				"description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3."
 			},
       "occupancyDetection": {
-        "title": "Omni - Whether to enable auto Occupancy detection based on minimum sound level.",
+        "title": "Omni - Whether to enable Occupancy detection based on minimum sound level.",
         "type": "boolean",
         "default": false,
 				"description": "Omni only - enables occupancy detection based on minimum sound level + occupancyOffset value."
@@ -70,6 +70,12 @@
 				"placeholder": 2,
 				"description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher."
 			},
+      "occupancyRestart": {
+        "title": "Omni - restart Occupancy detection measurement on next Homebridge reboot.",
+        "type": "boolean",
+        "default": false,
+				"description": "Omni only - reinitialize Occupancy detection measurement on Homebridge reboot."
+      },
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
         "type": "boolean",
@@ -121,6 +127,7 @@
         "vocMw",
         "occupancyDetection",
         "occupancyOffset",
+        "occupancyRestart",
         "logging",
         "verbose",
         "development"
