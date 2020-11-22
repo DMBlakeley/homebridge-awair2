@@ -73,7 +73,7 @@ Parameter | Description
 `platform` | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
 `token` | Developer Token (REQUIRED, see [Installation](#installation)) above.
 `userType` | The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-`airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-score`, `awair-aqi`)
+`airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-aqi` or `awair-score`)
 `endpoint` | The `/air-data/` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Number of consecutive data points returned per request, used for custom averaging of sensor values (OPTIONAL, default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
@@ -102,4 +102,5 @@ Parameter | Description
 - Reference AQ plugin: https://github.com/toto/homebridge-airrohr
 - Reference temperature plugin: https://github.com/metbosch/homebridge-http-temperature
 - AQI Calculation NPM package: https://www.npmjs.com/package/aqi-bot
+- How is the Air Quality Index (AQI) calculated: https://stimulatedemissions.wordpress.com/2013/04/10/how-is-the-air-quality-index-aqi-calculated/
 - Homebridge-philips-air plugin: https://github.com/Sunoo/homebridge-philips-air

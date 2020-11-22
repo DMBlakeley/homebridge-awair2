@@ -802,7 +802,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
 	      }
 				
-	      if(omniSpl_a > 47.0 && omniSpl_a < accessory.context.minSoundLevel) { // 50dBA (±3) baseline set by dust sensor fan noise 
+	      if(omniSpl_a > 48.0 && omniSpl_a < accessory.context.minSoundLevel) { // Omni ambient sound level range 48 - 90dBA 
 	        accessory.context.minSoundLevel = omniSpl_a; // use 'context' to track occupancy status for each Omni device
 	        accessory.context.occDetectedLevel = accessory.context.minSoundLevel + this.occupancyOffset + 0.5; // dBA
 	        accessory.context.occDetectedNotLevel = accessory.context.minSoundLevel + this.occupancyOffset; // dBA
