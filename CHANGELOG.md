@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.7
+ * Add the `Verified by Homebridge` badge and update README.md header.
+
 ## v5.5.6
   * Minimum Omni occupancy level changed to 48.0dBA per Omni specifications.
   * Addition of Wiki screenshots.
