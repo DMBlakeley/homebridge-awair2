@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.8
+  * Added dependabot.yml file.
+  * Approved and merged @dependabot pull requests.
+  * Confirmed plugin operation after merges.
+  
 ## v5.5.7
  * Add the `Verified by Homebridge` badge and update README.md header.
 
