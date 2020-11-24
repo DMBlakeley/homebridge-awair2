@@ -1,7 +1,7 @@
 <table align="center">
     <tr>
       <td><a href="https://github.com/homebridge/homebridge"><img alt="Homebridge" src="https://user-images.githubusercontent.com/3979615/78016493-9b89a800-7396-11ea-9442-414ad9ffcdf2.png" width="250px"></a></td>
-      <td><a href="https://www.getawair.com"><img alt="Homebridge" src="https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/AWAIR_logo_g.svg" width="400px"></a></td>
+      <td><a href="https://www.getawair.com"><img alt="Get Awair" src="https://assets.website-files.com/5e740636238c35d731ff790a/5eba093c3c1a0a9ae493429a_Logo_Horizontal_g.png" width="350px"></a></td>
     </tr>    
 </table>
 
