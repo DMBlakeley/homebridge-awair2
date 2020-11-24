@@ -64,6 +64,6 @@
   "dependencies": {
     "@types/request-promise": "^4.1.46",
     "request": "2.88.2",
-    "request-promise": "4.2.2"
+    "request-promise": "4.2.6"
   }
 }
