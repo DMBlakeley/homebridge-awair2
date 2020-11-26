@@ -13,7 +13,7 @@ import {
 } from 'homebridge';
 
 import { AwairPlatformConfig, DeviceConfig } from './configTypes';
-import request = require('request-promise');
+import axios from 'axios';
 import * as packageJSON from '../package.json';
 
 let hap: HAP;
@@ -245,23 +245,20 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const URL = 'https://developer-apis.awair.is/v1/' + this.config.userType;
 
 	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
 	  };
 
-	  await request(options)
+	  await axios.get(URL, options)
     	.then((response) => {
 	      if(this.config.logging && this.config.verbose) {
-	        this.log('userInfo: ' + JSON.stringify(response));
+	        this.log('userInfo: ' + JSON.stringify(response.data));
 	      }
 				
-	      this.userTier = response.tier;
+	      this.userTier = response.data.tier;
 
-	      const permissions: any[] = response.permissions;
+	      const permissions: any[] = response.data.permissions;
 								
 	      for (let i = 0; i < permissions.length; i++) {
 	        switch (permissions[i].scope){
@@ -330,17 +327,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
 
 	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
 	  };
 
-	  await request(options)
+	  await axios.get(URL, options)
     	.then((response) => {
-	      this.devices = response.devices;
+	      this.devices = response.data.devices;
 	      if(this.config.logging){
 	      	this.log('getAwairDevices: number discovered: ' + this.devices.length);
 	      }
@@ -406,7 +400,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.context.minSoundLevel = this.occDetectedNotLevel;
 	    }
 						
-	    this.addServices(accessory);
+	    await this.addServices(accessory);
 
 	    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 
@@ -440,7 +434,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	}
 
 	// add Services and Characteristics to each Accessory
-	addServices(accessory: PlatformAccessory): void {
+	async addServices(accessory: PlatformAccessory): Promise<void> {
 
 	  accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
 	    this.log(accessory.context.name + ' identify requested!');
@@ -564,17 +558,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
 	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true,
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
 	  };
 
-	  await request.get(options)
+	  await axios.get(URL, options)
     	.then((response) => {
-	      const data: any[] = response.data;
+	      const data: any[] = response.data.data;
 	      const sensors: any = data
 	        .map(sensor => sensor.sensors)
 	        .reduce((a: any, b: any) => a.concat(b))
@@ -583,7 +574,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }, {});
 
 	      if(this.config.logging && this.config.verbose){
-	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response));
+	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response.data));
 	      }
 
 	      // determine average score over data samples
@@ -749,16 +740,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	// *** TO DO - for Omni firmware v1.3.1, directory structure is '/settings/data'
 	async getOmniBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	  };
 
-	  await request(options)
+	  await axios.get(URL)
     	.then((response) => {
 	      // eslint-disable-next-line quotes
-	      const powerStatus = response["power-status"];
+	      const powerStatus = response.data["power-status"];
 	      const batteryLevel: number = powerStatus.battery;
 	      const batteryPlugged: boolean = powerStatus.plugged;
 	      const lowBattery: boolean = (batteryLevel < 30) ? true : false;
@@ -789,15 +775,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	// get Omni Montion Sensor Status using spl_a level via LocalAPI
 	async getOmniOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true,
-	  };
 
-	  await request(options)
+	  await axios.get(URL)
     	.then((response) => {
-	      const omniSpl_a: number = response.spl_a;
+	      const omniSpl_a: number = response.data.spl_a;
 	      if(this.config.logging && this.config.verbose) {	
 	        this.log('[' + accessory.context.serial + '] spl_a: ' + omniSpl_a);
 	      }
@@ -858,15 +839,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getOmniMintLightLevel(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, //  parses the JSON string in the response
-	  };
-
-	  await request(options)
+	  await axios.get(URL)
     	.then((response) => {
-	      const omniLux: number = response.lux; // lux is 'latest' value averaged by Omni/Mint over 10 seconds
+	      const omniLux: number = response.data.lux; // lux is 'latest' value averaged by Omni/Mint over 10 seconds
 	      if(this.config.logging && this.config.verbose) {	
 	        this.log('LocalAPI lux data for ' + accessory.context.deviceType + ': ' + omniLux);
 	      }
@@ -986,16 +961,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getLocalData(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	  };
-
-	  await request(options)
+	  await axios.get(URL)
     	.then((response) => {
 	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local data for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
+	        this.log('Local data for ' + accessory.context.deviceType + ': ' + JSON.stringify(response.data));
 	      }
 	    })
     	.catch((err) => {
@@ -1010,16 +979,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getLocalConfig(accessory: PlatformAccessory): Promise<void> {
 	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 		
-	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
-	  };
-
-	  await request(options)
+	  await axios.get(URL)
     	.then((response) => {
 	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local config for ' + accessory.context.deviceType + ': ' + JSON.stringify(response));
+	        this.log('Local config for ' + accessory.context.deviceType + ': ' + JSON.stringify(response.data));
 	      }
 	    })
     	.catch((err) => {
@@ -1036,18 +999,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			+ accessory.context.deviceId + '/api-usages';
 	
 	  const options = {
-	    method: 'GET',
-	    url: URL,
-	    json: true, // Automatically parses the JSON string in the response
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
 	  };
 	
-	  await request(options)
+	  await axios.get(URL, options)
 	    .then((response) => {
 	      if(this.config.logging && this.config.verbose) {
-	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response));
+	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response.data));
 	      }
 	    })
 	    .catch((err) => {

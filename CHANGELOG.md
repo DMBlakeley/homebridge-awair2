@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.9
+  * Replace request-promise with axios as request-promise has been depricated.
+  * Change @dependabot scanning from 'daily' to 'weekly'.
+  * Removed extraneous packages from package-lock.json.
+
 ## v5.5.8
   * Added dependabot.yml file.
   * Approved and merged @dependabot pull requests.

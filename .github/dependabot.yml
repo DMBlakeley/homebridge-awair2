@@ -1,4 +1,4 @@
-# Query daily for npm dependency updates.
+# Query weekly for npm dependency updates.
 #
 version: 2
 
@@ -12,7 +12,7 @@ updates:
 
     # Check for updated GitHub Actions every weekday.
     schedule:
-      interval: "daily"
+      interval: "weekly"
 
     # Allow up to ten pull requests to be generated at any one time.
     open-pull-requests-limit: 5
@@ -25,7 +25,7 @@ updates:
 
     # Check the npm registry for updates every weekday.
     schedule:
-      interval: "daily"
+      interval: "weekly"
 
     # Allow up to ten pull requests to be generated at any one time.
     open-pull-requests-limit: 5
