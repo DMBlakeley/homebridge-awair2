@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.5.10
+  * Add instructions to README.md for migrating from `homebridge-awair` to `homebridge-awair2`.
+  * Address "StatusCodeError: 400" and "404" due to errors in handling of config.json entries.
+  * Check that data sampling `limit` does not exceed maximum allowed per `endpoint`.
+  * Set `raw` data sampling for `non-Hobbyist` tier to have minimum `polling_interval` of 60 seconds.
+  * Improve error handling for `axios` HTTP calls.
+
 ## v5.5.9
   * Replace request-promise with axios as request-promise has been depricated.
   * Change @dependabot scanning from 'daily' to 'weekly'.

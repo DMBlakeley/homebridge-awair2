@@ -89,15 +89,25 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
-	  if (this.config.limit && this.config.endpoint === 'latest') {
-	    // no 'limit' applied to 'latest' endpoint, produces exactly one value
-	    this.limit = 1;
-	  } else {
-	    // useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
-	    // for AQI calculation) would be easier with the '15-min'avg' endpoint
-	    this.limit = this.config.limit;
+	  // Useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
+	  // for AQI calculation) would be easier with the '15-min'avg' endpoint.
+	  if (this.config.limit) {	
+	    switch (this.endpoint) {  // check that this.config.limit does not exceed limits
+	      case '15-min-avg':
+	        this.limit = (this.config.limit > 672) ? 672 : this.config.limit; // 672 samples max or ~7 days
+	        break;
+	      case '5-min-avg':
+	        this.limit = (this.config.limit > 288) ? 288 : this.config.limit; // 288 samples max or ~24 hours
+	        break;
+	      case 'raw':
+	        this.limit = (this.config.limit > 360) ? 360 : this.config.limit; // 360 samples max or ~1 hour
+	      	break;
+	      case 'latest':
+	        this.limit = 1; // no 'limit' applied to 'latest' endpoint, produces exactly one value
+	        break;
+	    }
 	  }
-	  
+		
 	  if (this.config.carbonDioxideThreshold){
 	    this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold);
 	  }
@@ -242,7 +252,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	// get User Info profile from your Awair development account
 	async getUserInfo(): Promise<void> {
-	  const URL = 'https://developer-apis.awair.is/v1/' + this.config.userType;
+	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType;
 
 	  const options = {
 	    headers: {
@@ -286,37 +296,37 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      switch (this.endpoint) {
 	        case '15-min-avg': // practical minimum is 15-min or 900 seconds
 	          this.polling_interval = Math.round(this.secondsPerDay / this.fifteenMin);
-	          this.polling_interval = (this.polling_interval < 900 ? 900 : this.polling_interval);
+	          this.polling_interval = (this.polling_interval < 900) ? 900 : this.polling_interval;
 	          break;
 
 	        case '5-min-avg': // practical minimum is 5-min or 300
 	          this.polling_interval = Math.round(this.secondsPerDay / this.fiveMin);
-	          this.polling_interval = (this.polling_interval < 300 ? 300 : this.polling_interval);
+	          this.polling_interval = (this.polling_interval < 300) ? 300 : this.polling_interval;
 	          break;
 						
 	        case 'raw': // minimum is (this.limit * 10 seconds), 200 min for "Hobbyist"
 	          this.polling_interval = Math.round(this.secondsPerDay / this.raw);
 	          if (this.userTier === 'Hobbyist') {
-	            this.polling_interval = ((this.limit * 10) < 200 ? 200 : (this.limit * 10));
+	            this.polling_interval = ((this.limit * 10) < 200) ? 200 : (this.limit * 10); // 200 seconds min for 'Hobbyist'
 	          } else {
-	            this.polling_interval = (this.polling_interval < (this.limit * 10) ? (this.limit * 10) : this.polling_interval);
+	            this.polling_interval = ((this.limit * 10) < 60) ? 60 : (this.limit * 10); // 60 seconds min for other tiers
 	          }
 	          break;
 						
 	        case 'latest': // latest is updated every 10 seconds on device, 300 min for "Hobbyist"
 	          this.polling_interval = Math.round(this.secondsPerDay / this.latest);
 	          if (this.userTier === 'Hobbyist') {
-	            this.polling_interval = (this.polling_interval < 300 ? 300 : this.polling_interval);
+	            this.polling_interval = (this.polling_interval < 300) ? 300 : this.polling_interval;
 	          } else {
-	            this.polling_interval = (this.polling_interval < 60 ? 60 : this.polling_interval);
+	            this.polling_interval = (this.polling_interval < 60) ? 60 : this.polling_interval;
 	          }
 	          break;
 	      }
 				
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getUserInfo error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getUserInfo error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -349,11 +359,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getAwairDevices error: ' + err);
+	      if(this.config.logging && err.reponse){
+	        this.log('getAwairDevices error: ' + err.response.data);
 	      }
 	    });
-	  return;
+	  return;	
 	}
 
 	// add single Accessory to Platform
@@ -574,7 +584,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }, {});
 
 	      if(this.config.logging && this.config.verbose){
-	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response.data));
+	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response.data.data));
 	      }
 
 	      // determine average score over data samples
@@ -729,8 +739,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
     		})
 	    .catch((err) => {
-	      if(this.config.logging){
-	        this.log('updateAirData error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('updateAirData error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -765,8 +775,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getOmniBatteryStatus error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getOmniBatteryStatus error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -828,8 +838,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getOmniOccupancyStatus error: ' + err);
+	      if(this.config.logging && err.reponse){
+	        this.log('getOmniOccupancyStatus error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -853,8 +863,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getOmniLocalData error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getOmniLocalData error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -968,8 +978,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getLocalData error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getLocalData error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -986,8 +996,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
     	.catch((err) => {
-	      if(this.config.logging){
-	        this.log('getLocalConfig error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getLocalConfig error: ' + err.response.data);
 	      }
 	    });
 	  return;
@@ -1011,8 +1021,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    })
 	    .catch((err) => {
-	      if(this.config.logging){
-	        this.log('getApiUsage error: ' + err);
+	      if(this.config.logging && err.response){
+	        this.log('getApiUsage error: ' + err.response.data);
 	      }
 	    });
 	  return;
