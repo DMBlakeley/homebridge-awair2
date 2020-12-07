@@ -23,34 +23,40 @@
       "airQualityMethod": {
         "title": "Air quality calculation method",
         "type": "string",
-        "placeholder": "awair-score",
-        "enum": ["awair-score", "awair-aqi"],
-        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-score' and 'awair-aqi'."
+        "placeholder": "awair-aqi",
+        "enum": ["awair-aqi", "awair-score", "nowcast-aqi"],
+        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-aqi', 'awair-score' and 'nowcast-aqi'. Nowcast-aqi only available for Omni, Mint, Awair, Awair-R2 and Element. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48."
       },
       "endpoint": {
         "title": "The 'air-data' endpoint",
         "type": "string",
-        "placeholder": "15-min-avg",
+        "default": "15-min-avg",
         "enum": ["15-min-avg", "5-min-avg", "raw", "latest"],
-        "description": "The 'air-data' endpoint to use. Default = '15-min-avg', Options: '15-min-avg', '5-min-avg', 'raw', or 'latest'."
+        "description": "The 'air-data' endpoint to use. Default = '15-min-avg', Options: '15-min-avg', '5-min-avg', 'raw', or 'latest'.",
+        "condition": {
+          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi';"
+        }
       },
       "limit": {
         "title": "Data Points Returned",
         "type": "integer",
-        "placeholder": 1,
-        "description": "Number of consecutive data points returned per request. For example, used for custom averaging of sensor values from 'raw' endpoint (OPTIONAL, default = '1' i.e. one '15-min-avg')."
+        "default": 1,
+        "description": "Number of consecutive data points returned per request. For example, used for custom averaging of sensor values from 'raw' endpoint. `endpoint` of `latest` defaults to `1`. Default = '1'.",
+        "condition": {
+          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi';"
+        }
       },
       "carbonDioxideThreshold": {
         "title": "Carbon Dioxide Threshold",
         "type": "integer",
         "placeholder": 0,
-        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = '0'."
+        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = `0`."
       },
       "carbonDioxideThresholdOff": {
         "title": "Carbon Dioxide Threshold Off",
         "type": "integer",
         "placeholder": 0,
-        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = 0."
+        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = `0`."
       },
       "vocMw": {
 				"title": "Reference Gas Molecular Weight",
@@ -67,14 +73,20 @@
       "occupancyOffset": {
 				"title": "Omni - used when occupancyDetection enabled.",
 				"type": "number",
-				"placeholder": 2,
-				"description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher."
+				"placeholder": 2.0,
+        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher.",
+        "condition": {
+          "functionBody": "return model.occupancyDetection === true;"
+        }
 			},
       "occupancyRestart": {
         "title": "Omni - restart Occupancy detection measurement on next Homebridge reboot.",
         "type": "boolean",
         "default": false,
-				"description": "Omni only - reinitialize Occupancy detection measurement on Homebridge reboot."
+				"description": "Omni only - reinitialize Occupancy detection measurement on Homebridge reboot.",
+        "condition": {
+          "functionBody": "return model.occupancyDetection === true;"
+        }
       },
       "logging": {
         "title": "Whether to output logs to the Homebridge logs.",
@@ -84,7 +96,10 @@
       "verbose": {
         "title": "Whether to include API data call results when logging is enabled.",
         "type": "boolean",
-        "default": false
+        "default": false,
+        "condition": {
+          "functionBody": "return model.logging === true;"
+        }
       },
       "development": {
         "title": "Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",

@@ -38,7 +38,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	
 	// default values when not defined in config.json
 	private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
-	private airQualityMethod = 'awair-aqi'; // ToDo: NowCast AQI
+	private airQualityMethod = 'awair-aqi';
 	private userType = 'users/self';
 	private polling_interval = 900;
 	private limit = 1;
@@ -69,7 +69,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.api = api;
 
 	  // We need Developer token or we're not starting.
-	  // ToDo: how would this handle local-only? i.e. merging homebridge-awair and homebridge-awair-local into a single plugin
 	  if(!this.config.token) {
 	    this.log('Awair Developer token not specified. Reference installation instructions.');
 	    return;
@@ -83,15 +82,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if (this.config.airQualityMethod) {
 	    this.airQualityMethod = this.config.airQualityMethod;
 	  }
-	  
-	  if (this.config.endpoint) {
+		
+	  if (this.airQualityMethod === 'nowcast-aqi') {
+	    this.endpoint = '15-min-avg'; // nowcast-aqi is calculated over 12 hours, 15-min-avg data will be used for calculation
+	    this.limit = 48; // nowcast-aqi is calculated over 12 hours
+	  } else if (this.config.endpoint) {
 	    this.endpoint = this.config.endpoint;
-	  }
+	  }			
 		
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
 	  // Useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
 	  // for AQI calculation) would be easier with the '15-min'avg' endpoint.
-	  if (this.config.limit) {	
+	  if (this.config.limit && this.airQualityMethod !== 'nowcast-aqi') {	
 	    switch (this.endpoint) {  // check that this.config.limit does not exceed limits
 	      case '15-min-avg':
 	        this.limit = (this.config.limit > 672) ? 672 : this.config.limit; // 672 samples max or ~7 days
@@ -186,7 +188,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 		
 	  // get initial API usage
-	  // *** ToDo - add check to make sure daily limits will not be exceeded
 	  this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
 	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
@@ -462,7 +463,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        .setCharacteristic(hap.Characteristic.AirQuality, '--')
 	        .setCharacteristic(hap.Characteristic.VOCDensity, '--')
 	        .setCharacteristic(hap.Characteristic.PM10Density, '--');
-	    } else { // mint, omni, awair-r2, element
+	    } else if (accessory.context.devType === 'awair-mint' || accessory.context.devType === 'awair-omni' || 
+					accessory.context.devType === 'awair-r2' || accessory.context.devType === 'awair-element') {
 	      airQualityService
 	        .setCharacteristic(hap.Characteristic.AirQuality, '--')
 	        .setCharacteristic(hap.Characteristic.VOCDensity, '--')
@@ -575,27 +577,37 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  await axios.get(URL, options)
     	.then((response) => {
-	      const data: any[] = response.data.data;
-	      const sensors: any = data
-	        .map(sensor => sensor.sensors)
-	        .reduce((a: any, b: any) => a.concat(b))
-	        .reduce((a: any, b: any) => {
-	          a[b.comp] = a[b.comp] ? 0.5*(a[b.comp] + b.value) : b.value; return a;
-	        }, {});
-
+	      const data: any[] = response.data.data;				
 	      if(this.config.logging && this.config.verbose){
-	        this.log('[' + accessory.context.serial + '] updateAirData:' + JSON.stringify(response.data.data));
+	        this.log('[' + accessory.context.serial + '] updateAirData: ' + JSON.stringify(response.data.data));
 	      }
+				
+	      // compute time weighted average for each sensor's data
+	      const sensors: any = data
+	        .map(sensor => sensor.sensors) // create sensors data array of length 'this.limit'
+	        .reduce((a, b) => a.concat(b)) // flatten array of sensors (which is an array) to single-level array
+	        .reduce((a: any, b: any) => {
+	          a[b.comp] = a[b.comp] ? 0.5*(a[b.comp] + b.value) : b.value; 
+	          return a; // return time weighted average
+	        }, []); // pass empty array as initial value
 
-	      // determine average score over data samples
-	      const score = data.reduce((a: any, b: any) => a + b.score, 0) / data.length;
-
+	      // determine average Awair score over data samples
+	      const score = data.reduce((a, b) => a + b.score, 0) / data.length;
+				
 	      const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
 	      if (airQualityService) {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
-	        } else {
+	        } else if ((this.airQualityMethod === 'nowcast-aqi') && 
+							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
+	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertNowcastAqi(accessory, data)); // pass response data
+	        } else if ((this.airQualityMethod === 'nowcast-aqi') 
+							&& (accessory.context.deviceType === 'awair-glow' || accessory.context.deviceType === 'awair-glow-c')) {
+	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
+	        } else { 
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
 	        }
@@ -668,29 +680,29 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	              if ((co2Before === 0) && (co2Detected === 0)) {
 	                // CO2 low already, don't send
 	                if(this.config.logging){
-	                  this.log('Carbon Dioxide already low.');
+	                  this.log('[' + accessory.context.serial + '] Carbon Dioxide already low.');
 	                }
 	              } else if ((co2Before === 0) && (co2Detected === 1)) {
 	                // CO2 low to high, send it!
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
 	                if(this.config.logging){
-	                  this.log('Carbon Dioxide low to high.');
+	                  this.log('[' + accessory.context.serial + '] Carbon Dioxide low to high.');
 	                }
 	              } else if ((co2Before === 1) && (co2Detected === 1)) {
 	                // CO2 high to not-quite-low-enough-yet, don't send
 	                if(this.config.logging){
-	                  this.log('Carbon Dioxide already elevated.');
+	                  this.log('[' + accessory.context.serial + '] Carbon Dioxide already elevated.');
 	                }
 	              } else if ((co2Before === 1) && (co2Detected === 0)) {
 	                // CO2 low to high, send it!
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
 	                if(this.config.logging){
-	                  this.log('Carbon Dioxide high to low.');
+	                  this.log('[' + accessory.context.serial + '] Carbon Dioxide high to low.');
 	                } else {
 	                  // CO2 unknown...
-	                  this.log('Carbon Dioxide state unknown.');
+	                  this.log('[' + accessory.context.serial + '] Carbon Dioxide state unknown.');
 	                }
 	              }
 	            }
@@ -699,7 +711,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          case 'voc':
 	            const voc = parseFloat(sensors[sensor]);
 	            const tvoc = this.convertChemicals( accessory, voc, atmos, temp );
-	            if(this.config.logging){
+	            if(this.config.logging && this .config.verbose){
 	              this.log('[' + accessory.context.serial + ']: voc (' + voc + ' ppb) => tvoc (' + tvoc + ' ug/m^3)');
 	            }
 	            // Chemicals (ug/m^3)
@@ -874,7 +886,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	convertChemicals(accessory: PlatformAccessory, voc: number, atmos: number, temp: number): number {
 	  const vocString = '(' + voc + ' * ' + this.vocMw + ' * ' + atmos + ' * 101.32) / ((273.15 + ' + temp + ') * 8.3144)';
 	  const tvoc = (voc * this.vocMw * atmos * 101.32) / ((273.15 + temp) * 8.3144);
-	  if(this.config.logging){
+	  if(this.config.logging && this.config.verbose){
 	    this.log('[' + accessory.context.serial + '] ppb => ug/m^3 equation: ' + vocString);
 	  }
 	  return tvoc;
@@ -896,7 +908,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	}
 
-	convertAwairAqi(accessory: PlatformAccessory, sensors: string[]): number {
+	convertAwairAqi(accessory: PlatformAccessory, sensors: any[]): number {
 	  const aqiArray = [];
 	  for (const sensor in sensors) {
 	    switch (sensor) {
@@ -952,19 +964,82 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        aqiArray.push(aqiDust);
 	        break;
 	      default:
-	        if(this.config.logging){
+	        if(this.config.logging && this.config.verbose){
 	          this.log('[' + accessory.context.serial + '] ignoring ' + JSON.stringify(sensor) + ': ' + parseFloat(sensors[sensor]));
 	        }
 	        aqiArray.push(0);
 	        break;
 	    }
 	  }
-	  if(this.config.logging){
-	    this.log('[' + accessory.context.serial + '] array: ' + JSON.stringify(aqiArray));
+	  if(this.config.logging && this.config.verbose){
+	    this.log('[' + accessory.context.serial + '] aqi array: ' + JSON.stringify(aqiArray));
 	  }
-	  return Math.max(...aqiArray);
+	  return Math.max(...aqiArray); // aqi is maximum value of voc, pm25 and dust
 	}
-  
+	
+	convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
+	  const pmRawData: number[] = data
+	    .map(sensor => sensor.sensors) // create sensor array of sensors with length 'this.limit'
+	    .reduce((a, b) => a.concat(b)) // flatten array of sensors (which is an array) to single-level array
+	    .filter((pmEntry: { comp: string; }) => (pmEntry.comp === 'pm25') || (pmEntry.comp === 'dust')) // get just pm25 & dust entries
+	    .map((pmValue: { value: number; }) => pmValue.value); // return just pm value
+			
+	  if(this.config.logging && this.config.verbose){
+	    this.log('[' + accessory.context.serial + '] pmRawData', pmRawData);
+	  }
+
+	  // calculate weightFactor of full 48 points
+	  const pmMax = Math.max(...pmRawData);
+	  const pmMin = Math.min(...pmRawData);
+	  const scaledRateChange = (pmMax - pmMin)/pmMax;
+	  const weightFactor = ((1 - scaledRateChange) > 0.5) ? (1 - scaledRateChange) : 0.5;
+		
+	  // reduce data from 48 points to 12 of 4 averaged points
+	  const pmData: number[] = [];
+	  for (let i = 0; i < 12; i++) {
+	    pmData[i] = 0;
+	    for (let j = 0; j < 4; j++) {
+	      pmData[i] += pmRawData[(i * 4) + j];
+	    }
+	    pmData[i] = pmData[i] / 4;
+	  }
+
+	  if(this.config.logging && this.config.verbose){
+	    this.log('[' + accessory.context.serial + '] pmData', pmData);
+	  }
+		
+	  // calculate NowCast value
+	  let nowCastNumerator = 0;
+	  for (let i = 0; i < pmData.length; i++) {
+	    nowCastNumerator += pmData[i] * Math.pow(weightFactor, i);
+	  }
+	  let nowCastDenominator = 0;
+	  for (let i = 0; i < pmData.length; i++) {
+	    nowCastDenominator += Math.pow(weightFactor, i);
+	  }
+	  const nowCast: number = nowCastNumerator / nowCastDenominator; // in ug/m3		
+	  if(this.config.logging){
+	    this.log('[' + accessory.context.serial + '] pmMax: ' + pmMax + ', pmMin: '+ pmMin + ', weightFactor: ' + weightFactor 
+			+ ', nowCast: ' + nowCast);
+	  }
+
+	  // determine nowCast level
+	  if (nowCast < 50) {
+	    return 1; // GOOD
+	  } else if (nowCast >= 50 && nowCast < 100) {
+	    return 2; // MODERATE
+	  } else if (nowCast >= 100 && nowCast < 150) {
+	    return 3; // UNHEALTHY for SENSITIVE GROUPS
+	  } else if (nowCast >= 150 && nowCast < 300) {
+	    return 4; // UNHEALTHY
+	  } else if (nowCast >= 300) {
+	    return 5; // HAZARDOUS
+	  } else {
+	    return 0; // Error
+	  }
+
+	}
+	
 	// *** NOT CURRENTLY USED FUNCTIONS ***
 
 	// get Device data using LocalAPI -> use for more general localAPI implementation

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.6.0
+  * Add NowCast-AQI `airQualityMethod` for Omni, Mint, Awair, Awair-R2 and Element. NowCast-AQI fixes `endpoint` to `15-min-avg` and `data points returned` to `48` (12 hours) for these devices. For Awair Glow and Awair Glow C, `airQualityMethod` is set to `awair-aqi` with same fixed `endpoint` and `data points returned`.
+  * Correct Awair, Glow and Glow-C reporting of PM25 which is not available on these devices. <u>NOTE:</u> Installed devices need to be removed from Homebridge followed by reboot to correct. Individual devices can be removed through Homebridge UI settings.
+  * Update config.schema.json to conditionally show options based on prior entries.
+  * Logging clean-up.
+
 ## v5.5.10
   * Add instructions to README.md for migrating from `homebridge-awair` to `homebridge-awair2`.
   * Address "StatusCodeError: 400" and "404" due to errors in handling of config.json entries.

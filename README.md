@@ -89,7 +89,7 @@ Parameter | Description
 `platform` | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
 `token` | Developer Token (REQUIRED, see [Installation](#installation)) above.
 `userType` | The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-`airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-aqi` or `awair-score`)
+`airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-aqi`, `awair-score` or `nowcast-aqi`)
 `endpoint` | The `/air-data/` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Number of consecutive data points returned per request, used for custom averaging of sensor values (OPTIONAL, default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
@@ -103,20 +103,9 @@ Parameter | Description
 `development` | Enables Development mode to allow use of `test` Awair devices lacking `end user`/Awair OUI formatted Serial numbers.
 `ignoredDevices` | (OPTIONAL) Array of Awair device macAddresses (12 characters in length) to be excluded from HomeKit (OPTIONAL). `End user` devices with begin with Awair OUI "70886B", `test` devices are concatnation of right 12 characters of '00000000000' + deviceId.
 
+Reference Wiki for detailed description of [Configurion Options](https://github.com/DMBlakeley/homebridge-awair2/wiki/3.-Awair2-Configuration-Options). 
+
 
 # Resources
 
-- Awair Cloud API: https://docs.developer.getawair.com/
-- Awair Local API: https://docs.google.com/document/d/1001C-ro_ig7aEyz0GiWUiiJn0M6DLj47BYWj31acesg/edit
-- Homebridge: https://github.com/nfarina/homebridge
-- Homebridge API: https://developers.homebridge.io/#/
-- Homebridge examples: https://github.com/homebridge/homebridge-examples
-- Homebridge Platform Plugin Template: https://github.com/homebridge/homebridge-plugin-template
-- Homebridge plugin development: http://blog.theodo.fr/2017/08/make-siri-perfect-home-companion-devices-not-supported-apple-homekit/
-- Using async-await and npm-promise with TypeScript: https://github.com/patdaburu/request-promise-typescript-example
-- Another Awair plugin: https://github.com/henrypoydar/homebridge-awair-glow
-- Reference AQ plugin: https://github.com/toto/homebridge-airrohr
-- Reference temperature plugin: https://github.com/metbosch/homebridge-http-temperature
-- AQI Calculation NPM package: https://www.npmjs.com/package/aqi-bot
-- How is the Air Quality Index (AQI) calculated: https://stimulatedemissions.wordpress.com/2013/04/10/how-is-the-air-quality-index-aqi-calculated/
-- Homebridge-philips-air plugin: https://github.com/Sunoo/homebridge-philips-air
+Reference Wiki for complete list of [Resources](https://github.com/DMBlakeley/homebridge-awair2/wiki/6.-Resources).
