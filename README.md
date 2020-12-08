@@ -8,7 +8,7 @@
 # homebridge-awair2
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
-This is a second generation Homebridge Dynamic Platform plugin for the Awair family of air quality sensors implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge). The Awair2 plugin is based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
+This is a second generation Homebridge Dynamic Platform plugin for the Awair family of air quality monitors implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge). The Awair2 plugin is based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
 
 ---
 
@@ -21,7 +21,8 @@ The Awair2 plugin will query your Awair account using a Developer Token to deter
 
 The plugin will fetch new data based on selected `endpoint` and User Account tier. For 'Hobbyist' tier, `15-min-avg` endpoint samples every 15 minutes, `5-min-avg` every 5 minutes, `latest` every 5 minutes and `raw` every 3.3 minutes (200 seconds). The main difference between the `latest` and `raw` endpoints is that you can define a `limit` (i.e. number of consecutive data points) for the `raw` endpoint, in order to create your own averaging (e.g. `.../raw?limit=12` for a 2 minute average.
 
-With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. Air quality, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you touch this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
+With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. 
+, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you touch this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
 
 ![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
 
