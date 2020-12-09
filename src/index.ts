@@ -187,14 +187,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.addAccInfo(accessory);
 	  });
 		
-	  // get initial API usage
-	  this.accessories.forEach(accessory => {
-	    if (this.config.logging) {
-	      this.log('[' + accessory.context.serial + '] Getting API usage status...' + accessory.context.deviceUUID);
-	    }
-	    this.getApiUsage(accessory);
-	  });
-		
 	  // get initial Air and Local data
 	  this.accessories.forEach(accessory => {
 	    if (this.config.logging) {
@@ -1037,70 +1029,5 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  } else {
 	    return 0; // Error
 	  }
-
 	}
-	
-	// *** NOT CURRENTLY USED FUNCTIONS ***
-
-	// get Device data using LocalAPI -> use for more general localAPI implementation
-	async getLocalData(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
-		
-	  await axios.get(URL)
-    	.then((response) => {
-	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local data for ' + accessory.context.deviceType + ': ' + JSON.stringify(response.data));
-	      }
-	    })
-    	.catch((err) => {
-	      if(this.config.logging && err.response){
-	        this.log('getLocalData error: ' + err.response.data);
-	      }
-	    });
-	  return;
-	}
-
-	// get device configuration using LocalAPI -> use for more general localAPI implementation
-	async getLocalConfig(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
-		
-	  await axios.get(URL)
-    	.then((response) => {
-	      if(this.config.logging && this.config.verbose) {	
-	        this.log('Local config for ' + accessory.context.deviceType + ': ' + JSON.stringify(response.data));
-	      }
-	    })
-    	.catch((err) => {
-	      if(this.config.logging && err.response){
-	        this.log('getLocalConfig error: ' + err.response.data);
-	      }
-	    });
-	  return;
-	}
-
-	// get CloudAPI usage for a Device -> not currently used as polling_interval being set to not exceed API usage limits
-	async getApiUsage(accessory: PlatformAccessory): Promise<void> {
-	  const URL = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
-			+ accessory.context.deviceId + '/api-usages';
-	
-	  const options = {
-	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
-	    },
-	  };
-	
-	  await axios.get(URL, options)
-	    .then((response) => {
-	      if(this.config.logging && this.config.verbose) {
-	        this.log('apiUsage for ' + accessory.context.deviceUUID + ': ' + JSON.stringify(response.data));
-	      }
-	    })
-	    .catch((err) => {
-	      if(this.config.logging && err.response){
-	        this.log('getApiUsage error: ' + err.response.data);
-	      }
-	    });
-	  return;
-	}	
-
 }

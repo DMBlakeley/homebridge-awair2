@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.6.2
+  * Housekeeping - remove unused functions (getLocalData, getLocalConfig, getApiUsage).
+
 ## v5.6.1
   * Correctly define Awair devices as 'air quality monitor', not 'air purifier'.
 
