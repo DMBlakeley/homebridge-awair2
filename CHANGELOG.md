@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.6.3
+  * Updates for setting up Raspberry Pi for Homebridge and awair2.
+  * config.schema.json - changed `placeholder` to `default` on `userType`, `airQualityMethod`, `carbonDioxideThreshold` and `carbonDioxideThresholdOff`.
+  * Add check that `carbonDioxideThresholdOff` is less than `carbonDioxideThreshold`. If not, set to `default` values.
+
 ## v5.6.2
   * Housekeeping - remove unused functions (getLocalData, getLocalConfig, getApiUsage).
 

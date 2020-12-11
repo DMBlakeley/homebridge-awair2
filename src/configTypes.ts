@@ -34,13 +34,3 @@ export type DeviceConfig = {
   deviceId: number;
   locationName: string;
 };
-
-export type UserInfoConfig = {
-  userTier: string;
-  fifteenMin: number;
-	fiveMin: number;
-	raw: number;
-	latest: number;
-	getPowerStatus: number;
-	getTimeZone: number;
-};

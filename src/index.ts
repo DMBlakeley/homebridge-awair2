@@ -119,6 +119,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  } else {
 	    this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThreshold);
 	  }
+		
+	  if (this.carbonDioxideThreshold < this.carbonDioxideThresholdOff){
+	    this.log ('"Carbon Dioxide Threshold Off" must be less than "Carbon Dioxide Threshold", using defaults.');
+	    this.carbonDioxideThresholdOff = 0;
+	    this.carbonDioxideThreshold = 0;
+	  }
 	  
 	  if (this.config.vocMw) {
 	    this.vocMw = this.config.vocMw;
