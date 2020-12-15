@@ -43,8 +43,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private polling_interval = 900;
 	private limit = 1;
 	private endpoint = '15-min-avg';
-	private carbonDioxideThreshold = 0;
-	private carbonDioxideThresholdOff = 0;
+	private carbonDioxideThreshold = 1000;
+	private carbonDioxideThresholdOff = 800;
 	private occupancyOffset = 2.0;
 	private occDetectedNotLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
 	private occDetectedLevel = 60;
@@ -122,8 +122,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  if (this.carbonDioxideThreshold < this.carbonDioxideThresholdOff){
 	    this.log ('"Carbon Dioxide Threshold Off" must be less than "Carbon Dioxide Threshold", using defaults.');
-	    this.carbonDioxideThresholdOff = 0;
-	    this.carbonDioxideThreshold = 0;
+	    this.carbonDioxideThresholdOff = 800;
+	    this.carbonDioxideThreshold = 1000;
 	  }
 	  
 	  if (this.config.vocMw) {

@@ -16,7 +16,7 @@
 			"airQualityMethod": "awair-aqi",
 			"endpoint": "15-min-avg",
 			"limit": 1,
-			"carbonDioxideThreshold": 1200,
+			"carbonDioxideThreshold": 1000,
 			"carbonDioxideThresholdOff": 800,
 			"vocMw": 72.66578273019740,
 			"occupancyDetection": false,

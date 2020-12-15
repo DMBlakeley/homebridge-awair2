@@ -67,7 +67,7 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
     "airQualityMethod": "awair-aqi",
     "endpoint": "15-min-avg",
     "limit": 1,
-    "carbonDioxideThreshold": 1200,
+    "carbonDioxideThreshold": 1000,
     "carbonDioxideThresholdOff": 800,
     "vocMw": 72.66578273019740,
     "occupancyDetection": false,
@@ -85,24 +85,24 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
 
 ## Descriptions
 
-Parameter | Description
------------- | -------------
-`platform` | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
-`token` | Developer Token (REQUIRED, see [Installation](#installation)) above.
-`userType` | The type of user account (OPTIONAL, default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-`airQualityMethod` | Air quality calculation method used to define the Air Quality Chracteristic (OPTIONAL, default = `awair-aqi`, options: `awair-aqi`, `awair-score` or `nowcast-aqi`)
-`endpoint` | The `/air-data/` endpoint to use (OPTIONAL, default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
-`limit` | Number of consecutive data points returned per request, used for custom averaging of sensor values (OPTIONAL, default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
-`carbonDioxideThreshold` | (OPTIONAL, default = `0` [i.e. OFF], the level at which HomeKit will trigger an alert for the CO2 in ppm)
-`carbonDioxideThresholdOff` | (OPTIONAL, default = `0` [i.e. `carbonDioxideThreshold`], the level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than `carbonDioxideThreshold`)
-`vocMw` | (OPTIONAL, default = `72.66578273019740`) The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3
-`occupancyDetection` | (OPTIONAL - Omni only, default = `false`) Enables Omni occupancy detection based on minimum environmental sound level detected.
-`occupancyOffset` | (OPTIONAL - Omni only, default = `2`) Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher.
-`occupancyRestart` | (OPTIONAL - Omni only, default = `false`, use historical data) `true` enables restart of occupancy detection algorithm on Homebridge reboot.
-`logging` | Whether to output logs to the Homebridge logs (OPTIONAL, default = `false`)
-`verbose` | Whether to log results from API data calls (OPTIONAL, default = `false`). Requires `logging` to be `true`.
-`development` | Enables Development mode to allow use of `test` Awair devices lacking `end user`/Awair OUI formatted Serial numbers.
-`ignoredDevices` | (OPTIONAL) Array of Awair device macAddresses (12 characters in length) to be excluded from HomeKit (OPTIONAL). `End user` devices with begin with Awair OUI "70886B", `test` devices are concatnation of right 12 characters of '00000000000' + deviceId.
+Parameter | Optional? | Description
+:-- | :----: | :---
+`platform` |  | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
+`token` |  | Developer Token (REQUIRED, see [Installation](#installation)) above.
+`userType` | Y | The type of user account (Eefault = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
+`airQualityMethod` | Y | Air quality calculation method used to define the Air Quality Chracteristic (Default = `awair-aqi`, options: `awair-aqi`, `awair-score` or `nowcast-aqi`)
+`endpoint` | Y | The `/air-data/` endpoint to use (Default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
+`limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
+`carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
+`carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number less than `carbonDioxideThreshold`. (Default = `800`)
+`vocMw` | Y | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3. (Default = `72.66578273019740`)
+`occupancyDetection` | Y | Omni Only - Enables Omni occupancy detection based on minimum environmental sound level detected. (Default = `false`)
+`occupancyOffset` | Y | Omni Only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher. (Default = `2`) 
+`occupancyRestart` |  Y | Omni Only - Enables restart of occupancy detection algorithm on Homebridge reboot. (Default = `false`, use historical data)
+`logging` | Y | Whether to output logs to the Homebridge logs. (Default = `false`)
+`verbose` | Y | Whether to log results from API data calls. Requires `logging` to be `true`. (Default = `false`)
+`development` | Y | Enables Development mode to allow use of `test` Awair devices lacking `end user`/Awair OUI formatted Serial numbers. (Default = `false`)
+`ignoredDevices` | Y | Array of Awair device macAddresses (12 characters in length) to be excluded from HomeKit (OPTIONAL). `End user` devices with begin with Awair OUI "70886B", `test` devices are concatnation of right 12 characters of '00000000000' + deviceId.
 
 Reference Wiki for detailed description of [Configurion Options](https://github.com/DMBlakeley/homebridge-awair2/wiki/3.-Awair2-Configuration-Options). 
 

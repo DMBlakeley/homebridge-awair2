@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.6.4
+  * Change `carbonDioxideThreshold` default from 0 to 1000 and `carbonDioxideThresholdOff` default from 0 to 800.
+
 ## v5.6.3
   * Updates for setting up Raspberry Pi for Homebridge and awair2.
   * config.schema.json - changed `placeholder` to `default` on `userType`, `airQualityMethod`, `carbonDioxideThreshold` and `carbonDioxideThresholdOff`.

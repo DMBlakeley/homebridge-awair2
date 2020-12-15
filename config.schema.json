@@ -49,13 +49,13 @@
       "carbonDioxideThreshold": {
         "title": "Carbon Dioxide Threshold",
         "type": "integer",
-        "default": 0,
+        "default": 1000,
         "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = `0`."
       },
       "carbonDioxideThresholdOff": {
         "title": "Carbon Dioxide Threshold Off",
         "type": "integer",
-        "default": 0,
+        "default": 800,
         "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = `0`."
       },
       "vocMw": {
