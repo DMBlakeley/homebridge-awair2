@@ -44,7 +44,7 @@ Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as
 
 The Awair2 plugin queries your Awair account to determine devices that you have registered. This is the same informaton that you have entered via the Awair app on your iOS device.
 
-You will need to request access to the [Awair Developer Console](https://developer.getawair.com) to obtain your Developer Token (`token`).
+You will need to request access to the [Awair Developer Console](https://developer.getawair.com) to obtain your Developer Token (`token`). You can also request your Developer Token directly through the Awair App on your iPhone. From the App, select 'Awair+' in the lower right hand corner, then select 'Awair APIs', select 'Cloud API' and finally 'Get API Token'.
 
 The [Awair Developer API Documentation](https://docs.developer.getawair.com) explains the inner workings of the Awair Developer API, but for the most part is not necessary to use this plugin.
 
