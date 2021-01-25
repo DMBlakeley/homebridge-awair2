@@ -33,4 +33,26 @@ export type DeviceConfig = {
   deviceUUID: string;
   deviceId: number;
   locationName: string;
+  accType: string;
+};
+
+export type UserInfoConfig = {
+  userTier: string;
+  fifteenMin: number;
+	fiveMin: number;
+	raw: number;
+	latest: number;
+	getPowerStatus: number;
+	getTimeZone: number;
+};
+
+export type DisplayModeConfig = {
+  mode: string;  // score, temp, humid, co2, voc, pm25, clock
+  clock_mode: string; // 12hr, 24hr
+  temp_unit: string; // c, f
+};
+
+export type LEDModeConfig = {
+  mode: string; // auto, manual, sleep
+  brightness: number; // 0 -> 100 in %
 };

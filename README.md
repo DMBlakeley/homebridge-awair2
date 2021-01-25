@@ -21,6 +21,8 @@ The Awair2 plugin will query your Awair account using a Developer Token to deter
 
 The plugin will fetch new data based on selected `endpoint` and User Account tier. For 'Hobbyist' tier, `15-min-avg` endpoint samples every 15 minutes, `5-min-avg` every 5 minutes, `latest` every 5 minutes and `raw` every 3.3 minutes (200 seconds). The main difference between the `latest` and `raw` endpoints is that you can define a `limit` (i.e. number of consecutive data points) for the `raw` endpoint, in order to create your own averaging (e.g. `.../raw?limit=12` for a 2 minute average.
 
+v5.7.0 of the plugin introduces control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
+
 With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. 
 , temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you touch this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
 
@@ -32,7 +34,12 @@ For Awair Omni, battery charge level, charging status, low battery, light level 
 
 ![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image2.png)
 
-<b>NOTE:</b> If you are setting up an Awair 1st Edition (i.e. deviceType = `awair`) unit for the first time, it is recommended that you allow 6 to 12 hours after adding to the iOS Awair App for the unit to calibrate, update firmware if necessary and establish connection to the Awair API cloud.
+---
+
+<u><h3 align=center>NOTE:</h3></u> 
+<p>If you are setting up an Awair unit for the first time, it is recommended that you allow a couple of hours after adding to the iOS Awair App for the unit to calibrate, update firmware if necessary and establish connection to the Awair Cloud. Initially the accessories may show up in Homebridge and HomeKit, however, the data field may be blank. This will correct after the data stream has been established between your Awair device and the Awair Cloud.</p>
+
+---
 
 Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as a reference for implementation of the Awair Dynamic Platform TypeScript plugin.
 
