@@ -22,6 +22,7 @@
 			"occupancyDetection": false,
 			"occupancyOffset": 2,
 			"occupancyRestart": false,
+			"enableModes": false,
 			"logging": false,
 			"verbose": false,
 			"development": false,

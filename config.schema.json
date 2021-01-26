@@ -101,6 +101,11 @@
           "functionBody": "return model.logging === true;"
         }
       },
+      "enableModes": {
+        "title": "Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Elemnt.",
+        "type": "boolean",
+        "default": false
+      },
       "development": {
         "title": "Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
         "type": "boolean",
@@ -145,6 +150,7 @@
         "occupancyRestart",
         "logging",
         "verbose",
+        "enableModes",
         "development"
       ]
     },
