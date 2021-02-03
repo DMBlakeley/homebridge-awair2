@@ -74,7 +74,7 @@
         "title": "Omni - used when occupancyDetection enabled.",
         "type": "number",
         "placeholder": 2.0,
-        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher.",
+        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above detected background sound level. Sets upper level for `not occupied`. The lower level for `occupied` is an additional 0.5dBA higher. See Wiki for full explanation.",
         "condition": {
           "functionBody": "return model.occupancyDetection === true;"
         }
