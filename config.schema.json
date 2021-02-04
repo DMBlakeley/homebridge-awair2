@@ -74,7 +74,7 @@
         "title": "Omni - used when occupancyDetection enabled.",
         "type": "number",
         "placeholder": 2.0,
-        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher.",
+        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above detected background sound level. Sets upper level for `not occupied`. The lower level for `occupied` is an additional 0.5dBA higher. See Wiki for full explanation.",
         "condition": {
           "functionBody": "return model.occupancyDetection === true;"
         }
@@ -100,6 +100,11 @@
         "condition": {
           "functionBody": "return model.logging === true;"
         }
+      },
+      "enableModes": {
+        "title": "Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Elemnt.",
+        "type": "boolean",
+        "default": false
       },
       "development": {
         "title": "Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
@@ -145,6 +150,7 @@
         "occupancyRestart",
         "logging",
         "verbose",
+        "enableModes",
         "development"
       ]
     },

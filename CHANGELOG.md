@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.7.0 & v5.7.1
+ * [New] Added functionality to control Awair display and brightness. Only applies to Omni, Awair-R2 and Element. <p align = center><b>NOTE:</b></p> <p>When migrating from `v5.6.3` to `v5.7.0` please first uninstall `homebridge-awair2` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair' cached accessories, install `homebridge-awair2`, add your Developer Token, and finally restart Homebridge one more time.</p>
+
 ## v5.6.4
   * Change `carbonDioxideThreshold` default from 0 to 1000 and `carbonDioxideThresholdOff` default from 0 to 800.
 
