@@ -13,7 +13,7 @@ This is a second generation Homebridge Dynamic Platform plugin for the Awair fam
 ---
 
 <u><h3 align=center>NOTE:</h3></u>
-<p>When migrating from `homebridge-awair` to `homebridge-awair2` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair' cached accessories, install `homebridge-awair2`, add your Developer Token, and finally restart Homebridge one more time.</p>
+When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.6.4` to `v5.7.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time.
 
 ---
 
@@ -93,25 +93,27 @@ See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/ma
 
 ## Descriptions
 
+Reference [Wiki Chapter 3](https://github.com/DMBlakeley/homebridge-awair2/wiki/3.-Awair2-Configuration-Options) for additional details.
+
 Parameter | Optional? | Description
 :-- | :----: | :---
 `platform` |  | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
 `token` |  | Developer Token (REQUIRED, see [Installation](#installation)) above.
-`userType` | Y | The type of user account (Eefault = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
+`userType` | Y | The type of user account (Default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
 `airQualityMethod` | Y | Air quality calculation method used to define the Air Quality Chracteristic (Default = `awair-aqi`, options: `awair-aqi`, `awair-score` or `nowcast-aqi`)
 `endpoint` | Y | The `/air-data/` endpoint to use (Default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
 `carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number less than `carbonDioxideThreshold`. (Default = `800`)
-`vocMw` | Y | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3. (Default = `72.66578273019740`)
+`vocMw` | Y | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to &micro;g/m&sup3;. (Default = `72.66578273019740`)
 `occupancyDetection` | Y | Omni Only - Enables Omni occupancy detection based on minimum environmental sound level detected. (Default = `false`)
 `occupancyOffset` | Y | Omni Only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher. (Default = `2`) 
-`occupancyRestart` |  Y | Omni Only - Enables restart of occupancy detection algorithm on Homebridge reboot. (Default = `false`, use historical data)
+`occupancyRestart` |  Y | Omni only - Reinitialize Occupancy detection measurement to determine unoccupied sound level on Homebridge reboot. (Default = `false`, use historical data)
 `enableModes` | Y | Applies to Omni, Awair-r2 & Element - Enables creation of Display Mode and LED Mode accessories. (Default = `false`)
 `logging` | Y | Whether to output logs to the Homebridge logs. (Default = `false`)
 `verbose` | Y | Whether to log results from API data calls. Requires `logging` to be `true`. (Default = `false`)
-`development` | Y | Enables Development mode to allow use of `test` Awair devices lacking `end user`/Awair OUI formatted Serial numbers. (Default = `false`)
-`ignoredDevices` | Y | Array of Awair device macAddresses (12 characters in length) to be excluded from HomeKit (OPTIONAL). `End user` devices with begin with Awair OUI "70886B", `test` devices are concatnation of right 12 characters of '00000000000' + deviceId.
+`development` | Y | Enables Development mode to allow use of `test` Awair devices lacking `end user/Awair OUI` formatted Serial numbers. (Default = `false`)
+`ignoredDevices` | Y | Array of Awair device macAddresses (12 characters in length) to be excluded from HomeKit (OPTIONAL). `End user` devices with begin with Awair OUI '70886B', `test` devices are concatnation of right 12 characters of '00000000000' + deviceId.
 
 Reference Wiki for detailed description of [Configurion Options](https://github.com/DMBlakeley/homebridge-awair2/wiki/3.-Awair2-Configuration-Options). 
 

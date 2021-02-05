@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.7.2
+ * [Enhancement] Update config schema titles to provide better description and consistency across titles.
+ * [Enhancement] Update README.md to be consistent with config schema changes. Clarify that when upgrading from 5.6.4 to 5.7.x that you should first uninstall plug-in, reboot, reinstall, configure and reboot. This is due to change in device accessory cache format.
+
 ## v5.7.0 & v5.7.1
  * [New] Added functionality to control Awair display and brightness. Only applies to Omni, Awair-R2 and Element. <p align = center><b>NOTE:</b></p> <p>When migrating from `v5.6.3` to `v5.7.0` please first uninstall `homebridge-awair2` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair' cached accessories, install `homebridge-awair2`, add your Developer Token, and finally restart Homebridge one more time.</p>
 

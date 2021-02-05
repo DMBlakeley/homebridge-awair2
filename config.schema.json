@@ -15,17 +15,17 @@
         "description": "Reference Installation Instructions - link provided in footer."
       },
       "userType": {
-        "title": "The type of user account",
+        "title": "The type of User Account",
         "type": "string",
         "default": "users/self",
-        "description": "The type of user account. Default = 'users/self', Options: 'users/self' or 'orgs/###', where ### is the Awair Organization 'orgId'."
+        "description": "The type of User Account. Default = 'users/self', Options: 'users/self' or 'orgs/###', where ### is the Awair Organization 'orgId'."
       },
       "airQualityMethod": {
         "title": "Air quality calculation method",
         "type": "string",
         "default": "awair-aqi",
         "enum": ["awair-aqi", "awair-score", "nowcast-aqi"],
-        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-aqi', 'awair-score' and 'nowcast-aqi'. Nowcast-aqi only available for Omni, Mint, Awair, Awair-R2 and Element. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48."
+        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-aqi', 'awair-score' and 'nowcast-aqi'. Nowcast-aqi only available for Omni, Mint, Awair, Awair-R2 and Element. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'number of data points returned' to '48."
       },
       "endpoint": {
         "title": "The 'air-data' endpoint",
@@ -38,63 +38,64 @@
         }
       },
       "limit": {
-        "title": "Data Points Returned",
+        "title": "Number of Data Points Returned",
         "type": "integer",
         "default": 1,
-        "description": "Number of consecutive data points returned per request. For example, used for custom averaging of sensor values from 'raw' endpoint. `endpoint` of `latest` defaults to `1`. Default = '1'.",
+        "description": "Number of consecutive data points returned per request. Used for custom averaging of sensor values from 'raw' Endpoint. Endpoint of 'latest' defaults to '1'. Default = '1'.",
         "condition": {
           "functionBody": "return model.airQualityMethod !== 'nowcast-aqi';"
         }
       },
       "carbonDioxideThreshold": {
-        "title": "Carbon Dioxide Threshold",
+        "title": "Carbon Dioxide Threshold - On",
         "type": "integer",
         "default": 1000,
-        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = `0`."
+        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = '1000'."
       },
       "carbonDioxideThresholdOff": {
-        "title": "Carbon Dioxide Threshold Off",
+        "title": "Carbon Dioxide Threshold - Off",
         "type": "integer",
         "default": 800,
-        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number lower than 'carbonDioxideThreshold'. Default = `0`."
+        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently. Must be a number lower than 'carbonDioxideThreshold'. Default = '800'."
       },
       "vocMw": {
         "title": "Reference Gas Molecular Weight",
         "type": "number",
         "placeholder": 72.66578273019740,
-        "description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to ug/m^3."
+        "description": "The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to &micro;g/m&sup3;."
       },
       "occupancyDetection": {
-        "title": "Omni - Whether to enable Occupancy detection based on minimum sound level.",
+        "title": "Omni Occupancy Detection - Whether to enable Occupancy detection based on minimum sound level.",
         "type": "boolean",
         "default": false,
-        "description": "Omni only - enables occupancy detection based on minimum sound level + occupancyOffset value."
+        "description": "Omni only - enables occupancy detection based on detected background sound level + occupancyOffset value."
       },
       "occupancyOffset": {
-        "title": "Omni - used when occupancyDetection enabled.",
+        "title": "Omni Occupancy decibels Offset - used when occupancyDetection enabled.",
         "type": "number",
-        "placeholder": 2.0,
-        "description": "Omni only - Used when `occupancy detection` enabled. Offset value in dBA above detected background sound level. Sets upper level for `not occupied`. The lower level for `occupied` is an additional 0.5dBA higher. See Wiki for full explanation.",
+        "default": 2.0,
+        "multipleOf": 0.5,
+        "description": "Omni only - used when `occupancy detection` enabled. Offset value in dBA above detected background sound level to set upper level for `not occupied`. The lower level for `occupied` is an additional 0.5dBA higher. See Wiki for further explanation. Default = '2'.",
         "condition": {
           "functionBody": "return model.occupancyDetection === true;"
         }
 			},
       "occupancyRestart": {
-        "title": "Omni - restart Occupancy detection measurement on next Homebridge reboot.",
+        "title": "Omni Reset Occupancy Status - reinitialize Occupancy detection measurement on Homebridge reboot.",
         "type": "boolean",
         "default": false,
-        "description": "Omni only - reinitialize Occupancy detection measurement on Homebridge reboot.",
+        "description": "Omni only - reinitialize Occupancy detection measurement to determine unoccupied sound level on Homebridge reboot.",
         "condition": {
           "functionBody": "return model.occupancyDetection === true;"
         }
       },
       "logging": {
-        "title": "Whether to output logs to the Homebridge logs.",
+        "title": "Logging - Whether to output logs to the Homebridge logs.",
         "type": "boolean",
         "default": false
       },
       "verbose": {
-        "title": "Whether to include API data call results when logging is enabled.",
+        "title": "Verbose Logging - Whether to include API data call results when logging is enabled.",
         "type": "boolean",
         "default": false,
         "condition": {
@@ -102,12 +103,12 @@
         }
       },
       "enableModes": {
-        "title": "Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Elemnt.",
+        "title": "Display Mode Switches - Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Elemnt.",
         "type": "boolean",
         "default": false
       },
       "development": {
-        "title": "Enables Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
+        "title": "Development Mode - Whether to enable Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
         "type": "boolean",
         "default": false
       },
