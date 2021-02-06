@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.7.3
+ * [New] Add `awair-pm` 'air quality method'. When 'awair-pm' selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers.
+
 ## v5.7.2
  * [Enhancement] Update config schema titles to provide better description and consistency across titles.
  * [Enhancement] Update README.md to be consistent with config schema changes. Clarify that when upgrading from 5.6.4 to 5.7.x that you should first uninstall plug-in, reboot, reinstall, configure and reboot. This is due to change in device accessory cache format.
