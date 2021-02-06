@@ -24,8 +24,8 @@
         "title": "Air quality calculation method",
         "type": "string",
         "default": "awair-aqi",
-        "enum": ["awair-aqi", "awair-pm", "nowcast-aqi"],
-        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-aqi', 'awair-pm', and 'nowcast-aqi'. Awair-pm and Nowcast-aqi are only available for Omni, Mint, Awair, Awair-R2 and Element. When 'awair-pm' selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48."
+        "enum": ["awair-aqi", "awair-pm", "awair-score", "nowcast-aqi"],
+        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-aqi', Options: 'awair-aqi', 'awair-pm', and 'nowcast-aqi'. Awair-pm and Nowcast-aqi are only available for Omni, Mint, Awair, Awair-R2 and Element. When 'awair-pm' selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48. The 'awair-score' method maps the Awair Score to an Air Quality value."
       },
       "endpoint": {
         "title": "The 'air-data' endpoint",
