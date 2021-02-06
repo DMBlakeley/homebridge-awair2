@@ -675,11 +675,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
+
 	        } else if ((this.airQualityMethod === 'awair-pm') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use awair-pm for Omni, Mint, Awair, Awair-R2, Element
 						  // eslint-disable-next-line max-len
 						  .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
+	        } else if ((this.airQualityMethod === 'awair-pm') 
+						&& (accessory.context.deviceType === 'awair-glow' || accessory.context.deviceType === 'awair-glow-c')) {
+	          airQualityService // for Glow or Glow-C use awair-aqi if awair-pm selected
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
+
 	        } else if ((this.airQualityMethod === 'nowcast-aqi') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2, Element
@@ -688,9 +694,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 							&& (accessory.context.deviceType === 'awair-glow' || accessory.context.deviceType === 'awair-glow-c')) {
 	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
+
 	        } else if (this.airQualityMethod === 'awair-score') {
 		  			airQualityService
 		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
+
 	        } else {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));

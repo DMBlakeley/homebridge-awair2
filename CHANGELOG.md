@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.0
+* [Enhancement] If `awair-pm` selected, Glow and Glow-C will use `awair-aqi` method with configured `endpoint` and `limit`. 
+
 ## v5.7.3
  * [New] Add `awair-pm` 'air quality method'. When 'awair-pm' selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers.
 
