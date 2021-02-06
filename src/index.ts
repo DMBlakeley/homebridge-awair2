@@ -675,10 +675,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
-			} else if ((this.airQualityMethod === 'awair-pm') && 
+	        } else if ((this.airQualityMethod === 'awair-pm') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use awair-pm for Omni, Mint, Awair, Awair-R2, Element
-			  .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
+						  // eslint-disable-next-line max-len
+						  .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
 	        } else if ((this.airQualityMethod === 'nowcast-aqi') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2, Element
@@ -688,9 +689,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
 	        } else if (this.airQualityMethod === 'awair-score') {
-		  airQualityService
-		    .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
-		} else {
+		  			airQualityService
+		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
+	        } else {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
 	        }
@@ -1490,7 +1491,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if(this.config.logging && this.config.verbose){
 	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
-	  return Math.max(...aqiArray); // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
+	  // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
+	  return Math.max(...aqiArray); 
 	}
 	
 	convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
