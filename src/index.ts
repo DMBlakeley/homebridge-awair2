@@ -687,7 +687,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 							&& (accessory.context.deviceType === 'awair-glow' || accessory.context.deviceType === 'awair-glow-c')) {
 	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
-	        } else { 
+	        } else if (this.airQualityMethod === 'awair-score') {
+		  airQualityService
+		    .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
+		} else {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
 	        }
