@@ -675,9 +675,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
+			} else if ((this.airQualityMethod === 'awair-pm') && 
+							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
+	          airQualityService // only use awair-pm for Omni, Mint, Awair, Awair-R2, Element
+			  .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
 	        } else if ((this.airQualityMethod === 'nowcast-aqi') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
-	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2
+	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2, Element
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertNowcastAqi(accessory, data)); // pass response data
 	        } else if ((this.airQualityMethod === 'nowcast-aqi') 
 							&& (accessory.context.deviceType === 'awair-glow' || accessory.context.deviceType === 'awair-glow-c')) {
@@ -1432,6 +1436,58 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
 	  return Math.max(...aqiArray); // aqi is maximum value of voc, pm25 and dust
+	}
+	
+	convertAwairPm(accessory: PlatformAccessory, sensors: any[]): number {
+	  const aqiArray = [];
+	  for (const sensor in sensors) {
+	    switch (sensor) {
+	      case 'pm25':
+	        let aqiPm25 = parseFloat(sensors[sensor]);
+	        if (aqiPm25 >= 0 && aqiPm25 < 15) {
+	          aqiPm25 = 1; // EXCELLENT
+	        } else if (aqiPm25 >= 15 && aqiPm25 < 35) {
+	          aqiPm25 = 2; // GOOD
+	        } else if (aqiPm25 >= 35 && aqiPm25 < 55) {
+	          aqiPm25 = 3; // FAIR
+	        } else if (aqiPm25 >= 55 && aqiPm25 < 75) {
+	          aqiPm25 = 4; // INFERIOR
+	        } else if (aqiPm25 >= 75) {
+	          aqiPm25 = 5; // POOR
+	        } else {
+	          aqiPm25 = 0; // Error
+	        }
+	        aqiArray.push(aqiPm25);
+	        break;
+	      case 'dust':
+	        let aqiDust = parseFloat(sensors[sensor]);
+	        if (aqiDust >= 0 && aqiDust < 50) {
+	          aqiDust = 1; // EXCELLENT
+	        } else if (aqiDust >= 50 && aqiDust < 100) {
+	          aqiDust = 2; // GOOD
+	        } else if (aqiDust >= 100 && aqiDust < 150) {
+	          aqiDust = 3; // FAIR
+	        } else if (aqiDust >= 150 && aqiDust < 250) {
+	          aqiDust = 4; // INFERIOR
+	        } else if (aqiDust >= 250) {
+	          aqiDust = 5; // POOR
+	        } else {
+	          aqiDust = 0; // Error
+	        }
+	        aqiArray.push(aqiDust);
+	        break;
+	      default:
+	        if(this.config.logging && this.config.verbose){
+	          this.log(`[${accessory.context.serial}] convertAwairAqi ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
+	        }
+	        aqiArray.push(0);
+	        break;
+	    }
+	  }
+	  if(this.config.logging && this.config.verbose){
+	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
+	  }
+	  return Math.max(...aqiArray); // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
 	}
 	
 	convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
