@@ -103,7 +103,7 @@
         }
       },
       "enableModes": {
-        "title": "Display Mode Switches - Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Elemnt.",
+        "title": "Display Mode Switches - Whether to enable Display Mode and LED Mode Accessories for Awair-Omni, Awair-R2 and Awair-Element.",
         "type": "boolean",
         "default": false
       },

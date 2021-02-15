@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.1
+* [Bug] Fix correctly checking whether config entries exist [PR #66](https://github.com/DMBlakeley/homebridge-awair2/pull/65).
+
 ## v5.8.0
 * [Enhancement] If `awair-pm` selected, Glow and Glow-C will use `awair-aqi` method with configured `endpoint` and `limit`. 
 
