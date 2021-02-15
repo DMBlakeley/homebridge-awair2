@@ -82,25 +82,25 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // check for Optional entries in config.json
-	  if (this.config.userType) {
+	  if ('userType' in this.config) {
 	    this.userType = this.config.userType;
 	  }
 	  
-	  if (this.config.airQualityMethod) {
+	  if ('airQualityMethod' in this.config) {
 	    this.airQualityMethod = this.config.airQualityMethod;
 	  }
 		
 	  if (this.airQualityMethod === 'nowcast-aqi') {
 	    this.endpoint = '15-min-avg'; // nowcast-aqi is calculated over 12 hours, 15-min-avg data will be used for calculation
 	    this.limit = 48; // nowcast-aqi is calculated over 12 hours
-	  } else if (this.config.endpoint) {
+	  } else if ('endpoint' in this.config) {
 	    this.endpoint = this.config.endpoint;
 	  }			
 		
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
 	  // Useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
 	  // for IAQ calculation) would be easier with the '15-min'avg' endpoint.
-	  if (this.config.limit && this.airQualityMethod !== 'nowcast-aqi') {	
+	  if ('limit' in this.config && this.airQualityMethod !== 'nowcast-aqi') {
 	    switch (this.endpoint) {  // check that this.config.limit does not exceed limits
 	      case '15-min-avg':
 	        this.limit = (this.config.limit > 672) ? 672 : this.config.limit; // 672 samples max or ~7 days
@@ -117,11 +117,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 		
-	  if (this.config.carbonDioxideThreshold){
+	  if ('carbonDioxideThreshold' in this.config){
 	    this.carbonDioxideThreshold = Number(this.config.carbonDioxideThreshold);
 	  }
 	  
-	  if (this.config.carbonDioxideThresholdOff) {
+	  if ('carbonDioxideThresholdOff' in this.config) {
 	    this.carbonDioxideThresholdOff = Number(this.config.carbonDioxideThresholdOff);
 	  }
 		
@@ -131,19 +131,19 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.carbonDioxideThreshold = 1000;
 	  }
 	  
-	  if (this.config.vocMw) {
+	  if ('vocMw' in this.config) {
 	    this.vocMw = this.config.vocMw;
 	  }
 	  
-	  if (this.config.occupancyOffset) {
+	  if ('occupancyOffset' in this.config) {
 	    this.occupancyOffset = this.config.occupancyOffset;
 	  }
 	  
-	  if (this.config.enableModes) {
+	  if ('enableModes' in this.config) {
 	    this.enableModes = this.config.enableModes;
 	  }
 	  
-	  if (this.config.ignoredDevices) {
+	  if ('ignoredDevices' in this.config) {
 	    this.ignoredDevices = this.config.ignoredDevices;
 	  }
 
