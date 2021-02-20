@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.2
+* [Bug] Corrected issue - `Multiple air data API calls during a single polling interval #66`. Determined that accessories were being duplicated resulting in additional API calls. For the Hobbyist `Request failed with status code 429`, was returned on API calls as API call limits were exceeded.
+* Update if statement logic with `()` to ensure consistency and readability.
+* Update logging for consistency.
+
 ## v5.8.1
 * [Bug] Fix correctly checking whether config entries exist [PR #66](https://github.com/DMBlakeley/homebridge-awair2/pull/65).
 
