@@ -42,7 +42,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
 	private airQualityMethod = 'awair-aqi';
 	private userType = 'users/self';
-	private polling_interval = 900;
+	private polling_interval = 900; // default for '15-min-avg' endpoint
 	private limit = 1;
 	private endpoint = '15-min-avg';
 	private carbonDioxideThreshold = 1000;
@@ -95,7 +95,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.limit = 48; // nowcast-aqi is calculated over 12 hours
 	  } else if ('endpoint' in this.config) {
 	    this.endpoint = this.config.endpoint;
-	  }			
+	  }
 		
 	  // config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
 	  // Useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
@@ -166,7 +166,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
    * It should be used to setup event handlers for characteristics and update respective values.
    */
 	configureAccessory(accessory: PlatformAccessory): void {
-	  this.log(`Configuring accessory ${accessory.displayName}`);
+	  this.log(`Configuring cached accessory ${accessory.displayName}`);
 
 	  switch(accessory.context.accType) {
 	    case 'IAQ':
@@ -378,12 +378,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          this.polling_interval = (this.polling_interval < 900) ? 900 : this.polling_interval;
 	          break;
 
-	        case '5-min-avg': // practical minimum is 5-min or 300
+	        case '5-min-avg': // practical minimum is 5-min or 300 seconds
 	          this.polling_interval = Math.round(this.secondsPerDay / this.fiveMin);
 	          this.polling_interval = (this.polling_interval < 300) ? 300 : this.polling_interval;
 	          break;
 						
-	        case 'raw': // minimum is (this.limit * 10 seconds), 200 min for "Hobbyist"
+	        case 'raw': // minimum is (this.limit * 10 seconds) to have non repeating data
 	          this.polling_interval = Math.round(this.secondsPerDay / this.raw);
 	          if (this.userTier === 'Hobbyist') {
 	            this.polling_interval = ((this.limit * 10) < 200) ? 200 : (this.limit * 10); // 200 seconds min for 'Hobbyist'
@@ -395,9 +395,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        case 'latest': // latest is updated every 10 seconds on device, 300 min for "Hobbyist"
 	          this.polling_interval = Math.round(this.secondsPerDay / this.latest);
 	          if (this.userTier === 'Hobbyist') {
-	            this.polling_interval = (this.polling_interval < 300) ? 300 : this.polling_interval;
+	            this.polling_interval = (this.polling_interval < 300) ? 300 : this.polling_interval; // 300 seconds min for 'Hobbyist'
 	          } else {
-	            this.polling_interval = (this.polling_interval < 60) ? 60 : this.polling_interval;
+	            this.polling_interval = (this.polling_interval < 60) ? 60 : this.polling_interval; // 60 seconds min for other tiers
 	          }
 	          break;
 	      }
@@ -598,7 +598,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      lightLevelSensor
 	        .getCharacteristic(hap.Characteristic.CurrentAmbientLightLevel)
 	        .setProps({
-	          minValue: 0,
+	          minValue: 0.0001, // now checked by Homebridge v1.3.x
 	          maxValue: 64000,
 	        });
 	    }
@@ -956,7 +956,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  await axios.get(url)
     	.then(response => {
-	      const omniLux: number = response.data.lux; // lux is 'latest' value averaged by Omni/Mint over 10 seconds
+	      const omniLux = (response.data.lux < 0.0001) ? 0.0001 : response.data.lux; // lux is 'latest' value averaged over 10 seconds
 	      if(this.config.logging && this.config.verbose) {	
 	        this.log(`LocalAPI lux data for ${accessory.context.deviceType}: ${omniLux}`);
 	      }

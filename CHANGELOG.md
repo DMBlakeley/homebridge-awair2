@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
 ## v5.8.2
+* Updates for Homebridge 1.3.x compatibility. Set minimum level for Omni lux to 0.0001.
+
+## v5.8.2
 * [Bug] Corrected issue - `Multiple air data API calls during a single polling interval #66`. Determined that accessories were being duplicated resulting in additional API calls. For the Hobbyist `Request failed with status code 429`, was returned on API calls as API call limits were exceeded.
 * Update if statement logic with `()` to ensure consistency and readability.
 * Update logging for consistency.
