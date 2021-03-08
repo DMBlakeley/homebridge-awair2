@@ -1278,7 +1278,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    await this.putLEDMode(accessory, newLEDMode.toLowerCase(), newBrightness);
 			
 	    // turn ON new switch
-	    const newIndex = this.displayModes.findIndex(mode => mode === newLEDMode);
+	    const newIndex = this.ledModes.findIndex(mode => mode === newLEDMode);
 	    const newSwitch = accessory.getService(`${accessory.context.name}: ${newLEDMode}`);
 	    if (newSwitch && (newIndex < 2)) { // Auto or Sleep
 	      newSwitch

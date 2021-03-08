@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.4
+* Housekeeping aligning with @dependabot merges.
+* Correct error in 'changeLEDMode' function.
+
 ## v5.8.3
 * Updates for Homebridge 1.3.x compatibility. Set minimum level for Omni lux to 0.0001.
 
