@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-mixed-spaces-and-tabs */
+
 import {
   API,
   APIEvent,
@@ -1231,9 +1232,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  });
 
-	  const oldBrightness = accessory.context.brightness;
-
-	  // no Auto or Sleep mode change / switch change to OFF -> reset switch to ON, return
+	  // Auto or Sleep mode active and reselected which changes mode to OFF -> reset switch to ON, return
 	  if (((newLEDMode === 'Auto') && (oldLEDMode === 'Auto')) || ((newLEDMode === 'Sleep') && (oldLEDMode === 'Sleep'))) {
 	    if (this.config.logging) {
 	      this.log(`[${accessory.context.serial}] No change, resetting ${oldLEDMode} switch`);
@@ -1248,16 +1247,25 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    return;
 	  }
 		
-	  // no manual mode or brightness change -> return
-	  if ((newLEDMode === 'Manual') && (oldLEDMode === 'Manual') && (newBrightness === oldBrightness)) {
+	  // Manual mode already active and reselected -> assume Brightness change, return
+	  if ((newLEDMode === 'Manual') && (oldLEDMode === 'Manual')) {
 	    if (this.config.logging) {
-	      this.log(`[${accessory.context.serial}] No change, returning`);
+	      this.log(`[${accessory.context.serial}] Updating brightness for ${accessory.context.deviceUUID} to ${newBrightness}`);
 	    }
+	    const oldSwitch = accessory.getService(`${accessory.context.name}: ${oldLEDMode}`);
+	    if (oldSwitch) { // Manual
+	      oldSwitch
+	        .updateCharacteristic(hap.Characteristic.On, true);
+	      oldSwitch
+	        .updateCharacteristic(hap.Characteristic.Brightness, newBrightness);
+	    }
+	    // set new LED Mode -> putLEDMode updates accessory.context.ledMode & accessory.context.brightness
+	    await this.putLEDMode(accessory, newLEDMode.toLowerCase(), newBrightness);	
 	    return;
 	  }
-		
-	  // mode or brightness change -> update mode switches, update Awair device, return
-	  if ((newLEDMode !== oldLEDMode) || (newBrightness !== oldBrightness)) { 
+
+	  // mode change -> update mode switches, update Awair device, return
+	  if (newLEDMode !== oldLEDMode) { 
 	    if (this.config.logging) {
 	      // eslint-disable-next-line max-len
 	      this.log(`[${accessory.context.serial}] Changing LED Mode for ${accessory.context.deviceUUID} to ${newLEDMode} brightness ${newBrightness}`);
@@ -1272,9 +1280,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        .updateCharacteristic(hap.Characteristic.Brightness, 0);
 	    }
 
-	    this.log(`[${accessory.context.serial}] changeLEDMode newLEDMode: ${newLEDMode} newBrightness: ${newBrightness}`);
-			
-	    // set new LED Mode -> updates accessory.context.ledMode & accessory.context.brightness
+	    // set new LED Mode -> putLEDMode updates accessory.context.ledMode & accessory.context.brightness
 	    await this.putLEDMode(accessory, newLEDMode.toLowerCase(), newBrightness);
 			
 	    // turn ON new switch
