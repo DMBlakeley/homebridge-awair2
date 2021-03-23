@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.6
+* Awair Device and LED modes cache values are used if available - applies to Omni, R2 and Element. For new device, Device mode is set to 'Score' and LED mode is set to 'Auto'.
+* Housekeeping - update of function names for clarity.
+
 ## v5.8.5
 * [Enhancement] Update 'changeLEDMode' Manual mode and brightness behavior.
 

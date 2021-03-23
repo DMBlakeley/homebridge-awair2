@@ -22,9 +22,9 @@
 			"occupancyDetection": false,
 			"occupancyOffset": 2,
 			"occupancyRestart": false,
-			"enableModes": false,
 			"logging": false,
 			"verbose": false,
+			"enableModes": false,
 			"development": false,
 			"ignoredDevices": [
 				"70886Bxxxxxx"

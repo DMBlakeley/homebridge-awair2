@@ -12,8 +12,8 @@ export type AwairPlatformConfig = {
   occupancyDetection: boolean;
   occupancyOffset: number;
   occupancyRestart: false;
-  occupancyDetectedLevel: number;
-  occupancyNotDetectedLevel: number;
+  occDetectedLevel: number;
+  occNotDetectedLevel: number;
   enableModes: boolean;
   logging: boolean;
   verbose: boolean;
