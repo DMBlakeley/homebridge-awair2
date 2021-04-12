@@ -2,15 +2,21 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.7
+* [Bug] Correct Display and LED Mode initialization of compatible devices to ensure that 'Score' and 'Auto' are selected as defaults.
+* [Bug] Initialize IAQ characteristics with numberic values to address Homebride v1.3.x warning.
+* [Housekeeping] Remove duplicate entries from package-lock.json.
+* [Housekeeping] In config.schema.json change 'default' to 'placeholder' for 'carbonDioxideThreshold' and 'carbonDioxideThresholdOff' entries.
+
 ## v5.8.6
-* Awair Device and LED modes cache values are used if available - applies to Omni, R2 and Element. For new device, Device mode is set to 'Score' and LED mode is set to 'Auto'.
-* Housekeeping - update of function names for clarity.
+* [Enhancement] Awair Device and LED modes cache values are used if available - applies to Omni, R2 and Element. For new device, Device mode is set to 'Score' and LED mode is set to 'Auto'.
+* [Housekeeping] Update of function names for clarity.
 
 ## v5.8.5
 * [Enhancement] Update 'changeLEDMode' Manual mode and brightness behavior.
 
 ## v5.8.4
-* Housekeeping aligning with @dependabot merges.
+* [Housekeeping] aligning with @dependabot merges.
 * [Bug] Correct error in 'changeLEDMode' function.
 
 ## v5.8.3
