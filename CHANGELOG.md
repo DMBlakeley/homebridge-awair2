@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.8
+* Added node v16.x to supported versions.
+* Housekeeping. No functional changes.
+
 ## v5.8.7
 * [Bug] Correct Display and LED Mode initialization of compatible devices to ensure that 'Score' and 'Auto' are selected as defaults.
 * [Bug] Initialize IAQ characteristics with numberic values to address Homebride v1.3.x warning.

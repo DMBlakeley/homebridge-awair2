@@ -117,6 +117,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      case 'latest':
 	        this.limit = 1; // no 'limit' applied to 'latest' endpoint, produces exactly one value
 	        break;
+	      default:
+	        this.log('Error: Endpoint not defined in Awair account.');
+	        break;
 	    }
 	  }
 		
@@ -320,6 +323,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          });
 	        }
 	        break;
+	      default:
+	        this.log('Error: Accessory not of type IAQ, Display or LED.');
+	        break;
 	    }
 	  });
 		
@@ -375,20 +381,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 					  case 'FIFTEEN_MIN':
 	            this.fifteenMin = parseFloat(permission.quota);
 	            break;
-
 	          case 'FIVE_MIN':
 	            this.fiveMin = parseFloat(permission.quota);
 	            break;
-
 	          case 'RAW':
 	            this.raw = parseFloat(permission.quota);
 	            break;
-						
 	          case 'LATEST':
 	            this.latest = parseFloat(permission.quota);
 	            break;
-						
 	          default:
+	            this.log('getUserInfo error: Quota not defined.');
 	            break;
 	        }
 	      });
@@ -420,6 +423,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          } else {
 	            this.polling_interval = (this.polling_interval < 60) ? 60 : this.polling_interval; // 60 seconds min for other tiers
 	          }
+	          break;
+
+	        default:
+	          this.log('getUserInfo error: Endpoint not defined.');
 	          break;
 	      }
 	    })
@@ -702,17 +709,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
-
 	        } else if ((this.airQualityMethod === 'awair-pm') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use awair-pm for Omni, Mint, Awair, Awair-R2, Element
-						  // eslint-disable-next-line max-len
-						  .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
 	        } else if ((this.airQualityMethod === 'awair-pm') 
 						&& ((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // for Glow or Glow-C use awair-aqi if awair-pm selected
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
-
 	        } else if ((this.airQualityMethod === 'nowcast-aqi') && 
 							!((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2, Element
@@ -721,11 +725,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 							&& ((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
 	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
-
 	        } else if (this.airQualityMethod === 'awair-score') {
 		  			airQualityService
 		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
-
 	        } else {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
