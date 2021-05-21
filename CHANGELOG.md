@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.9
+* Correct `switch` statement for fall through condition in `getUserInfo()` function.
+* Confirm latest @dependabot updates.
+* Removed node v10.x from support versions.
+
 ## v5.8.8
 * Added node v16.x to supported versions.
 * Housekeeping. No functional changes.

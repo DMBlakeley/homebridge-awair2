@@ -391,7 +391,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	            this.latest = parseFloat(permission.quota);
 	            break;
 	          default:
-	            this.log('getUserInfo error: Quota not defined.');
 	            break;
 	        }
 	      });
