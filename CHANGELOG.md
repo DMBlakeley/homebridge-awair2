@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.10
+* Address dns-packet security vulnerability. Reference [CVE-2021-23386](https://github.com/advisories/GHSA-3wcq-x3mq-6r9p).
+
 ## v5.8.9
 * Correct `switch` statement for fall through condition in `getUserInfo()` function.
 * Confirm latest @dependabot updates.
