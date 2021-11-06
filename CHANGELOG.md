@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.12
+* Updated index.ts for compatibility with axios v0.24.0 which changed `never` type to `unknown`. Added specification that response data should be `any`.
+
+## v5.8.11
+* Update index.ts code comments to support future updates. No functional changes to code.
+
 ## v5.8.10
 * Address dns-packet security vulnerability. Reference [CVE-2021-23386](https://github.com/advisories/GHSA-3wcq-x3mq-6r9p).
 

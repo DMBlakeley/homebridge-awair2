@@ -384,7 +384,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.get(url, options)
+	  await axios.get<any>(url, options)
     	.then(response => {
 	      if(this.config.logging && this.config.verbose) {
 	        this.log(`userInfo: ${JSON.stringify(response.data)}`);
@@ -463,7 +463,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.get(url, options)
+	  await axios.get<any>(url, options)
     	.then(response => {
 	      this.devices = response.data.devices;
 	      if(this.config.logging){
@@ -722,7 +722,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.get(url, options)
+	  await axios.get<any>(url, options)
     	.then(response => {
 	      const data: any[] = response.data.data;				
 	      if(this.config.logging && this.config.verbose){
@@ -924,7 +924,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getBatteryStatus(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 
-	  await axios.get(url)
+	  await axios.get<any>(url)
     	.then(response => {
 	      // eslint-disable-next-line quotes
 	      const powerStatus = response.data["power-status"];
@@ -962,7 +962,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getOccupancyStatus(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 
-	  await axios.get(url)
+	  await axios.get<any>(url)
     	.then(response => {
 	      const omniSpl_a: number = response.data.spl_a;
 	      if(this.config.logging && this.config.verbose) {	
@@ -1025,7 +1025,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	async getLightLevel(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
-	  await axios.get(url)
+	  await axios.get<any>(url)
     	.then(response => {
 	      const omniLux = (response.data.lux < 0.0001) ? 0.0001 : response.data.lux; // lux is 'latest' value averaged over 10 seconds
 	      if(this.config.logging && this.config.verbose) {	
@@ -1182,7 +1182,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.get(url, options)
+	  await axios.get<any>(url, options)
 	    .then(response => {
 	      if (this.config.logging && this.config.verbose) {
 	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} response: ${response.data.mode}`);
@@ -1213,7 +1213,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 		
-	  await axios.put(url, body, options)
+	  await axios.put<any>(url, body, options)
 	    .then(response => {
 	      if(this.config.logging){
 	        this.log(`[${accessory.context.serial}] putDisplayMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
@@ -1404,7 +1404,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.get(url, options)
+	  await axios.get<any>(url, options)
 	    .then(response => {
 	      if (this.config.logging && this.config.verbose) {
 	        // eslint-disable-next-line max-len
@@ -1440,7 +1440,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    },
 	  };
 
-	  await axios.put(url, body, options)
+	  await axios.put<any>(url, body, options)
 	    .then(response => {
 	      if(this.config.logging){
 	        this.log(`[${accessory.context.serial}] putLEDMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
