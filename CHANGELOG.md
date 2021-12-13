@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.13
+* Update to `lockfileversion 2`. The lockfile version used by npm v7, which is backwards compatible to v1 lockfiles.
+
 ## v5.8.12
 * Updated index.ts for compatibility with axios v0.24.0 which changed `never` type to `unknown`. Added specification that response data should be `any`.
 
