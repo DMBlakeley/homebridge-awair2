@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.8.14
+* Updates to `index.ts`, `package.json`, and `package-lock.json` for compatibility with `eslint v8.50` and `@typescript-eslint v5.7.0`.
+
 ## v5.8.13
 * Update to `lockfileversion 2`. The lockfile version used by npm v7, which is backwards compatible to v1 lockfiles.
 

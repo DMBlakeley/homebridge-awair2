@@ -36,50 +36,51 @@ export = (api: API): void => {
 
 class AwairPlatform implements DynamicPlatformPlugin {
   public readonly log: Logging;
-	public readonly api: API;
-	public config: AwairPlatformConfig;
+  public readonly api: API;
+  public config: AwairPlatformConfig;
 	
-	// PlaftformAccessory defaults
-	private readonly manufacturer = 'Awair';
-	private readonly accessories: PlatformAccessory[] = [];
-	private devices: any[] = []; // array of Awair devices
-	private ignoredDevices: string [] = []; // array of ignored Awair devices
+  // PlaftformAccessory defaults
+  private readonly manufacturer = 'Awair';
+  private readonly accessories: PlatformAccessory[] = [];
+  private devices: any[] = []; // array of Awair devices
+  private ignoredDevices: string [] = []; // array of ignored Awair devices
 
-	// default values when not defined in config.json
-	private userType = 'users/self';
-	private airQualityMethod = 'awair-aqi';
-	private endpoint = '15-min-avg';
-	private limit = 1;
-	private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
-	private carbonDioxideThreshold = 1000;
-	private carbonDioxideThresholdOff = 800;
-	private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
-	private occupancyOffset = 2.0;
-	private occDetectedNotLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
-	private occDetectedLevel = 60;
-	private omniPresent = false; // flag that Awair account contains Omni device(s), enables occupancy detection loop
+  // default values when not defined in config.json
+  private userType = 'users/self';
+  private airQualityMethod = 'awair-aqi';
+  private endpoint = '15-min-avg';
+  private limit = 1;
+  private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
+  private carbonDioxideThreshold = 1000;
+  private carbonDioxideThresholdOff = 800;
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
+  private occupancyOffset = 2.0;
+  private occDetectedNotLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
+  private occDetectedLevel = 60;
+  private omniPresent = false; // flag that Awair account contains Omni device(s), enables occupancy detection loop
 	
-	//default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
-	private userTier = 'Hobbyist';
-	private fifteenMin = 100;
-	private fiveMin = 300;
-	private raw = 500;
-	private latest = 300;
-	private secondsPerDay = 60 * 60 * 24;
+  //default User Info Hobbyist samples per 24 hours reference UTC 00:00:00
+  private userTier = 'Hobbyist';
+  private fifteenMin = 100;
+  private fiveMin = 300;
+  private raw = 500;
+  private latest = 300;
+  private secondsPerDay = 60 * 60 * 24;
 
-	// displayModes and ledModes for Omni, Awair-r2 and Element
-	private displayModes: string[] = ['Score', 'Temp', 'Humid', 'CO2', 'VOC', 'PM25', 'Clock'];
-	private ledModes: string[] = ['Auto', 'Sleep', 'Manual'];
-	private enableModes = false;
+  // displayModes and ledModes for Omni, Awair-r2 and Element
+  private displayModes: string[] = ['Score', 'Temp', 'Humid', 'CO2', 'VOC', 'PM25', 'Clock'];
+  private ledModes: string[] = ['Auto', 'Sleep', 'Manual'];
+  private enableModes = false;
 
-	/**
+  /**
    * The platform class constructor used when registering a plugin.
    *
    * @param log  The platform's logging function.
    * @param config  The platform's config.json section as object.
    * @param api  The homebridge API.
    */
-	constructor(log: Logging, config: PlatformConfig, api: API) {
+  constructor(log: Logging, config: PlatformConfig, api: API) {
 	  this.log = log;
 	  this.config = config as unknown as AwairPlatformConfig;
 	  this.api = api;
@@ -171,15 +172,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log('homebridge-awair2 platform didFinishLaunching');
 	    this.didFinishLaunching();
 	  });
-	}
+  }
 
-	/**
+  /**
    * REQUIRED: This function is invoked when homebridge restores EACH CACHED accessory (IAQ, Display, LED) from disk at startup.
    * It should be used to setup event handlers for characteristics and update respective values.
    *
    * @param {object} accessory  The accessory in question.
    */
-	configureAccessory(accessory: PlatformAccessory): void {
+  configureAccessory(accessory: PlatformAccessory): void {
 	  this.log(`Configuring cached accessory ${accessory.displayName}`);
 
 	  switch(accessory.context.accType) {
@@ -193,13 +194,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      break;
 	  }
 	  this.accessories.push(accessory);
-	}
+  }
 
-	/**
+  /**
    * When the homebridge api finally registers the plugin, homebridge fires the
    * didFinishLaunching event, which in turn, launches the following method
    */
-	async didFinishLaunching() {
+  async didFinishLaunching() {
 
 	  // Get Developer User Info from your Awair account
 	  await this.getUserInfo();
@@ -371,12 +372,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      });
 	    }, 30000); // check every 30 seconds, 10 seconds is updata interval for LocalAPI data, spl_a is 'smoothed' value
 	  }
-	}
+  }
 
-	/**
+  /**
 	 * Method to retrieve user info/profile from your Awair development account
 	 */
-	async getUserInfo() {
+  async getUserInfo() {
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType;
 	  const options = {
 	    headers: {
@@ -450,12 +451,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`getUserInfo error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to retrieve registered devices from your Awair development account
 	 */
-	async getAwairDevices() {
+  async getAwairDevices() {
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
 	  const options = {
 	    headers: {
@@ -484,14 +485,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`getAwairDevices error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Awair Indoor Air Quality accessory (IAQ) to Platform
 	 * 
 	 * @param {object} device - Air Quality device to be added to Platform
 	 */
-	addAirQualityAccessory(device: DeviceConfig) {
+  addAirQualityAccessory(device: DeviceConfig) {
 	  if (this.config.logging) {
 	    this.log(`[${device.macAddress}] Initializing platform accessory ${device.name}...`);
 	  }
@@ -561,28 +562,28 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 	  return;
-	}
+  }
 
-	/**
+  /**
 	 * Method to remove no longer used Accessories (IAQ, Device or LED) from Platform
 	 * 
 	 * @param {array} - array of Accessories to be removed from Platform
 	 */
-	removeAwairAccessories(accessories: Array<PlatformAccessory>) {
+  removeAwairAccessories(accessories: Array<PlatformAccessory>) {
 	  accessories.forEach(accessory => {
 	    this.log(`${accessory.context.name} is removed from HomeBridge.`);
 	    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 	    this.accessories.splice(this.accessories.indexOf(accessory), 1);
 	  });
 	  return;
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Characteristics to each IAQ Service
 	 * 
 	 * @param {object} accessory - accessory to add IAQ service based on accessory type
 	 */
-	addAirQualityServices(accessory: PlatformAccessory) {
+  addAirQualityServices(accessory: PlatformAccessory) {
 	  if (this.config.logging) {
 	    this.log(`[${accessory.context.serial}] Configuring IAQ Services for ${accessory.displayName}`);
 	  }
@@ -686,14 +687,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if(this.config.logging) {
 	    this.log(`[${accessory.context.serial}] addAirQualityServices completed`);
 	  }
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Accessory Information to Accessory (IAQ, Display, LED)
 	 * 
 	 * @param {object} accessory - accessory to which accessory information is added to
 	 */
-	addAccessoryInfo(accessory: PlatformAccessory): void {
+  addAccessoryInfo(accessory: PlatformAccessory): void {
 	  const accInfo = accessory.getService(hap.Service.AccessoryInformation);
 	  if (accInfo) {
 	    accInfo
@@ -705,14 +706,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accInfo
 	      .updateCharacteristic(hap.Characteristic.FirmwareRevision, packageJSON.version);
 	  }
-	}
+  }
 
-	/**
+  /**
 	 * Method to update Awair IAQ data using CloudAPI
 	 * 
 	 * @param {object} accessory - accessory to be updated
 	 */
-	async updateAirQualityData(accessory: PlatformAccessory) {
+  async updateAirQualityData(accessory: PlatformAccessory) {
 	  // Update status for accessory of deviceId
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
@@ -914,14 +915,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`updateAirQualityData error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to get Omni battery level and charging status using LocalAPI (must enable in Awair App, firmware v1.3.0 and below)
 	 * 
 	 * @param {object} accessory - accessory to obtain battery status
 	 */
-	async getBatteryStatus(accessory: PlatformAccessory) {
+  async getBatteryStatus(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 
 	  await axios.get<any>(url)
@@ -952,14 +953,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`getBatteryStatus error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to get Omni Occupancy Status using spl_a level via LocalAPI
 	 * 
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
-	async getOccupancyStatus(accessory: PlatformAccessory) {
+  async getOccupancyStatus(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 
 	  await axios.get<any>(url)
@@ -1015,14 +1016,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    });
 	  return;
-	}
+  }
 
-	/**
+  /**
 	 * Method to get Omni & Mint light level in lux using LocalAPI
 	 *
 	 * * @param {object} accessory - accessory to obtain light level status
 	 */
-	async getLightLevel(accessory: PlatformAccessory) {
+  async getLightLevel(accessory: PlatformAccessory) {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
 	  await axios.get<any>(url)
@@ -1043,14 +1044,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`getLightLevel error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Display Mode Accessory for Omni, Awair-r2 and Element
 	 * 
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
-	addDisplayModeAccessory(data: DeviceConfig) {
+  addDisplayModeAccessory(data: DeviceConfig) {
 	  if (this.config.logging) {
 	    this.log(`[${data.macAddress}] Initializing Display Mode accessory for ${data.deviceUUID}...`);
 	  }
@@ -1098,14 +1099,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 	  return;
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Characteristics to each Device Mode Service for Omni, Awair-r2 and Element
 	 * 
 	 * @param {object} accessory - accessory to add display mode services
 	 */
-	addDisplayModeServices(accessory: PlatformAccessory) {
+  addDisplayModeServices(accessory: PlatformAccessory) {
 	  if (this.config.logging) {
 	    this.log(`[${accessory.context.serial}] Configuring Display Mode Services for ${accessory.context.deviceUUID}`);
 	  }
@@ -1124,9 +1125,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if(this.config.logging) {
 	    this.log(`[${accessory.context.serial}] addDisplayModeServices completed for ${accessory.context.deviceUUID}`);
 	  }		
-	}
+  }
 
-	/**
+  /**
 	 * Method to change Display Mode for Omni, Awair-r2 and Element
 	 */
 	 async changeDisplayMode(accessory: PlatformAccessory, newDisplayMode: string) {
@@ -1169,9 +1170,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	    return;
 	  }
-	}
+  }
 
-	/**
+  /**
 	 * Method to get Display Mode for Omni, Awair-r2 and Element
 	 */
 	 async getDisplayMode(accessory: PlatformAccessory) {
@@ -1199,9 +1200,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to set Display Mode for Omni, Awair-r2 and Element
 	 */
 	 async putDisplayMode(accessory: PlatformAccessory, mode: string) {
@@ -1225,12 +1226,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      }
 	    });
 	  accessory.context.displayMode = mode; // 'context.displayMode' is Mixed case 
-	}
+  }
 
-	/**
+  /**
 	 * Method to add LED Mode Accessory for Omni, Awair-r2 and Element
 	 */
-	addLEDModeAccessory(data: DeviceConfig) {
+  addLEDModeAccessory(data: DeviceConfig) {
 	  if (this.config.logging) {
 	    this.log(`[${data.macAddress}] Initializing LED Mode accessory for ${data.deviceUUID}...`);
 	  }
@@ -1275,12 +1276,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 	  return;
-	}
+  }
 
-	/**
+  /**
 	 * Method to add Characteristic to each LED Mode Accessory for for Omni, Awair-r2 and Element
 	 */
-	addLEDModeServices(accessory: PlatformAccessory) {
+  addLEDModeServices(accessory: PlatformAccessory) {
 	  if (this.config.logging) {
 	    this.log(`[${accessory.context.serial}] Configuring LED Mode Services for ${accessory.context.deviceUUID}`);
 	  }
@@ -1316,9 +1317,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if(this.config.logging) {
 	    this.log(`[${accessory.context.serial}] addLEDModeServices completed for ${accessory.context.deviceUUID}`);
 	  }
-	}
+  }
 	
-	/**
+  /**
 	 * Method to change LED Mode for Omni, Awair-r2 and Element
 	 */
 	 async changeLEDMode(accessory: PlatformAccessory, newLEDMode: string, newBrightness: number) {
@@ -1391,12 +1392,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	    return;
 	  }
-	}
+  }
 
-	/**
+  /**
 	 * Method to get LED Mode for Omni, Awair-r2 and Element
 	 */
-	async getLEDMode(accessory: PlatformAccessory) {
+  async getLEDMode(accessory: PlatformAccessory) {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/led`;
 	  const options = {
 	    headers: {
@@ -1423,9 +1424,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error}`);
 	      }
 	    });
-	}
+  }
 
-	/**
+  /**
 	 * Method to set LED Mode for Omni, Awair-r2 and Element
 	 */
 	 async putLEDMode(accessory: PlatformAccessory, mode: string, brightness: number) {
@@ -1454,19 +1455,19 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  accessory.context.ledMode = mode; // 'context.ledMode' is Mixed case
 	  accessory.context.ledBrightness = brightness;
-	}
+  }
 
-	// Conversion functions
-	convertChemicals(accessory: PlatformAccessory, voc: number, atmos: number, temp: number): number {
+  // Conversion functions
+  convertChemicals(accessory: PlatformAccessory, voc: number, atmos: number, temp: number): number {
 	  const vocString = '(' + voc + ' * ' + this.vocMw + ' * ' + atmos + ' * 101.32) / ((273.15 + ' + temp + ') * 8.3144)';
 	  const tvoc = (voc * this.vocMw * atmos * 101.32) / ((273.15 + temp) * 8.3144);
 	  if(this.config.logging && this.config.verbose){
 	    this.log(`[${accessory.context.serial}] ppb => ug/m^3 equation: ${vocString}`);
 	  }
 	  return tvoc;
-	}
+  }
 
-	convertScore(score: number): number {
+  convertScore(score: number): number {
 	  if (score >= 90) {
 	    return 1; // EXCELLENT
 	  } else if (score >= 80 && score < 90) {
@@ -1480,9 +1481,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  } else {
 	    return 0; // Error
 	  }
-	}
+  }
 
-	convertAwairAqi(accessory: PlatformAccessory, sensors: any[]): number {
+  convertAwairAqi(accessory: PlatformAccessory, sensors: any[]): number {
 	  const aqiArray = [];
 	  for (const sensor in sensors) {
 	    switch (sensor) {
@@ -1549,9 +1550,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
 	  return Math.max(...aqiArray); // aqi is maximum value of voc, pm25 and dust
-	}
+  }
 	
-	convertAwairPm(accessory: PlatformAccessory, sensors: any[]): number {
+  convertAwairPm(accessory: PlatformAccessory, sensors: any[]): number {
 	  const aqiArray = [];
 	  for (const sensor in sensors) {
 	    switch (sensor) {
@@ -1602,9 +1603,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	  // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
 	  return Math.max(...aqiArray); 
-	}
+  }
 	
-	convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
+  convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
 	  const pmRawData: number[] = data
 	    .map(sensor => sensor.sensors) // create sensor array of sensors with length 'this.limit'
 	    .reduce((a, b) => a.concat(b)) // flatten array of sensors (which is an array) to single-level array
@@ -1663,5 +1664,5 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  } else {
 	    return 0; // Error
 	  }
-	}
+  }
 }
