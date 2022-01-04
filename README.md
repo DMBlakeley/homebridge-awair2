@@ -101,7 +101,6 @@ Parameter | Optional? | Description
 `token` |  | Developer Token (REQUIRED, see [Installation](#installation)) above.
 `userType` | Y | The type of user account (Eefault = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
 `airQualityMethod` | Y | Air quality calculation method used to define the Air Quality Chracteristic (Default = `awair-aqi`, options: `awair-aqi`, `awair-pm`, `awair-score` or `nowcast-aqi`)
-
 `endpoint` | Y | The `/air-data/` endpoint to use (Default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
