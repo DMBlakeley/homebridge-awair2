@@ -53,6 +53,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
   private carbonDioxideThreshold = 1000;
   private carbonDioxideThresholdOff = 800;
+  private tvocThreshold = 1000;
+  private tvocThresholdOff = 800;
+  private pm25Threshold = 35;
+  private pm25ThresholdOff = 20;	
   // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
   private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
   private occupancyOffset = 2.0;
@@ -146,10 +150,38 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.carbonDioxideThresholdOff = 800;
 	  }
 	  
+	  if ('tvocThreshold' in this.config) {
+	    this.tvocThreshold = Number(this.config.tvocThreshold);
+	  }
+	  
+	  if ('tvocThresholdOff' in this.config) {
+	    this.tvocThresholdOff = Number(this.config.tvocThresholdOff);
+	  }
+		
+	  if (this.tvocThreshold <= this.tvocThresholdOff) {
+	    this.log ('"Total VOC Threshold Off" must be less than "Total VOC Threshold", using defaults.');
+	    this.tvocThreshold = 1000;
+	    this.tvocThresholdOff = 800;
+	  }
+
 	  if ('vocMw' in this.config) {
 	    this.vocMw = this.config.vocMw;
 	  }
 	  
+	  if ('pm25Threshold' in this.config) {
+	    this.pm25Threshold = Number(this.config.pm25Threshold);
+	  }
+	  
+	  if ('pm25ThresholdOff' in this.config) {
+	    this.pm25ThresholdOff = Number(this.config.pm25ThresholdOff);
+	  }
+		
+	  if (this.pm25Threshold <= this.pm25ThresholdOff) {
+	    this.log ('"PM2.5 Threshold Off" must be less than "PM2.5 Threshold", using defaults.');
+	    this.pm25Threshold = 35;
+	    this.pm25ThresholdOff = 20;
+	  }
+		
 	  if ('occupancyOffset' in this.config) {
 	    this.occupancyOffset = this.config.occupancyOffset;
 	  }
@@ -200,7 +232,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
    * When the homebridge api finally registers the plugin, homebridge fires the
    * didFinishLaunching event, which in turn, launches the following method
    */
-  async didFinishLaunching() {
+  async didFinishLaunching(): Promise<void> {
 
 	  // Get Developer User Info from your Awair account
 	  await this.getUserInfo();
@@ -377,7 +409,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to retrieve user info/profile from your Awair development account
 	 */
-  async getUserInfo() {
+  async getUserInfo(): Promise<void> {
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType;
 	  const options = {
 	    headers: {
@@ -456,7 +488,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to retrieve registered devices from your Awair development account
 	 */
-  async getAwairDevices() {
+  async getAwairDevices(): Promise<void> {
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
 	  const options = {
 	    headers: {
@@ -515,30 +547,39 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.context.deviceId = device.deviceId;
 	    accessory.context.accType = 'IAQ'; // Indoor Air Quality
 			
-	    accessory.addService(hap.Service.AirQualitySensor, device.name);
-	    accessory.addService(hap.Service.TemperatureSensor, device.name + ' Temp');
-	    accessory.addService(hap.Service.HumiditySensor, device.name + ' Humidity');
+	    accessory.addService(hap.Service.AirQualitySensor, `${device.name} IAQ`);
+	    accessory.addService(hap.Service.TemperatureSensor, `${device.name} Temp`);
+	    accessory.addService(hap.Service.HumiditySensor, `${device.name} Humidity`);
 
 	    if (device.deviceType !== 'awair-mint' && device.deviceType !== 'awair-glow-c') {
-	      accessory.addService(hap.Service.CarbonDioxideSensor, device.name + ' CO2');
+	      accessory.addService(hap.Service.CarbonDioxideSensor, `${device.name} CO2`);
 	    }
 
-	    // Add Omni and Mint Light Sensor service
-	    if (device.deviceType === 'awair-omni' || device.deviceType === 'awair-mint') {
-	      accessory.addService(hap.Service.LightSensor, device.name + ' Light');
-	    }
+	    // If you are adding more than one service of the same type to an accessory, you need to give the service a "name" and "subtype".
+      // Add VOC alert service as dummy occupancy sensor
+      accessory.addService(hap.Service.OccupancySensor, `${device.name}: TVOC Limit`, '0');
 
+      // Add PM2.5 alert service as dummy occupancy sensor for all devices except Awair 1st edition which measures PM10.
+      if (device.deviceType !== 'awair') {
+	      accessory.addService(hap.Service.OccupancySensor, `${device.name}: PM2.5 Limit`, '1');
+      }
+			
 	    // Add Omni Battery and Occupancy service
 	    if (device.deviceType === 'awair-omni') {
-	      accessory.addService(hap.Service.BatteryService, device.name + ' Battery');
-	      accessory.addService(hap.Service.OccupancySensor, device.name + ' Occupancy');
+	      accessory.addService(hap.Service.Battery, `${device.name} Battery`);
+	      accessory.addService(hap.Service.OccupancySensor, `${device.name} Occupancy`, '2');
 	      this.omniPresent = true; // set flag for Occupancy detected loop
 	      accessory.context.occDetectedLevel = this.occDetectedLevel;
 	      accessory.context.occDetectedNotLevel = this.occDetectedNotLevel;
 	      accessory.context.minSoundLevel = this.occDetectedNotLevel;
 	    }
-			
-	    this.addAirQualityServices(accessory);
+
+	    // Add Omni and Mint Light Sensor service
+	    if (device.deviceType === 'awair-omni' || device.deviceType === 'awair-mint') {
+	      accessory.addService(hap.Service.LightSensor, `${device.name} Light`);
+	    }
+
+      this.addAirQualityServices(accessory);
 			
 	    this.addAccessoryInfo(accessory);
 
@@ -579,11 +620,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
   }
 
   /**
-	 * Method to add Characteristics to each IAQ Service
+	 * Method to add and initialize Characteristics for each IAQ Service
 	 * 
 	 * @param {object} accessory - accessory to add IAQ service based on accessory type
 	 */
-  addAirQualityServices(accessory: PlatformAccessory) {
+  addAirQualityServices(accessory: PlatformAccessory): void {
 	  if (this.config.logging) {
 	    this.log(`[${accessory.context.serial}] Configuring IAQ Services for ${accessory.displayName}`);
 	  }
@@ -592,7 +633,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 
 	  // Air Quality Service
-	  const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
+	  const airQualityService = accessory.getService(`${accessory.context.name} IAQ`);
 	  if (airQualityService) {
 	    if ((accessory.context.devType === 'awair-glow') || (accessory.context.devType === 'awair-glow-c')) {
 	      airQualityService
@@ -619,7 +660,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  // Temperature Service
-	  const temperatureService = accessory.getService(hap.Service.TemperatureSensor);
+	  const temperatureService = accessory.getService(`${accessory.context.name} Temp`);
 	  if (temperatureService) {
 	    temperatureService
 	      .setCharacteristic(hap.Characteristic.CurrentTemperature, 0);
@@ -632,7 +673,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // Humidity Service
-	  const humidityService = accessory.getService(hap.Service.HumiditySensor);
+	  const humidityService = accessory.getService(`${accessory.context.name} Humidity`);
 	  if (humidityService) {
 	    humidityService
 	      .setCharacteristic(hap.Characteristic.CurrentRelativeHumidity, 0);
@@ -640,16 +681,30 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  // Carbon Dioxide Service
 	  if ((accessory.context.devType !== 'awair-mint') && (accessory.context.devType !== 'awair-glow-c')) {
-	    const carbonDioxideService = accessory.getService(hap.Service.CarbonDioxideSensor);
+	    const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
 	    if (carbonDioxideService) {
 	      carbonDioxideService
 	        .setCharacteristic(hap.Characteristic.CarbonDioxideLevel, 0);
 	    }
 	  }
 
-	  // Omni & Mint Ambient Light Service
+    // Total VOC Threshold Service
+    const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
+    if (vocService) {
+      vocService
+        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // VOC level not exceeded
+    }
+
+    // PM2.5 Threshold Service
+    const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+    if (pm25Service) {
+      pm25Service
+        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // PM2.5 level not exceeded
+    }
+
+    // Omni & Mint Ambient Light Service
 	  if ((accessory.context.devType === 'awair-omni') || (accessory.context.devType === 'awair-mint')) {
-	    const lightLevelSensor = accessory.getService(hap.Service.LightSensor);
+	    const lightLevelSensor = accessory.getService(`${accessory.context.name} Light`);
 	    if (lightLevelSensor) {
 	      lightLevelSensor
 	        .setCharacteristic(hap.Characteristic.CurrentAmbientLightLevel, 0.0001);
@@ -664,7 +719,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // Omni Battery Service
 	  if (accessory.context.devType === 'awair-omni') {
-	    const batteryService = accessory.getService(hap.Service.BatteryService);
+	    const batteryService = accessory.getService(`${accessory.context.name} Battery`);
 	    if (batteryService) {
 	      batteryService
 	        .setCharacteristic(hap.Characteristic.BatteryLevel, 100); // 0 -> 100%
@@ -677,13 +732,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // Omni Occupancy Sensor Service
 	  if (accessory.context.devType === 'awair-omni') {
-	    const occupancyService = accessory.getService(hap.Service.OccupancySensor);
+	    const occupancyService = accessory.getService(`${accessory.context.name} Occupancy`);
 	    if (occupancyService) {
 	      occupancyService
 	        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // Not occupied
 	    }
 	  }
-		
+
 	  if(this.config.logging) {
 	    this.log(`[${accessory.context.serial}] addAirQualityServices completed`);
 	  }
@@ -713,7 +768,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to be updated
 	 */
-  async updateAirQualityData(accessory: PlatformAccessory) {
+  async updateAirQualityData(accessory: PlatformAccessory): Promise<void> {
 	  // Update status for accessory of deviceId
 	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
 			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
@@ -742,7 +797,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      // determine average Awair score over data samples
 	      const score = data.reduce((a, b) => a + b.score, 0) / data.length;
 				
-	      const airQualityService = accessory.getService(hap.Service.AirQualitySensor);
+        const airQualityService = accessory.getService(`${accessory.context.name} IAQ`);
 	      if (airQualityService) {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
@@ -778,7 +833,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      for (const sensor in sensors) {
 	        switch (sensor) {
 	          case 'temp': // Temperature (C)
-	            const temperatureService = accessory.getService(hap.Service.TemperatureSensor);
+	            const temperatureService = accessory.getService(`${accessory.context.name} Temp`);
 	            if (temperatureService) {
 	              temperatureService
 	                .updateCharacteristic(hap.Characteristic.CurrentTemperature, parseFloat(sensors[sensor]));
@@ -786,7 +841,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	            break;
 		
 	          case 'humid': // Humidity (%)
-	            const humidityService = accessory.getService(hap.Service.HumiditySensor);
+	            const humidityService = accessory.getService(`${accessory.context.name} Humid`);
 	            if (humidityService) {
 	              humidityService
 	                .updateCharacteristic(hap.Characteristic.CurrentRelativeHumidity, parseFloat(sensors[sensor]));
@@ -794,37 +849,36 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	            break;
 		
 	          case 'co2': // Carbon Dioxide (ppm)
-	            const carbonDioxideService = accessory.getService(hap.Service.CarbonDioxideSensor);
+	            const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
 	            const co2 = sensors[sensor];
-	            let co2Detected;
+	            let co2Detected: any;
 		
 	            if (carbonDioxideService) {
 	              const co2Before = carbonDioxideService.getCharacteristic(hap.Characteristic.CarbonDioxideDetected).value;
-	              if(this.config.logging){
-	                this.log(`[${accessory.context.serial}] CO2Before: ${co2Before}`);
-	              }
+	              //if(this.config.logging){
+	              // this.log(`[${accessory.context.serial}] CO2Before: ${co2Before}`);
+	              //}
 		
-	              // Logic to determine if Carbon Dioxide should trip a change in Detected state
+	              // Logic to determine if Carbon Dioxide should change in Detected state
 	              carbonDioxideService
 	                .updateCharacteristic(hap.Characteristic.CarbonDioxideLevel, parseFloat(sensors[sensor]));
-	              if ((this.carbonDioxideThreshold > 0) && (co2 >= this.carbonDioxideThreshold)) {
-	                // threshold set and CO2 HIGH
+	              if (co2 >= this.carbonDioxideThreshold) {
+	                // CO2 HIGH
 	                co2Detected = 1;
 	                if(this.config.logging){
 	                  this.log(`[${accessory.context.serial}] CO2 HIGH: ${co2} > ${this.carbonDioxideThreshold}`);
 	                }
-	              } else if ((this.carbonDioxideThreshold > 0) && (co2 < this.carbonDioxideThresholdOff)) {
-	                // threshold set and CO2 LOW
+	              } else if (co2 <= this.carbonDioxideThresholdOff) {
+	                // CO2 LOW
 	                co2Detected = 0;
 	                if(this.config.logging){
 	                  this.log(`[${accessory.context.serial}] CO2 NORMAL: ${co2} < ${this.carbonDioxideThresholdOff}`);
 	                }
-	              } else if ((this.carbonDioxideThreshold > 0) && (co2 < this.carbonDioxideThreshold) 
-														&& (co2 > this.carbonDioxideThresholdOff)) {
-	                // the inbetween...
+	              } else if ((co2 > this.carbonDioxideThresholdOff) && (co2 < this.carbonDioxideThreshold)) {
+	                // CO2 inbetween, no change
 	                if(this.config.logging){
 	                  // eslint-disable-next-line max-len
-	                  this.log(`[${accessory.context.serial}] CO2 INBETWEEN: ${this.carbonDioxideThreshold} > [[[${co2}]]] > ${this.carbonDioxideThresholdOff}`);
+	                  this.log(`[${accessory.context.serial}] CO2 INBETWEEN: ${this.carbonDioxideThreshold} > ${co2} > ${this.carbonDioxideThresholdOff}`);
 	                }
 	                co2Detected = co2Before;
 	              } else {
@@ -837,32 +891,28 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	              // Prevent sending a Carbon Dioxide detected update if one has not occured
 	              if ((co2Before === 0) && (co2Detected === 0)) {
-	                // CO2 low already, don't send
-	                if(this.config.logging){
-	                  this.log(`[${accessory.context.serial}] Carbon Dioxide already low.`);
-	                }
+	                // CO2 low already, don't update
 	              } else if ((co2Before === 0) && (co2Detected === 1)) {
-	                // CO2 low to high, send it!
+	                // CO2 low to high, update
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
 	                if(this.config.logging){
 	                  this.log(`[${accessory.context.serial}] Carbon Dioxide low to high.`);
 	                }
 	              } else if ((co2Before === 1) && (co2Detected === 1)) {
-	                // CO2 high to not-quite-low-enough-yet, don't send
-	                if(this.config.logging){
-	                  this.log(`[${accessory.context.serial}] Carbon Dioxide already elevated.`);
-	                }
+	                // CO2 already high, don't update
 	              } else if ((co2Before === 1) && (co2Detected === 0)) {
-	                // CO2 low to high, send it!
+	                // CO2 high to low, update
 	                carbonDioxideService
 	                  .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
 	                if(this.config.logging){
 	                  this.log(`[${accessory.context.serial}] Carbon Dioxide high to low.`);
-	                } else {
-	                  // CO2 unknown...
-	                  this.log(`[${accessory.context.serial}] Carbon Dioxide state unknown.`);
-	                }
+	              } else {
+	                // CO2 unknown...
+                    if(this.config.logging){
+                      this.log(`[${accessory.context.serial}] Carbon Dioxide state unknown.`);
+                    }
+	              }
 	              }
 	            }
 	            break;
@@ -870,31 +920,76 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          case 'voc':
 	            const voc = parseFloat(sensors[sensor]);
 	            const tvoc = this.convertChemicals( accessory, voc, atmos, temp );
-	            if(this.config.logging && this.config.verbose){
-	              this.log(`[${accessory.context.serial}]: voc (${voc} ppb) => tvoc (${tvoc} ug/m^3)`);
+	            if(this.config.logging){
+	              this.log(`[${accessory.context.serial}] VOC: (${voc} ppb) => TVOC: (${tvoc} ug/m^3)`);
 	            }
-	            // Chemicals (ug/m^3)
 	            if (airQualityService) {
 	              airQualityService
 	                .updateCharacteristic(hap.Characteristic.VOCDensity, tvoc);
 	            }
-	            break;
+
+              // Set or clear TVOC Limit flag based on Threshold levels
+              const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
+							
+              if (vocService) {
+                // get current tvocLimit state
+                let tvocLimit: any = vocService.getCharacteristic(hap.Characteristic.OccupancyDetected);
+
+                if ((tvoc >= this.tvocThreshold) && (tvocLimit !== 1)) {
+                  tvocLimit = 1;
+                } else if ((tvoc <= this.tvocThresholdOff) && (tvocLimit !== 0)) {
+                  tvocLimit = 0;
+                } else if ((tvoc > this.tvocThresholdOff) && (tvoc < this.tvocThreshold)){
+                  // TVOC inbetween, no change
+                }
+                if (this.config.logging) {
+                  this.log(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
+                }
+                vocService
+                  .updateCharacteristic(hap.Characteristic.OccupancyDetected, tvocLimit);
+              }
+              break;
 		
-	          case 'dust': // Dust (ug/m^3)
+	          case 'pm25': // PM2.5 (ug/m^3)
+              const pm25 = parseFloat(sensors[sensor]);
+	            if(this.config.logging){
+	              this.log(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
+	            }
+	            if (airQualityService) {
+	              airQualityService
+	                .updateCharacteristic(hap.Characteristic.PM2_5Density, pm25);
+	            }
+
+              // Set or clear PM2.5 limit flag based on Threshold levels
+              const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+
+              if (pm25Service) {
+                // get current pm25Limit state
+                let pm25Limit: any = pm25Service.getCharacteristic(hap.Characteristic.OccupancyDetected);
+
+                if ((pm25 >= this.pm25Threshold) && (pm25Limit !== 1)) {
+                  pm25Limit = 1;
+                } else if ((pm25 <= this.pm25ThresholdOff) && (pm25Limit !== 0)) {
+                  pm25Limit = 0;
+                } else if ((pm25 > this.pm25ThresholdOff) && (pm25 < this.pm25Threshold)){
+                  // PM2.5 inbetween, no change
+                }
+                if (this.config.logging) {
+                  this.log(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
+                }
+                pm25Service
+                  .updateCharacteristic(hap.Characteristic.OccupancyDetected, pm25Limit);
+              }
+              break;
+		
+	          case 'pm10': // PM10 (ug/m^3)
 	            if (airQualityService) {
 	              airQualityService
 	                .updateCharacteristic(hap.Characteristic.PM10Density, parseFloat(sensors[sensor]));
 	            }
 	            break;
 		
-	          case 'pm25': // PM2.5 (ug/m^3)
-	            if (airQualityService) {
-	              airQualityService
-	                .updateCharacteristic(hap.Characteristic.PM2_5Density, parseFloat(sensors[sensor]));
-	            }
-	            break;
-		
-	          case 'pm10': // PM10 (ug/m^3)
+            case 'dust': // Dust (ug/m^3)
 	            if (airQualityService) {
 	              airQualityService
 	                .updateCharacteristic(hap.Characteristic.PM10Density, parseFloat(sensors[sensor]));
@@ -922,7 +1017,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to obtain battery status
 	 */
-  async getBatteryStatus(accessory: PlatformAccessory) {
+  async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
 
 	  await axios.get<any>(url)
@@ -938,7 +1033,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log(`[${accessory.context.serial}] batteryLevel: ${batteryLevel} batteryPlugged: ${batteryPlugged} lowBattery: ${lowBattery}`);
 	      }
 
-	      const batteryService = accessory.getService(hap.Service.BatteryService);
+	      const batteryService = accessory.getService(`${accessory.context.name} Battery`);
+				
 	      if (batteryService) {
 	        batteryService
 	          .updateCharacteristic(hap.Characteristic.BatteryLevel, batteryLevel); // 0 -> 100%
@@ -960,7 +1056,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
-  async getOccupancyStatus(accessory: PlatformAccessory) {
+  async getOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 
 	  await axios.get<any>(url)
@@ -980,7 +1076,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	      }
 			
-	      const occupancyService = accessory.getService(hap.Service.OccupancySensor);
+	      const occupancyService = accessory.getService(`${accessory.context.name} Occupancy`);
 				
 	      if (occupancyService) {
 	        // get current Occupancy state
@@ -1023,7 +1119,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 *
 	 * * @param {object} accessory - accessory to obtain light level status
 	 */
-  async getLightLevel(accessory: PlatformAccessory) {
+  async getLightLevel(accessory: PlatformAccessory): Promise<void> {
 	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
 		
 	  await axios.get<any>(url)
@@ -1051,7 +1147,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
-  addDisplayModeAccessory(data: DeviceConfig) {
+  addDisplayModeAccessory(data: DeviceConfig): void {
 	  if (this.config.logging) {
 	    this.log(`[${data.macAddress}] Initializing Display Mode accessory for ${data.deviceUUID}...`);
 	  }
@@ -1106,7 +1202,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to add display mode services
 	 */
-  addDisplayModeServices(accessory: PlatformAccessory) {
+  addDisplayModeServices(accessory: PlatformAccessory): void {
 	  if (this.config.logging) {
 	    this.log(`[${accessory.context.serial}] Configuring Display Mode Services for ${accessory.context.deviceUUID}`);
 	  }
@@ -1130,7 +1226,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to change Display Mode for Omni, Awair-r2 and Element
 	 */
-	 async changeDisplayMode(accessory: PlatformAccessory, newDisplayMode: string) {
+  async changeDisplayMode(accessory: PlatformAccessory, newDisplayMode: string): Promise<void> {
 	  const oldDisplayMode = accessory.context.displayMode; // context.displayMode is in Mixed case
 		
 	  // displayMode HAS NOT changed
@@ -1175,7 +1271,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to get Display Mode for Omni, Awair-r2 and Element
 	 */
-	 async getDisplayMode(accessory: PlatformAccessory) {
+	 async getDisplayMode(accessory: PlatformAccessory): Promise<void> {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/display`;
 	  const options = {
 	    headers: {
@@ -1205,7 +1301,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to set Display Mode for Omni, Awair-r2 and Element
 	 */
-	 async putDisplayMode(accessory: PlatformAccessory, mode: string) {
+	 async putDisplayMode(accessory: PlatformAccessory, mode: string): Promise<void> {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/display`;
 	  const body = {'mode': mode.toLowerCase()};
 	  const options = {
@@ -1322,7 +1418,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to change LED Mode for Omni, Awair-r2 and Element
 	 */
-	 async changeLEDMode(accessory: PlatformAccessory, newLEDMode: string, newBrightness: number) {
+	 async changeLEDMode(accessory: PlatformAccessory, newLEDMode: string, newBrightness: number): Promise<void> {
 	  const oldLEDMode = accessory.context.ledMode; // this is in mixed case
 		
 	  // Auto or Sleep mode active and reselected which changes mode to OFF -> reset switch to ON, return
@@ -1397,7 +1493,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to get LED Mode for Omni, Awair-r2 and Element
 	 */
-  async getLEDMode(accessory: PlatformAccessory) {
+  async getLEDMode(accessory: PlatformAccessory): Promise<void> {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/led`;
 	  const options = {
 	    headers: {
@@ -1429,7 +1525,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to set LED Mode for Omni, Awair-r2 and Element
 	 */
-	 async putLEDMode(accessory: PlatformAccessory, mode: string, brightness: number) {
+	 async putLEDMode(accessory: PlatformAccessory, mode: string, brightness: number): Promise<void> {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/led`;
 	  let body: any = {'mode': mode.toLowerCase()};
 	  if (mode === 'Manual'){

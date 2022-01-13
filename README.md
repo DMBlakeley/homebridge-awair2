@@ -13,18 +13,18 @@ This is a second generation Homebridge Dynamic Platform plugin for the Awair fam
 ---
 
 <u><h3 align=center>NOTE:</h3></u>
-When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.6.4` to `v5.7.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time.
+When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.8.14` to `v5.9.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time. Alternately you may remove your Awair devices from the Homebridge cache followed by Homebridge restart.
 
 ---
 
-The Awair2 plugin will query your Awair account using a Developer Token to determine your registered Awair devices which were setup through the Awair app on your iOS device. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair 1st Edition, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition, Awair Glow C, or Awair Element) and provide sensor status and value (e.g. temperature, humidity, carbon dioxide, TVOC, dust/PM2.5/PM10, Omni lux, and Omni battery) to HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+The Awair2 plugin will query your Awair account using a Developer Token to determine registered Awair devices which were setup through the Awair app on your iOS device. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair 1st Edition, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition, Awair Glow C, or Awair Element) and provide sensor status and value (e.g. temperature, humidity, carbon dioxide, TVOC, dust/PM2.5/PM10, Omni lux, and Omni battery) to HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
 The plugin will fetch new data based on selected `endpoint` and User Account tier. For 'Hobbyist' tier, `15-min-avg` endpoint samples every 15 minutes, `5-min-avg` every 5 minutes, `latest` every 5 minutes and `raw` every 3.3 minutes (200 seconds). The main difference between the `latest` and `raw` endpoints is that you can define a `limit` (i.e. number of consecutive data points) for the `raw` endpoint, in order to create your own averaging (e.g. `.../raw?limit=12` for a 2 minute average.
 
-v5.7.x of the plugin introduces control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
+v5.7.x of the plugin introduced control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
 
 With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. 
-, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you touch this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
+, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you select this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
 
 ![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
 
@@ -61,35 +61,7 @@ Changelog is available [here](https://github.com/DMBlakeley/homebridge-awair2/bl
 
 # Plugin Configuration
 
-Configuration sample:
-
-See [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/master/config-sample.json)
-
-```
-"platforms": [
-  {
-    "platform": "Awair2",
-    "token": "AAA.AAA.AAA",
-    "userType": "users/self",
-    "airQualityMethod": "awair-aqi",
-    "endpoint": "15-min-avg",
-    "limit": 1,
-    "carbonDioxideThreshold": 1000,
-    "carbonDioxideThresholdOff": 800,
-    "vocMw": 72.66578273019740,
-    "occupancyDetection": false,
-    "occupancyOffset": 2,
-    "occupancyRestart": false,
-    "enableModes": false,
-    "logging": false,
-    "verbose": false,
-    "development": false,
-    "ignoredDevices": [
-      "70886Bxxxxxx"
-    ]
-  }
-]
-```
+Configuration sample: [config-sample.json](https://github.com/DMBlakeley/homebridge-awair2/blob/master/config-sample.json)
 
 ## Descriptions
 
@@ -104,7 +76,11 @@ Parameter | Optional? | Description
 `endpoint` | Y | The `/air-data/` endpoint to use (Default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
-`carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently choose a number less than `carbonDioxideThreshold`. (Default = `800`)
+`carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently. Choose a number less than `carbonDioxideThreshold`. (Default = `800`)
+`tvocThreshold` | Y | Total VOC level at which HomeKit will trigger an alert in &micro;g/m&sup3. (Default = `1000`)
+`tvocThresholdOff` | Y | Total VOC level at which HomeKit will turn off the trigger alert in ug/m^3, to ensure that it doesn't trigger on/off too frequently. Choose a number less than `tvocThreshold`. (Default = `800`)
+`pm25Threshold` | Y | The level at which HomeKit will trigger an alert for PM2.5 in &micro;g/m&sup3. (Default = `35`)
+`pm25ThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for pm2.5 in ug/m^3, to ensure that it doesn't trigger on/off too frequently. Choose a number less than `pm25Threshold`. (Default = `20`)
 `vocMw` | Y | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to &micro;g/m&sup3;. (Default = `72.66578273019740`)
 `occupancyDetection` | Y | Omni Only - Enables Omni occupancy detection based on minimum environmental sound level detected. (Default = `false`)
 `occupancyOffset` | Y | Omni Only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher. (Default = `2`) 

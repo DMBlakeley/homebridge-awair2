@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.0
+* [Enhancement] Add binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
+* <b><u>NOTE</u>:</b> Awair device(s) need to be deleted from Homebridge cache followed by Homebridge restart in order to add VOC and PM2.5 limit switch capability. This also will require that the Awair device(s) be reconfigured in HomeKit including room location and automations.
+* [Housekeeping] Typescript syntax and readability improvements.
+
 ## v5.8.14
 * Updates to `index.ts`, `package.json`, and `package-lock.json` for compatibility with `eslint v8.50` and `@typescript-eslint v5.7.0`.
 

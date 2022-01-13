@@ -2,7 +2,7 @@
   "pluginAlias": "Awair2",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair API.",
+  "headerDisplay": "Awair plug-in for [Homebridge](https://github.com/nfarina/homebridge) using the native Awair Cloud and Local APIs.",
   "footerDisplay": "Reference [Installation Instructions](https://github.com/DMBlakeley/homebridge-awair2#readme) for details on determining 'Developer Token'.",
   "schema": {
     "type": "object",
@@ -50,13 +50,37 @@
         "title": "Carbon Dioxide Threshold - On",
         "type": "integer",
         "placeholder": 1000,
-        "description": "The CO2 level at which HomeKit will turn ON the trigger alert for the CO2 in ppm. Default = '1000'."
+        "description": "The CO2 level in ppm at which HomeKit will turn ON the trigger alert for the CO2. Default = '1000'."
       },
       "carbonDioxideThresholdOff": {
         "title": "Carbon Dioxide Threshold - Off",
         "type": "integer",
         "placeholder": 800,
-        "description": "The CO2 level at which HomeKit will turn OFF the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently. Must be a number lower than 'carbonDioxideThreshold'. Default = '800'."
+        "description": "The CO2 level in ppm at which HomeKit will turn OFF the trigger alert for the CO2 to ensure that it doesn't trigger on/off too frequently. Must be a number lower than 'carbonDioxideThreshold'. Default = '800'."
+      },
+      "tvocThreshold": {
+        "title": "Total VOC Threshold - On",
+        "type": "integer",
+        "placeholder": 1000,
+        "description": "Total VOC level in &micro;g/m&sup3; at which HomeKit will turn ON the trigger alert for Total VOC. Default = '1000'."
+      },
+      "tvocThresholdOff": {
+        "title": "Total VOC Threshold - Off",
+        "type": "integer",
+        "placeholder": 800,
+        "description": "Total VOC level in &micro;g/m&sup3; at which HomeKit will turn OFF the trigger alert for the Total VOC to ensure that it doesn't trigger on/off too frequently. Must be a number lower than 'tvocThreshold'. Default = '800'."
+      },
+      "pm25Threshold": {
+        "title": "PM2.5 Threshold - On",
+        "type": "integer",
+        "placeholder": 35,
+        "description": "The PM2.5 level in &micro;g/m&sup3; at which HomeKit will turn ON the trigger alert for the PM2.5. Default = '35'."
+      },
+      "pm25ThresholdOff": {
+        "title": "PM2.5 Threshold - Off",
+        "type": "integer",
+        "placeholder": 20,
+        "description": "The PM2.5 level in &micro;g/m&sup3; at which HomeKit will turn OFF the trigger alert for the PM2.5 to ensure that it doesn't trigger on/off too frequently. Must be a number lower than 'pm25Threshold'. Default = '20'."
       },
       "vocMw": {
         "title": "Reference Gas Molecular Weight",
@@ -73,7 +97,7 @@
       "occupancyOffset": {
         "title": "Omni Occupancy decibels Offset - used when occupancyDetection enabled.",
         "type": "number",
-        "default": 2.0,
+        "placeholder": 2.0,
         "multipleOf": 0.5,
         "description": "Omni only - used when `occupancy detection` enabled. Offset value in dBA above detected background sound level to set upper level for `not occupied`. The lower level for `occupied` is an additional 0.5dBA higher. See Wiki for further explanation. Default = '2'.",
         "condition": {
@@ -84,7 +108,7 @@
         "title": "Omni Reset Occupancy Status - reinitialize Occupancy detection measurement on Homebridge reboot.",
         "type": "boolean",
         "default": false,
-        "description": "Omni only - reinitialize Occupancy detection measurement to determine unoccupied sound level on Homebridge reboot.",
+        "description": "Omni only - reinitialize Occupancy detection measurement to determine unoccupied sound level on Homebridge boot or restart.",
         "condition": {
           "functionBody": "return model.occupancyDetection === true;"
         }
@@ -145,6 +169,10 @@
         "limit",
         "carbonDioxideThreshold",
         "carbonDioxideThresholdOff",
+        "tvocThreshold",
+        "tvocThresholdOff",
+        "pm25Threshold",
+        "pm25ThresholdOff",
         "vocMw",
         "occupancyDetection",
         "occupancyOffset",
