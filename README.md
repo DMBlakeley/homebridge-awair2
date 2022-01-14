@@ -23,6 +23,8 @@ The plugin will fetch new data based on selected `endpoint` and User Account tie
 
 v5.7.x of the plugin introduced control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
 
+v5.9.x of the plugin introduced binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
+
 With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. 
 , temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you select this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
 
@@ -67,6 +69,8 @@ Configuration sample: [config-sample.json](https://github.com/DMBlakeley/homebri
 
 Reference [Wiki Chapter 3](https://github.com/DMBlakeley/homebridge-awair2/wiki/3.-Awair2-Configuration-Options) for additional details.
 
+(*) Introduced with v5.9.0.
+
 Parameter | Optional? | Description
 :-- | :----: | :---
 `platform` |  | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
@@ -77,10 +81,10 @@ Parameter | Optional? | Description
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
 `carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently. Choose a number less than `carbonDioxideThreshold`. (Default = `800`)
-`tvocThreshold` | Y | Total VOC level at which HomeKit will trigger an alert in &micro;g/m&sup3;. (Default = `1000`)
-`tvocThresholdOff` | Y | Total VOC level at which HomeKit will turn off the trigger alert in &micro;g/m&sup3; to ensure that it doesn't trigger on/off too frequently. Choose a number less than `tvocThreshold`. (Default = `800`)
-`pm25Threshold` | Y | The level at which HomeKit will trigger an alert for PM2.5 in &micro;g/m&sup3;. (Default = `35`)
-`pm25ThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for pm2.5 in &micro;g/m&sup3; to ensure that it doesn't trigger on/off too frequently. Choose a number less than `pm25Threshold`. (Default = `20`)
+`tvocThreshold`(*) | Y | Total VOC level at which HomeKit will trigger an alert in &micro;g/m&sup3;. (Default = `1000`)
+`tvocThresholdOff`(*) | Y | Total VOC level at which HomeKit will turn off the trigger alert in &micro;g/m&sup3; to ensure that it doesn't trigger on/off too frequently. Choose a number less than `tvocThreshold`. (Default = `800`)
+`pm25Threshold`(*) | Y | The level at which HomeKit will trigger an alert for PM2.5 in &micro;g/m&sup3;. (Default = `35`)
+`pm25ThresholdOff`(*) | Y | The level at which HomeKit will turn off the trigger alert for pm2.5 in &micro;g/m&sup3; to ensure that it doesn't trigger on/off too frequently. Choose a number less than `pm25Threshold`. (Default = `20`)
 `vocMw` | Y | The Molecular Weight (g/mol) of a reference gas or mixture that you use to convert from ppb to &micro;g/m&sup3;. (Default = `72.66578273019740`)
 `occupancyDetection` | Y | Omni Only - Enables Omni occupancy detection based on minimum environmental sound level detected. (Default = `false`)
 `occupancyOffset` | Y | Omni Only - Used when `occupancy detection` enabled. Offset value in dBA above background sound level to set `not occupied` level, `occupied` is 0.5dBA higher. (Default = `2`) 
