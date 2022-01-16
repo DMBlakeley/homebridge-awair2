@@ -410,7 +410,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * Method to retrieve user info/profile from your Awair development account
 	 */
   async getUserInfo(): Promise<void> {
-	  const url = 'https://developer-apis.awair.is/v1/' + this.userType;
+	  const url = `https://developer-apis.awair.is/v1/${this.userType}`;
 	  const options = {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
@@ -489,7 +489,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * Method to retrieve registered devices from your Awair development account
 	 */
   async getAwairDevices(): Promise<void> {
-	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices';
+	  const url = `https://developer-apis.awair.is/v1/${this.userType}/devices`;
 	  const options = {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
@@ -770,8 +770,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   async updateAirQualityData(accessory: PlatformAccessory): Promise<void> {
 	  // Update status for accessory of deviceId
-	  const url = 'https://developer-apis.awair.is/v1/' + this.userType + '/devices/' + accessory.context.deviceType + '/' 
-			+ accessory.context.deviceId + '/air-data/' + this.endpoint + '?limit=' + this.limit + '&desc=true';
+	  // eslint-disable-next-line max-len
+	  const url = `https://developer-apis.awair.is/v1/${this.userType}/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/air-data/${this.endpoint}?limit=${this.limit}&desc=true`;
 	  const options = {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
@@ -855,9 +855,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	            if (carbonDioxideService) {
 	              const co2Before = carbonDioxideService.getCharacteristic(hap.Characteristic.CarbonDioxideDetected).value;
-	              //if(this.config.logging){
-	              // this.log(`[${accessory.context.serial}] CO2Before: ${co2Before}`);
-	              //}
 		
 	              // Logic to determine if Carbon Dioxide should change in Detected state
 	              carbonDioxideService
@@ -1018,7 +1015,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain battery status
 	 */
   async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/settings/config/data';
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/settings/config/data`;
 
 	  await axios.get<any>(url)
     	.then(response => {
@@ -1057,9 +1054,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
   async getOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/air-data/latest`;
 
-	  await axios.get<any>(url)
+    await axios.get<any>(url)
     	.then(response => {
 	      const omniSpl_a: number = response.data.spl_a;
 	      if(this.config.logging && this.config.verbose) {	
@@ -1120,7 +1117,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * * @param {object} accessory - accessory to obtain light level status
 	 */
   async getLightLevel(accessory: PlatformAccessory): Promise<void> {
-	  const url = 'http://' + accessory.context.deviceType + '-' + accessory.context.serial.substr(6) + '/air-data/latest';
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/air-data/latest`;
 		
 	  await axios.get<any>(url)
     	.then(response => {
