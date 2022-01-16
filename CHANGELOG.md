@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.1
+* [Housekeeping] Update node_module dependencies to latest versions.
+* [Security] Update `follow-redirects` to version 1.14.7 to address CVE-2022-0155 security advisory.
+
 ## v5.9.0
 * [Enhancement] Add binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
 * <b><u>NOTE</u>:</b> Awair device(s) need to be deleted from Homebridge cache followed by Homebridge restart in order to add VOC and PM2.5 limit switch capability. This also will require that the Awair device(s) be reconfigured in HomeKit including room location and automations.
