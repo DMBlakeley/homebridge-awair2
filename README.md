@@ -13,7 +13,11 @@ This is a second generation Homebridge Dynamic Platform plugin for the Awair fam
 ---
 
 <u><h3 align=center>NOTE:</h3></u>
-When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.8.14` to `v5.9.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time. Alternately you may remove your Awair devices from the Homebridge cache followed by Homebridge restart.
+When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.8.14` to `v5.9.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time. 
+
+Alternately you may remove your Awair accessory from the Homebridge single device cache found in Homebridge Settings followed by Homebridge restart. Display and LED mode accessories do not need to be removed.
+
+With either method you will need to check that your Awair device is assigned to the correct HomeKit room and verify that HomeKit Automations which use your Awair device are correct.
 
 ---
 
