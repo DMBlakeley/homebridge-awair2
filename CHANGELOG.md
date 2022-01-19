@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.2
+* [Housekeeping] Added explicit return types for all functions. Added explicit `return` to close all functions as appropriate.
+* [Improvement] Refactored `updateAirQualityData` function for cleaner operation. Updated `axios.get` syntax.
+* [Bug] Corrected syntax of `voc` and `pm25` cases in `updateAirQualityData` function to correctly use `getCharacteristic` for current `value`.
+
+## v5.9.1
+* [Housekeeping] Update node_module dependencies to latest versions.
+* [Security] Update `follow-redirects` to version 1.14.7 to address CVE-2022-0155 security advisory.
+
+## v5.9.0
+* [Enhancement] Add binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
+* <b><u>NOTE</u>:</b> Awair device(s) need to be deleted from Homebridge cache followed by Homebridge restart in order to add VOC and PM2.5 limit switch capability. This also will require that the Awair device(s) be reconfigured in HomeKit including room location and automations.
+* [Housekeeping] Typescript syntax and readability improvements.
+
 ## v5.8.14
 * Updates to `index.ts`, `package.json`, and `package-lock.json` for compatibility with `eslint v8.50` and `@typescript-eslint v5.7.0`.
 
