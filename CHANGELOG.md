@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.3
+* [Bug] Correctly report humidity. Was returning `0%` for all Awair devices.
+
 ## v5.9.2
 * [Housekeeping] Added explicit return types for all functions. Added explicit `return` to close all functions as appropriate.
 * [Improvement] Refactored `updateAirQualityData` function for cleaner operation. Updated `axios.get` syntax.

@@ -844,7 +844,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                 break;
 			
               case 'humid': // Humidity (%)
-                const humidityService = accessory.getService(`${accessory.context.name} Humid`);
+                const humidityService = accessory.getService(`${accessory.context.name} Humidity`);
                 if (humidityService) {
                   humidityService
                     .updateCharacteristic(hap.Characteristic.CurrentRelativeHumidity, parseFloat(sensors[sensor]));
