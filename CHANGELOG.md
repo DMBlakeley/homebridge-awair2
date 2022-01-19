@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.2
+* [Housekeeping] Added explicit return types for all functions. Added explicit `return` to close all functions as appropriate.
+* [Improvement] Refactored `updateAirQualityData` function for cleaner operation. Updated `axios.get` syntax.
+* [Bug] Corrected syntax of `voc` and `pm25` cases in `updateAirQualityData` function to correctly use `getCharacteristic` for current `value`.
+
 ## v5.9.1
 * [Housekeeping] Update node_module dependencies to latest versions.
 * [Security] Update `follow-redirects` to version 1.14.7 to address CVE-2022-0155 security advisory.
