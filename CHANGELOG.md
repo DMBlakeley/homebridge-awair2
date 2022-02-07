@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.4
+* [Security] Update `minimist` dependecy to version `>=0.2.1` to address [CVE-2020-7598](https://github.com/advisories/GHSA-vh95-rmgr-6w4m) security advisory.
+* [Housekeeping] Improve error logging for `updateAirQualityData`, `getBatteryStatus` and `getOccupancyStatus` to include `accessory.context.serial` in logging output.
+
 ## v5.9.3
 * [Bug] Correctly report humidity. Was returning `0%` for all Awair devices.
 
@@ -12,7 +16,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ## v5.9.1
 * [Housekeeping] Update node_module dependencies to latest versions.
-* [Security] Update `follow-redirects` to version 1.14.7 to address CVE-2022-0155 security advisory.
+* [Security] Update `follow-redirects` to version 1.14.7 to address [CVE-2022-0155](https://github.com/advisories/GHSA-74fj-2j2h-c42q) security advisory.
 
 ## v5.9.0
 * [Enhancement] Add binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.

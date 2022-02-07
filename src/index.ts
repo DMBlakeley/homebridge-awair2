@@ -1001,7 +1001,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     		})
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`updateAirQualityData error: ${error}`);
+	        this.log(`[${accessory.context.serial}] updateAirQualityData error: ${error}`);
 	      }
 	  	});
     return;
@@ -1041,7 +1041,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getBatteryStatus error: ${error}`);
+	        this.log(`[${accessory.context.serial}] getBatteryStatus error: ${error}`);
 	      }
 	    });
     return;
@@ -1104,7 +1104,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getOccupancyStatus error: ${error}`);
+	        this.log(`[${accessory.context.serial}] getOccupancyStatus error: ${error}`);
 	      }
 	    });
 	  return;
@@ -1133,7 +1133,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getLightLevel error: ${error}`);
+	        this.log(`[${accessory.context.serial}] getLightLevel error: ${error}`);
 	      }
 	    });
     return;
