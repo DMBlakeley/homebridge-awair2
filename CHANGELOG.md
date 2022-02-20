@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.5
+* [Enhancement] Add option to enable/disable VOC and PM2.5 binary limit switches.
+* [Housekeeping] Update dependent node modules to latest versions.
+
 ## v5.9.4
 * [Security] Update `minimist` dependecy to version `>=0.2.1` to address [CVE-2020-7598](https://github.com/advisories/GHSA-vh95-rmgr-6w4m) security advisory.
 * [Housekeeping] Improve error logging for `updateAirQualityData`, `getBatteryStatus` and `getOccupancyStatus` to include `accessory.context.serial` in logging output.

@@ -85,6 +85,7 @@ Parameter | Optional? | Description
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)
 `carbonDioxideThresholdOff` | Y | The level at which HomeKit will turn off the trigger alert for the CO2 in ppm, to ensure that it doesn't trigger on/off too frequently. Choose a number less than `carbonDioxideThreshold`. (Default = `800`)
+`enableTvocPm25` | Y | Whether to enable Total VOC and PM2.5 threshold binary sensors.
 `tvocThreshold`(*) | Y | Total VOC level at which HomeKit will trigger an alert in &micro;g/m&sup3;. (Default = `1000`)
 `tvocThresholdOff`(*) | Y | Total VOC level at which HomeKit will turn off the trigger alert in &micro;g/m&sup3; to ensure that it doesn't trigger on/off too frequently. Choose a number less than `tvocThreshold`. (Default = `800`)
 `pm25Threshold`(*) | Y | The level at which HomeKit will trigger an alert for PM2.5 in &micro;g/m&sup3;. (Default = `35`)

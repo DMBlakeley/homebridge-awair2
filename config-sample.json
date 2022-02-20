@@ -18,6 +18,7 @@
 			"limit": 1,
 			"carbonDioxideThreshold": 1000,
 			"carbonDioxideThresholdOff": 800,
+			"enableTvocPm25": false,
 			"tvocThreshold": 1000,
 			"tvocThresholdOff": 800,
 			"pm25Threshold": 35,

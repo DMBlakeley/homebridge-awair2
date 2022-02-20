@@ -53,6 +53,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
   private carbonDioxideThreshold = 1000;
   private carbonDioxideThresholdOff = 800;
+  private enableTvocPm25 = false;
   private tvocThreshold = 1000;
   private tvocThresholdOff = 800;
   private pm25Threshold = 35;
@@ -149,39 +150,45 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.carbonDioxideThreshold = 1000;
 	    this.carbonDioxideThresholdOff = 800;
 	  }
-	  
-	  if ('tvocThreshold' in this.config) {
-	    this.tvocThreshold = Number(this.config.tvocThreshold);
-	  }
-	  
-	  if ('tvocThresholdOff' in this.config) {
-	    this.tvocThresholdOff = Number(this.config.tvocThresholdOff);
-	  }
-		
-	  if (this.tvocThreshold <= this.tvocThresholdOff) {
-	    this.log ('"Total VOC Threshold Off" must be less than "Total VOC Threshold", using defaults.');
-	    this.tvocThreshold = 1000;
-	    this.tvocThresholdOff = 800;
-	  }
 
+    if ('enableTvocPm25' in this.config) {
+      this.enableTvocPm25 = this.config.enableTvocPm25;
+    }
+	  
+	  if (this.enableTvocPm25) { // only check thresholds if TVOC and PM2.5 sensors are enabled
+      if ('tvocThreshold' in this.config) {
+        this.tvocThreshold = Number(this.config.tvocThreshold);
+      }
+			
+      if ('tvocThresholdOff' in this.config) {
+        this.tvocThresholdOff = Number(this.config.tvocThresholdOff);
+      }
+			
+      if (this.tvocThreshold <= this.tvocThresholdOff) {
+        this.log ('"Total VOC Threshold Off" must be less than "Total VOC Threshold", using defaults.');
+        this.tvocThreshold = 1000;
+        this.tvocThresholdOff = 800;
+      }
+
+      if ('pm25Threshold' in this.config) {
+        this.pm25Threshold = Number(this.config.pm25Threshold);
+      }
+			
+      if ('pm25ThresholdOff' in this.config) {
+        this.pm25ThresholdOff = Number(this.config.pm25ThresholdOff);
+      }
+			
+      if (this.pm25Threshold <= this.pm25ThresholdOff) {
+        this.log ('"PM2.5 Threshold Off" must be less than "PM2.5 Threshold", using defaults.');
+        this.pm25Threshold = 35;
+        this.pm25ThresholdOff = 20;
+      }
+    }
+		
 	  if ('vocMw' in this.config) {
 	    this.vocMw = this.config.vocMw;
 	  }
 	  
-	  if ('pm25Threshold' in this.config) {
-	    this.pm25Threshold = Number(this.config.pm25Threshold);
-	  }
-	  
-	  if ('pm25ThresholdOff' in this.config) {
-	    this.pm25ThresholdOff = Number(this.config.pm25ThresholdOff);
-	  }
-		
-	  if (this.pm25Threshold <= this.pm25ThresholdOff) {
-	    this.log ('"PM2.5 Threshold Off" must be less than "PM2.5 Threshold", using defaults.');
-	    this.pm25Threshold = 35;
-	    this.pm25ThresholdOff = 20;
-	  }
-		
 	  if ('occupancyOffset' in this.config) {
 	    this.occupancyOffset = this.config.occupancyOffset;
 	  }
@@ -216,7 +223,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.log(`Configuring cached accessory ${accessory.displayName}`);
 
 	  switch(accessory.context.accType) {
-	    case 'IAQ': // no initialization required
+	    case 'IAQ':
+	      // make sure VOC and PM2.5 alert services are added if enabled after initial plug-in configuration
+        if (this.enableTvocPm25) {
+          const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
+          if (!vocService) {
+            accessory.addService(hap.Service.OccupancySensor, `${accessory.context.name}: TVOC Limit`, '0');
+          }
+          const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+          if (!pm25Service && (accessory.context.deviceType !== 'awair')) {
+            accessory.addService(hap.Service.OccupancySensor, `${accessory.context.name}: PM2.5 Limit`, '1');
+          }
+        }
 	      break;
 	    case 'Display': // initialize Display Mode switch characteristics
 	      this.addDisplayModeServices(accessory);
@@ -557,13 +575,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.addService(hap.Service.CarbonDioxideSensor, `${device.name} CO2`);
 	    }
 
-	    // If you are adding more than one service of the same type to an accessory, you need to give the service a "name" and "subtype".
-      // Add VOC alert service as dummy occupancy sensor
-      accessory.addService(hap.Service.OccupancySensor, `${device.name}: TVOC Limit`, '0');
+      // If you are adding more than one service of the same type to an accessory, you need to give the service a "name" and "subtype".
+	    if (this.enableTvocPm25) {
+      	// if enabled, add VOC alert service as dummy occupancy sensor
+        accessory.addService(hap.Service.OccupancySensor, `${device.name}: TVOC Limit`, '0');
 
-      // Add PM2.5 alert service as dummy occupancy sensor for all devices except Awair 1st edition which measures PM10.
-      if (device.deviceType !== 'awair') {
+        // if enabled, add PM2.5 alert service as dummy occupancy sensor for all devices except Awair 1st edition which measures PM10.
+        if (device.deviceType !== 'awair') {
 	      accessory.addService(hap.Service.OccupancySensor, `${device.name}: PM2.5 Limit`, '1');
+        }
       }
 			
 	    // Add Omni Battery and Occupancy service
@@ -603,6 +623,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      accessory.context.occDetectedNotLevel = this.occDetectedNotLevel;
 	      accessory.context.minSoundLevel = this.occDetectedNotLevel;
 	    }
+      // make sure VOC and PM2.5 alert services are removed if disabled after previous enable
+      if (!this.enableTvocPm25) {
+        const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
+        if (vocService) {
+          accessory.removeService(vocService);
+        }
+        const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+        if (pm25Service) {
+          accessory.removeService(pm25Service);
+        }
+      }	
 	  }
 	  return;
   }
@@ -690,18 +721,21 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  }
 
-    // Total VOC Threshold Service
-    const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
-    if (vocService) {
-      vocService
-        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // VOC level not exceeded
-    }
+    // If enabled, add Total VOC and PM2.5 threshold services
+    if (this.enableTvocPm25) {
+      // Total VOC Threshold Service
+      const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);
+      if (vocService) {
+        vocService
+          .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // VOC level not exceeded
+      }
 
-    // PM2.5 Threshold Service
-    const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
-    if (pm25Service) {
-      pm25Service
-        .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // PM2.5 level not exceeded
+      // PM2.5 Threshold Service
+      const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+      if (pm25Service) {
+        pm25Service
+          .setCharacteristic(hap.Characteristic.OccupancyDetected, 0); // PM2.5 level not exceeded
+      }
     }
 
     // Omni & Mint Ambient Light Service
@@ -927,25 +961,27 @@ class AwairPlatform implements DynamicPlatformPlugin {
                 airQualityService
                   .updateCharacteristic(hap.Characteristic.VOCDensity, tvoc);
 
-                // Set or clear TVOC Limit flag based on Threshold levels
-                const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);							
-                if (vocService) {
+                // If enabled, set or clear TVOC Limit flag based on Threshold levels
+                if (this.enableTvocPm25) {
+                  const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);							
+                  if (vocService) {
                   // get current tvocLimit state
-                  let tvocLimit: any = vocService.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
+                    let tvocLimit: any = vocService.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
 
-                  if ((tvoc >= this.tvocThreshold) && (tvocLimit !== 1)) {  // low -> high
-                    tvocLimit = 1;
-                  } else if ((tvoc <= this.tvocThresholdOff) && (tvocLimit !== 0)) {  // high -> low
-                    tvocLimit = 0;
-                  } else if ((tvoc > this.tvocThresholdOff) && (tvoc < this.tvocThreshold)){
+                    if ((tvoc >= this.tvocThreshold) && (tvocLimit !== 1)) {  // low -> high
+                      tvocLimit = 1;
+                    } else if ((tvoc <= this.tvocThresholdOff) && (tvocLimit !== 0)) {  // high -> low
+                      tvocLimit = 0;
+                    } else if ((tvoc > this.tvocThresholdOff) && (tvoc < this.tvocThreshold)){
                     // TVOC inbetween, no change
-                  }
+                    }
 
-                  if (this.config.logging) {
-                    this.log(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
+                    if (this.config.logging) {
+                      this.log(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
+                    }
+                    vocService
+                      .updateCharacteristic(hap.Characteristic.OccupancyDetected, tvocLimit);
                   }
-                  vocService
-                    .updateCharacteristic(hap.Characteristic.OccupancyDetected, tvocLimit);
                 }
                 break;
 			
@@ -957,25 +993,27 @@ class AwairPlatform implements DynamicPlatformPlugin {
                 airQualityService
                   .updateCharacteristic(hap.Characteristic.PM2_5Density, pm25);
 
-                // Set or clear PM2.5 limit flag based on Threshold levels
-                const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
-                if (pm25Service) {
+                // If enabled, set or clear PM2.5 limit flag based on Threshold levels
+                if (this.enableTvocPm25) {
+                  const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+                  if (pm25Service) {
                   // get current pm25Limit state
-                  let pm25Limit: any = pm25Service.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
+                    let pm25Limit: any = pm25Service.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
 
-                  if ((pm25 >= this.pm25Threshold) && (pm25Limit !== 1)) {  // low -> high
-                    pm25Limit = 1;
-                  } else if ((pm25 <= this.pm25ThresholdOff) && (pm25Limit !== 0)) { // high -> low
-                    pm25Limit = 0;
-                  } else if ((pm25 > this.pm25ThresholdOff) && (pm25 < this.pm25Threshold)){
+                    if ((pm25 >= this.pm25Threshold) && (pm25Limit !== 1)) {  // low -> high
+                      pm25Limit = 1;
+                    } else if ((pm25 <= this.pm25ThresholdOff) && (pm25Limit !== 0)) { // high -> low
+                      pm25Limit = 0;
+                    } else if ((pm25 > this.pm25ThresholdOff) && (pm25 < this.pm25Threshold)){
                     // PM2.5 inbetween, no change
-                  }
+                    }
 
-                  if (this.config.logging) {
-                    this.log(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
+                    if (this.config.logging) {
+                      this.log(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
+                    }
+                    pm25Service
+                      .updateCharacteristic(hap.Characteristic.OccupancyDetected, pm25Limit);
                   }
-                  pm25Service
-                    .updateCharacteristic(hap.Characteristic.OccupancyDetected, pm25Limit);
                 }
                 break;
 			
