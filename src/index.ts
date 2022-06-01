@@ -220,7 +220,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
    * @param {object} accessory  The accessory in question.
    */
   configureAccessory(accessory: PlatformAccessory): void {
-	  this.log(`Configuring cached accessory ${accessory.displayName}`);
+	  this.log(`Restoring cached accessory ${accessory.displayName}`);
 
 	  switch(accessory.context.accType) {
 	    case 'IAQ':
@@ -262,7 +262,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const serNums: string[] = [];
 
 	  // Add accessories for each Awair device (IAQ, Display Mode, LED Mode)
-	  this.devices.forEach(device => {
+	  this.devices.forEach(async (device): Promise<void> => {
 
 	    // determine if device supports Display and LED modes - Omni, R2 and Element
 	    // eslint-disable-next-line max-len
@@ -299,7 +299,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // Remove old, no longer used or ignored devices. Also remove Device and LED modes if disabled after adding.
 	  const badAccessories: Array<PlatformAccessory> = [];
-	  this.accessories.forEach(cachedAccessory => {
+	  this.accessories.forEach((cachedAccessory): void => {
 	    if (!serNums.includes(cachedAccessory.context.serial) || 
 					this.ignoredDevices.includes(cachedAccessory.context.serial) ||
 					((cachedAccessory.context.accType === 'Display') && !this.enableModes) ||
@@ -310,8 +310,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.removeAwairAccessories(badAccessories);
 				
 	  // Get initial Air and Local data for all devices. Initialize displayMode & ledMode for Omni, Awair-r2 and Element if enabled.
-	  this.accessories.forEach(async accessory => {
-	    switch (accessory.context.accType) {
+    if(this.config.logging){
+      this.log('--- Initializing IAQ data, Display mode and LED mode for Awair devices ---');
+    }
+    this.accessories.forEach(async (accessory): Promise<void> => {
+      switch (accessory.context.accType) {
 	      case 'IAQ':
 	        if (this.config.logging) {
 	          this.log(`[${accessory.context.serial}] Getting initial IAQ status for ${accessory.context.deviceUUID}`);
@@ -331,62 +334,58 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }	
 	        break;
 	      case 'Display': // applies to Omni, Awair-r2 and Element
-	        if (this.enableModes) {
-	          if (this.config.logging) {
-	            // eslint-disable-next-line max-len
-	            this.log(`[${accessory.context.serial}] Initializing Display Mode for ${accessory.context.deviceUUID} to ${accessory.context.displayMode}`);
-	          }
-						
-	          // initialize Display Mode switch array: 'Score' if new accessory (addDisplayModeAccessory), cached value if existing
-	          this.displayModes.forEach(displayMode => {
-	            if (accessory.context.displayMode === displayMode) {
-	              this.putDisplayMode(accessory, accessory.context.displayMode); // update device mode to match
-	              const activeSwitch = accessory.getService(`${accessory.context.name}: ${displayMode}`); 
-	              if (activeSwitch) {
-	                activeSwitch
-	                  .updateCharacteristic(hap.Characteristic.On, true); // set switch 'on'
-	              }
-	            } else { // set switch to 'off'
-	              const inactiveSwitch = accessory.getService(`${accessory.context.name}: ${displayMode}`); 
-	              if (inactiveSwitch) {
-	                inactiveSwitch
-	                  .updateCharacteristic(hap.Characteristic.On, false); // set switch 'off'
-	              }										
-	            }
-	          });
-	        }
+          if (this.config.logging) {
+            // eslint-disable-next-line max-len
+            this.log(`[${accessory.context.serial}] Setting Display Mode for ${accessory.context.deviceUUID} to ${accessory.context.displayMode}`);
+          }
+					
+          // initialize Display Mode switch array: 'Score' if new accessory (addDisplayModeAccessory), cached value if existing
+          this.displayModes.forEach(async (displayMode): Promise<void> => {
+            if (accessory.context.displayMode === displayMode) { // set switch 'on'
+              await this.putDisplayMode(accessory, accessory.context.displayMode); // update device mode to match
+              const activeSwitch = accessory.getService(`${accessory.context.name}: ${displayMode}`);
+              if (activeSwitch) {
+                activeSwitch
+                  .updateCharacteristic(hap.Characteristic.On, true);
+              }
+            } else { // set switch to 'off'
+              const inactiveSwitch = accessory.getService(`${accessory.context.name}: ${displayMode}`);
+              if (inactiveSwitch) {
+                inactiveSwitch
+                  .updateCharacteristic(hap.Characteristic.On, false);
+              }
+            }
+          });
 	        break;
 	      case 'LED': // applies to Omni, Awair-r2 and Element
-	        if (this.enableModes) {
-	          if (this.config.logging) {
-	            // eslint-disable-next-line max-len
-	            this.log(`[${accessory.context.serial}] Initializing LED Mode for ${accessory.context.deviceUUID} to ${accessory.context.ledMode}, brightness ${accessory.context.ledBrightness}`);
-	          }
+          if (this.config.logging) {
+            // eslint-disable-next-line max-len
+            this.log(`[${accessory.context.serial}] Setting LED Mode for ${accessory.context.deviceUUID} to ${accessory.context.ledMode}, brightness ${accessory.context.ledBrightness}`);
+          }
 
-	          // initialize LED Mode switch array: 'Auto' if new accessory (addLEDModeAccessory), cached value if existing
-	          this.ledModes.forEach(ledMode => {
-	            if (accessory.context.ledMode === ledMode) { // set switch 'on'
-	              this.putLEDMode(accessory, accessory.context.ledMode, accessory.context.ledBrightness); // update device LED mode to match
-	              const activeSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
-	              if (activeSwitch && ledMode !== 'Manual"') { // 'Auto' or 'Sleep'
-	                activeSwitch
-	                  .updateCharacteristic(hap.Characteristic.On, true);
-	            	}
-	              if (activeSwitch && ledMode === 'Manual') { // if 'Manual' also set 'Brightness'
-	                activeSwitch
-	                  .updateCharacteristic(hap.Characteristic.On, true);
-	                activeSwitch // only set brightness on active switch
-	                  .updateCharacteristic(hap.Characteristic.Brightness, accessory.context.ledBrightness);
-	            	}
-	            } else { // set switch to 'off
-	              const inactiveSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
-	              if (inactiveSwitch) {
-	                inactiveSwitch
-	                  .updateCharacteristic(hap.Characteristic.On, false);
-	              }
-	          	}
-	          });
-	        }
+          // initialize LED Mode switch array: 'Auto' if new accessory (addLEDModeAccessory), cached value if existing
+          this.ledModes.forEach(async (ledMode): Promise<void> => {
+            if (accessory.context.ledMode === ledMode) { // set switch 'on'
+              await this.putLEDMode(accessory, accessory.context.ledMode, accessory.context.ledBrightness); // update device LED mode
+              const activeSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
+              if (activeSwitch && ledMode !== 'Manual"') { // 'Auto' or 'Sleep'
+                activeSwitch
+                  .updateCharacteristic(hap.Characteristic.On, true);
+              }
+              if (activeSwitch && ledMode === 'Manual') { // if 'Manual' also set 'Brightness'
+                activeSwitch
+                  .updateCharacteristic(hap.Characteristic.On, true);
+                activeSwitch // only set brightness on active switch
+                  .updateCharacteristic(hap.Characteristic.Brightness, accessory.context.ledBrightness);
+              }
+            } else { // set switch to 'off
+              const inactiveSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
+              if (inactiveSwitch) {
+                inactiveSwitch
+                  .updateCharacteristic(hap.Characteristic.On, false);
+              }
+            }
+          });
 	        break;
 	      default:
 	        this.log('Error: Accessory not of type IAQ, Display or LED.');
@@ -395,8 +394,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 		
 	  // start Device Air and Local data collection according to 'polling_interval' settings
+    if(this.config.logging){
+      this.log('--- Starting Air and Local data collection ---');
+    }
 	  setInterval(() => {
-	    this.accessories.forEach(async accessory => { // only applies to IAQ accessory type
+	    this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
 	      if (accessory.context.accType === 'IAQ') { 
 	        if (this.config.logging) {
 	          this.log(`[${accessory.context.serial}] Updating status...${accessory.context.deviceUUID}`);
@@ -415,7 +417,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // if Omni device exists in account & detection enabled, start 30 second loop to test for Omni occupancy status
 	  if(this.omniPresent && this.config.occupancyDetection) {
 	    setInterval(() => {
-	      this.accessories.forEach(async accessory => { // only applies to IAQ accessory type
+	      this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
 	        if ((accessory.context.deviceType === 'awair-omni') && (accessory.context.accType === 'IAQ')) {
 	          await this.getOccupancyStatus(accessory);
 	        }
@@ -443,7 +445,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      this.userTier = response.data.tier;
 	      const permissions: any[] = response.data.permissions;
 								
-	      permissions.forEach(permission => {
+	      permissions.forEach((permission): void => {
 	        switch (permission.scope){
 					  case 'FIFTEEN_MIN':
 	            this.fifteenMin = parseFloat(permission.quota);
@@ -495,6 +497,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          this.log('getUserInfo error: Endpoint not defined.');
 	          break;
 	      }
+        if(this.config.logging){
+      	this.log('getUserInfo: Completed');
+        }
+
 	    })
     	.catch(error => {
 	      if(this.config.logging){
@@ -519,7 +525,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      this.devices = response.data.devices;
 	      if(this.config.logging){
-	      	this.log(`getAwairDevices: number discovered: ${this.devices.length}`);
+	      	this.log(`getAwairDevices: ${this.devices.length} devices discovered`);
 	      }
 	      for (let i = 0; i < this.devices.length; i++) {
 	        if(!this.devices[i].macAddress.includes('70886B')) { // check if 'end user' or 'test' device
@@ -644,8 +650,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {array} - array of Accessories to be removed from Platform
 	 */
   removeAwairAccessories(accessories: Array<PlatformAccessory>): void {
-	  accessories.forEach(accessory => {
-	    this.log(`${accessory.context.name} is removed from HomeBridge.`);
+	  accessories.forEach((accessory): void => {
+	    this.log(`${accessory.context.name} ${accessory.context.accType} is removed from HomeBridge.`);
 	    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 	    this.accessories.splice(this.accessories.indexOf(accessory), 1);
 	  });
@@ -1217,8 +1223,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
 	    this.addDisplayModeServices(accessory);
 
-	  	this.addAccessoryInfo(accessory);
-		
 	    // register the accessory
 	    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 
@@ -1245,7 +1249,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log(`${accessory.context.name} identify requested!`);
 	  });
 		
-	  this.displayModes.forEach(displayMode => {
+	  this.displayModes.forEach((displayMode): void => {
 	    accessory.getService(`${accessory.context.name}: ${displayMode}`)!.getCharacteristic(hap.Characteristic.On)
 	      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
 	        this.changeDisplayMode(accessory, displayMode);
@@ -1397,8 +1401,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
 	  	this.addLEDModeServices(accessory);
 
-	  	this.addAccessoryInfo(accessory);
-		
 	    // register the accessory
 	    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 			

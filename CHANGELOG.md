@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.6
+* [Housekeeping] Plug-in initialization code and logging improvements.
+* [Housekeeping] Update dependent node modules to latest versions.
+
 ## v5.9.5
 * [Enhancement] Add option to enable/disable VOC and PM2.5 binary limit switches.
 * [Housekeeping] Update dependent node modules to latest versions.
