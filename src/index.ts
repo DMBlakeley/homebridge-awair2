@@ -220,8 +220,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
    * @param {object} accessory  The accessory in question.
    */
   configureAccessory(accessory: PlatformAccessory): void {
-	  this.log(`Restoring cached accessory ${accessory.displayName}`);
-
+    if(this.config.logging){
+      this.log(`Restoring cached accessory deviceUUID: ${accessory.context.deviceUUID}, UUID: ${accessory.UUID}`);
+    }
+		
 	  switch(accessory.context.accType) {
 	    case 'IAQ':
 	      // make sure VOC and PM2.5 alert services are added if enabled after initial plug-in configuration
@@ -563,6 +565,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // if IAQ accessory does _not_ exist, initialze as new
 	  if (!accessory) {  
 	    const uuid = hap.uuid.generate(device.deviceUUID);
+      if(this.config.logging){
+        this.log(`Adding deviceUUID: ${device.deviceUUID}, UUID: ${uuid}`);
+      }
     	accessory = new Accessory(device.name, uuid);
 
 	    // Using 'context' property of PlatformAccessory saves information to accessory cache

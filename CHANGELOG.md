@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.7
+* [Debugging] Add additional logging for homebridge accessory UUID during addition of new Awair device and recovery from cache for existing Awair devices.
+
 ## v5.9.6
 * [Housekeeping] Plug-in initialization code and logging improvements.
 * [Housekeeping] Update dependent node modules to latest versions.
