@@ -221,7 +221,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
    */
   configureAccessory(accessory: PlatformAccessory): void {
     if(this.config.logging){
-      this.log(`Restoring cached accessory deviceUUID: ${accessory.context.deviceUUID}, UUID: ${accessory.UUID}`);
+      // eslint-disable-next-line max-len
+      this.log(`Restoring cached accessory deviceUUID: ${accessory.context.deviceUUID}, ${accessory.context.accType}, UUID: ${accessory.UUID}`);
     }
 		
 	  switch(accessory.context.accType) {
@@ -557,16 +558,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log(`[${device.macAddress}] Initializing platform accessory ${device.name}...`);
 	  }
 		
-	  // check if IAQ accessory exists
+	  // check if IAQ accessory exists in cache
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return ((cachedAccessory.context.serial === device.macAddress) && (cachedAccessory.context.accType === 'IAQ'));
+	    return ((cachedAccessory.context.deviceUUID === device.deviceUUID) && (cachedAccessory.context.accType === 'IAQ'));
 	  });
 		
-	  // if IAQ accessory does _not_ exist, initialze as new
+	  // if IAQ accessory does NOT exist in cache, initialze as new
 	  if (!accessory) {  
 	    const uuid = hap.uuid.generate(device.deviceUUID);
       if(this.config.logging){
-        this.log(`Adding deviceUUID: ${device.deviceUUID}, UUID: ${uuid}`);
+        this.log(`Adding deviceUUID: ${device.deviceUUID}, IAQ, UUID: ${uuid}`);
       }
     	accessory = new Accessory(device.name, uuid);
 
@@ -1200,7 +1201,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // check if Awair device 'displayMode' accessory exists
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return ((cachedAccessory.context.serial === data.macAddress) && (cachedAccessory.context.accType === 'Display'));
+	    return ((cachedAccessory.context.deviceUUID === data.deviceUUID) && (cachedAccessory.context.accType === 'Display'));
 	  });
 				
 	  // if displayMode accessory does not exist in cache, initialze as new
@@ -1381,7 +1382,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // check if Awair device 'ledMode' accessory exists
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return ((cachedAccessory.context.serial === data.macAddress) && (cachedAccessory.context.accType === 'LED'));
+	    return ((cachedAccessory.context.deviceUUID === data.deviceUUID) && (cachedAccessory.context.accType === 'LED'));
 	  });
 		
 	  // if ledMode accessory does not exist in cache, initialze as new
