@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge Awair2",
   "name": "homebridge-awair2",
-  "version": "5.9.8",
+  "version": "5.9.9",
   "description": "HomeKit integration of Awair air quality monitor as Dynamic Platform.",
   "main": "dist/index.js",
   "scripts": {
@@ -66,6 +66,6 @@
   "dependencies": {
     "axios": "^0.27.2",
     "minimist": ">=1.2.6",
-    "optimist": "^0.6.1"
+    "optimist": "^0.5.2"
   }
 }

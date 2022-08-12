@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.9
+* [Enhancement] Verify Awair server status prior to axios.get call to Awair servers (axios 'validateStatus' option). Add additional error logging.
+* [Housekeeping] Update dependent node modules to latest versions.
+
 ## v5.9.8
 * [Housekeeping] Check if device exists based on `deviceUUID` rather than `serial` for consistency with cache restore checks. `deviceUUID` used as basis for Homebridge `UUID`.
 * [Logging] Add accType to logging messages added in v5.9.7 so that UUIDs can be more easily tracked.

@@ -438,7 +438,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
 	    },
-	  };
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+    };
 
 	  await axios.get(url, options)
     	.then(response => {
@@ -507,7 +508,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getUserInfo error: ${error}`);
+	        this.log(`getUserInfo error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -522,6 +523,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -542,7 +544,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getAwairDevices error: ${error}`);
+	        this.log(`getAwairDevices error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -826,6 +828,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': 'Bearer ' + this.config.token,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -1051,7 +1054,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     		})
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] updateAirQualityData error: ${error}`);
+	        this.log(`[${accessory.context.serial}] updateAirQualityData error: ${error.toJson}`);
 	      }
 	  	});
     return;
@@ -1323,6 +1326,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      Authorization: `Bearer ${this.config.token}`,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -1339,7 +1343,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error}`);
+	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -1353,8 +1357,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const body = {'mode': mode.toLowerCase()};
 	  const options = {
 	    headers: {
-	      Authorization: `Bearer ${this.config.token}`,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 		
 	  await axios.put<any>(url, body, options)
@@ -1365,7 +1370,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putDisplayMode error: ${error} for ${accessory.context.deviceUUID}`);
+	        this.log(`[${accessory.context.serial}] putDisplayMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 	  accessory.context.displayMode = mode; // 'context.displayMode' is Mixed case
@@ -1544,8 +1549,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/led`;
 	  const options = {
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -1564,7 +1570,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error}`);
+	        this.log(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -1581,8 +1587,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	  const options = {
 	    headers: {
-	      Authorization: 'Bearer ' + this.config.token,
+	      'Authorization': 'Bearer ' + this.config.token,
 	    },
+      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.put<any>(url, body, options)
@@ -1593,7 +1600,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putLEDMode error: ${error} for ${accessory.context.deviceUUID}`);
+	        this.log(`[${accessory.context.serial}] putLEDMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 
