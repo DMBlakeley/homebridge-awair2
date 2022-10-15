@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.9.10
+* [Security] Address potential vunerabilites by updating to `minimist ^1.2.7` and `optimist ^0.5.2`.
+* [Housekeeping] Update dependent node modules to latest versions.
+
 ## v5.9.9
 * [Enhancement] Verify Awair server status prior to axios.get call to Awair servers (axios 'validateStatus' option). Add additional error logging.
 * [Housekeeping] Update dependent node modules to latest versions.
