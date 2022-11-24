@@ -29,14 +29,12 @@ The plugin will fetch new data based on selected `endpoint` and User Account tie
 With iOS16, the layout, icons and status were refined in the iOS/iPadOS/macOS Home apps. Temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen. If you select this icon a screen opens with all of the Climate devices in your HomeKit.
 
 ![iOS16 Climate](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_climate.gif)
-![iOS16 Climate](./screenshots/ios16_climate.gif)
 
 For those with multiple Awair devices, you can optionally list the macAddress of the device (found on the back or bottom of the device) which you want to exclude from HomeKit.
 
 For Awair Omni, battery charge level, charging status, low battery, light level and occupancy detection based on ambient sound level [experimental] are also provided using the Local Sensors capability which is configured in the Awair App. 
 
 ![iOS16 Local API](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_local_api.gif)
-![iOS16 Local API](./screenshots/ios16_local_api.gif)
 
 Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status section.
 
