@@ -58,7 +58,6 @@ The Awair2 plugin queries your Awair account to determine devices that you have 
 You will need to request access to the [Awair Developer Console](https://developer.getawair.com) to obtain your Developer Token (`token`). You can also request your Developer Token directly through the Awair App on your iPhone. From the App, select 'Awair+' in the lower right hand corner, then select 'Awair APIs', select 'Cloud API' and finally 'Get API Token'.
 
 ![iOS16 Developer Token](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_developer_token.gif)
-![iOS16 Developer Token](./screenshots/ios16_developer_token.gif)
 
 The [Awair Developer API Documentation](https://docs.developer.getawair.com) explains the inner workings of the Awair Developer API, but for the most part is not necessary to use this plugin.
 
