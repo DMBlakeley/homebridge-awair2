@@ -91,12 +91,19 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  this.api = api;
 	  this.accessories = []; // store restored cached accessories here
 
-	  // We need Developer token or we're not starting.
+	  // We need Developer token or we're not starting. Check if length of Developer token is xx characters long.
 	  if(!this.config.token) {
 	    this.log('Awair Developer token not specified. Reference installation instructions.');
 	    return;
 	  }
 		
+    if(!this.config.token.startsWith('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9')) {
+	    this.log('Awair Developer token is not valid. Please check that token is entered correctly with no leading spaces.');
+	    return;
+    }
+
+    this.log('Developer token is valid, loading Awair devices from account.');
+
 	  // check for Optional entries in config.json
 	  if ('userType' in this.config) {
 	    this.userType = this.config.userType;
@@ -234,7 +241,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
             accessory.addService(hap.Service.OccupancySensor, `${accessory.context.name}: TVOC Limit`, '0');
           }
           const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
-          if (!pm25Service && (accessory.context.deviceType !== 'awair')) {
+          if (!pm25Service) {
             accessory.addService(hap.Service.OccupancySensor, `${accessory.context.name}: PM2.5 Limit`, '1');
           }
         }
@@ -267,7 +274,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Add accessories for each Awair device (IAQ, Display Mode, LED Mode)
 	  this.devices.forEach(async (device): Promise<void> => {
 
-	    // determine if device supports Display and LED modes - Omni, R2 and Element
+	    // determine if device supports Display and LED modes - Omni, R2 and Element, not available on Mint
 	    // eslint-disable-next-line max-len
 	    const modeDevice: boolean = (device.deviceType === 'awair-omni') || (device.deviceType === 'awair-r2') || (device.deviceType === 'awair-element');
 
@@ -300,13 +307,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    }
 	  });
 		
-	  // Remove old, no longer used or ignored devices. Also remove Device and LED modes if disabled after adding.
 	  const badAccessories: Array<PlatformAccessory> = [];
 	  this.accessories.forEach((cachedAccessory): void => {
 	    if (!serNums.includes(cachedAccessory.context.serial) || 
+	  			// Remove old, no longer used or ignored devices.
 					this.ignoredDevices.includes(cachedAccessory.context.serial) ||
+      		// Remove Device and LED modes if disabled after adding.
 					((cachedAccessory.context.accType === 'Display') && !this.enableModes) ||
-					((cachedAccessory.context.accType === 'LED') && !this.enableModes)) {
+					((cachedAccessory.context.accType === 'LED') && !this.enableModes) ||
+      		// Remove Awair, Glow and Glow-C as these devices 'sunsetted' by Awair as of 30 November 2022
+					(cachedAccessory.context.deviceType === 'awair') ||
+					(cachedAccessory.context.deviceType === 'awair-glow') ||
+					(cachedAccessory.context.deviceType === 'awair-glow-c')) {
 	      badAccessories.push(cachedAccessory);
 	    }
 	  });
@@ -530,7 +542,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      this.devices = response.data.devices;
 	      if(this.config.logging){
-	      	this.log(`getAwairDevices: ${this.devices.length} devices discovered`);
+	      	this.log(`getAwairDevices: ${this.devices.length} devices discovered, will only add Omni, Awair-r2, Element and Mint`);
 	      }
 	      for (let i = 0; i < this.devices.length; i++) {
 	        if(!this.devices[i].macAddress.includes('70886B')) { // check if 'end user' or 'test' device
@@ -556,6 +568,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} device - Air Quality device to be added to Platform
 	 */
   addAirQualityAccessory(device: DeviceConfig): void {
+    // Do not add Awair, Glow and Glow-C if present in account as these devices 'sunsetted' by Awair effective 30 November 2022
+    if ((device.deviceType === 'awair') || (device.deviceType === 'awair-glow') || (device.deviceType === 'awair-glow-c')) {
+      return;
+    }
+
 	  if (this.config.logging) {
 	    this.log(`[${device.macAddress}] Initializing platform accessory ${device.name}...`);
 	  }
@@ -585,7 +602,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accessory.addService(hap.Service.TemperatureSensor, `${device.name} Temp`);
 	    accessory.addService(hap.Service.HumiditySensor, `${device.name} Humidity`);
 
-	    if (device.deviceType !== 'awair-mint' && device.deviceType !== 'awair-glow-c') {
+	    if (device.deviceType !== 'awair-mint') { // CO2 not available on Awair Mint
 	      accessory.addService(hap.Service.CarbonDioxideSensor, `${device.name} CO2`);
 	    }
 
@@ -594,10 +611,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
       	// if enabled, add VOC alert service as dummy occupancy sensor
         accessory.addService(hap.Service.OccupancySensor, `${device.name}: TVOC Limit`, '0');
 
-        // if enabled, add PM2.5 alert service as dummy occupancy sensor for all devices except Awair 1st edition which measures PM10.
-        if (device.deviceType !== 'awair') {
+        // if enabled, add PM2.5 alert service as dummy occupancy sensor 
 	      accessory.addService(hap.Service.OccupancySensor, `${device.name}: PM2.5 Limit`, '1');
-        }
       }
 			
 	    // Add Omni Battery and Occupancy service
@@ -682,16 +697,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Air Quality Service
 	  const airQualityService = accessory.getService(`${accessory.context.name} IAQ`);
 	  if (airQualityService) {
-	    if ((accessory.context.devType === 'awair-glow') || (accessory.context.devType === 'awair-glow-c')) {
-	      airQualityService
-	        .setCharacteristic(hap.Characteristic.AirQuality, 100)
-	        .setCharacteristic(hap.Characteristic.VOCDensity, 0);
-	    } else if (accessory.context.devType === 'awair') {
-	      airQualityService
-	        .setCharacteristic(hap.Characteristic.AirQuality, 100)
-	        .setCharacteristic(hap.Characteristic.VOCDensity, 0)
-	        .setCharacteristic(hap.Characteristic.PM10Density, 0);
-	    } else if ((accessory.context.devType === 'awair-mint') || (accessory.context.devType === 'awair-omni') || 
+      if ((accessory.context.devType === 'awair-mint') || (accessory.context.devType === 'awair-omni') || 
 					(accessory.context.devType === 'awair-r2') || (accessory.context.devType === 'awair-element')) {
 	      airQualityService
 	        .setCharacteristic(hap.Characteristic.AirQuality, 100)
@@ -727,7 +733,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  // Carbon Dioxide Service
-	  if ((accessory.context.devType !== 'awair-mint') && (accessory.context.devType !== 'awair-glow-c')) {
+	  if (accessory.context.devType !== 'awair-mint') {
 	    const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
 	    if (carbonDioxideService) {
 	      carbonDioxideService
@@ -855,22 +861,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        if (this.airQualityMethod === 'awair-aqi') {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors));
-	        // eslint-disable-next-line max-len
-	        } else if ((this.airQualityMethod === 'awair-pm') && !((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
-	          airQualityService // only use awair-pm for Omni, Mint, Awair, Awair-R2, Element
+	        } else if (this.airQualityMethod === 'awair-pm') {
+	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, sensors)); // pass response data
-	        // eslint-disable-next-line max-len
-	        } else if ((this.airQualityMethod === 'awair-pm') && ((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
-	          airQualityService // for Glow or Glow-C use awair-aqi if awair-pm selected
-	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
-	        // eslint-disable-next-line max-len
-	        } else if ((this.airQualityMethod === 'nowcast-aqi') && !((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
-	          airQualityService // only use nowcast-aqi for Omni, Mint, Awair, Awair-R2, Element
+	        } else if ((this.airQualityMethod === 'nowcast-aqi')) {
+	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertNowcastAqi(accessory, data)); // pass response data
-	        // eslint-disable-next-line max-len
-	        } else if ((this.airQualityMethod === 'nowcast-aqi') && ((accessory.context.deviceType === 'awair-glow') || (accessory.context.deviceType === 'awair-glow-c'))) {
-	          airQualityService // for Glow or Glow-C use awair-aqi if nowcast-aqi selected
-	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, sensors)); 
 	        } else if (this.airQualityMethod === 'awair-score') {
 		  			airQualityService
 		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
@@ -1197,38 +1193,38 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * 
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
-  addDisplayModeAccessory(data: DeviceConfig): void {
+  addDisplayModeAccessory(device: DeviceConfig): void {
 	  if (this.config.logging) {
-	    this.log(`[${data.macAddress}] Initializing Display Mode accessory for ${data.deviceUUID}...`);
+	    this.log(`[${device.macAddress}] Initializing Display Mode accessory for ${device.deviceUUID}...`);
 	  }
 		
 	  // check if Awair device 'displayMode' accessory exists
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return ((cachedAccessory.context.deviceUUID === data.deviceUUID) && (cachedAccessory.context.accType === 'Display'));
+	    return ((cachedAccessory.context.deviceUUID === device.deviceUUID) && (cachedAccessory.context.accType === 'Display'));
 	  });
 				
 	  // if displayMode accessory does not exist in cache, initialze as new
 	  if (!accessory) {  
-  	  const uuid = hap.uuid.generate(`${data.deviceUUID}_Display`); // secondary UUID for Display Mode control
-	    accessory = new Accessory(`${data.name} Display Mode`, uuid);
+  	  const uuid = hap.uuid.generate(`${device.deviceUUID}_Display`); // secondary UUID for Display Mode control
+	    accessory = new Accessory(`${device.name} Display Mode`, uuid);
 
 	    // Using 'context' property of PlatformAccessory saves information to accessory cache
-	    accessory.context.name = data.name;
-	    accessory.context.serial = data.macAddress;
-	    accessory.context.deviceType = data.deviceType;
-	    accessory.context.deviceUUID = data.deviceUUID;
-	    accessory.context.deviceId = data.deviceId;
+	    accessory.context.name = device.name;
+	    accessory.context.serial = device.macAddress;
+	    accessory.context.deviceType = device.deviceType;
+	    accessory.context.deviceUUID = device.deviceUUID;
+	    accessory.context.deviceId = device.deviceId;
 	    accessory.context.accType = 'Display'; // Display Mode accessory type
 	    accessory.context.displayMode = 'Score'; // default for new accessory, initialize Display Mode to 'Score'
 	    						
 	    // If you are adding more than one service of the same type to an accessory, you need to give the service a "name" and "subtype".
-	    accessory.addService(hap.Service.Switch, `${data.name}: Score`, '0'); // displays in HomeKit at first switch position
-	    accessory.addService(hap.Service.Switch, `${data.name}: Temp`, '1');  // remaining switches displayed alphabetically
-	    accessory.addService(hap.Service.Switch, `${data.name}: Humid`, '2');
-	    accessory.addService(hap.Service.Switch, `${data.name}: CO2`, '3');
-	    accessory.addService(hap.Service.Switch, `${data.name}: VOC`, '4');
-	    accessory.addService(hap.Service.Switch, `${data.name}: PM25`, '5');
-	    accessory.addService(hap.Service.Switch, `${data.name}: Clock`, '6');
+	    accessory.addService(hap.Service.Switch, `${device.name}: Score`, '0'); // displays in HomeKit at first switch position
+	    accessory.addService(hap.Service.Switch, `${device.name}: Temp`, '1');  // remaining switches displayed alphabetically
+	    accessory.addService(hap.Service.Switch, `${device.name}: Humid`, '2');
+	    accessory.addService(hap.Service.Switch, `${device.name}: CO2`, '3');
+	    accessory.addService(hap.Service.Switch, `${device.name}: VOC`, '4');
+	    accessory.addService(hap.Service.Switch, `${device.name}: PM25`, '5');
+	    accessory.addService(hap.Service.Switch, `${device.name}: Clock`, '6');
 			
 	    this.addDisplayModeServices(accessory);
 
@@ -1239,7 +1235,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
-	      this.log(`[${data.macAddress}] ${accessory.context.deviceUUID} Display Mode accessory exists, using data from cache`);
+	      this.log(`[${device.macAddress}] ${accessory.context.deviceUUID} Display Mode accessory exists, using data from cache`);
 	    }
 	  }
 	  return;
@@ -1380,35 +1376,35 @@ class AwairPlatform implements DynamicPlatformPlugin {
   /**
 	 * Method to add LED Mode Accessory for Omni, Awair-r2 and Element
 	 */
-  addLEDModeAccessory(data: DeviceConfig): void {
+  addLEDModeAccessory(device: DeviceConfig): void {
 	  if (this.config.logging) {
-	    this.log(`[${data.macAddress}] Initializing LED Mode accessory for ${data.deviceUUID}...`);
+	    this.log(`[${device.macAddress}] Initializing LED Mode accessory for ${device.deviceUUID}...`);
 	  }
 		
 	  // check if Awair device 'ledMode' accessory exists
 	  let accessory = this.accessories.find(cachedAccessory => {
-	    return ((cachedAccessory.context.deviceUUID === data.deviceUUID) && (cachedAccessory.context.accType === 'LED'));
+	    return ((cachedAccessory.context.deviceUUID === device.deviceUUID) && (cachedAccessory.context.accType === 'LED'));
 	  });
 		
 	  // if ledMode accessory does not exist in cache, initialze as new
 	  if (!accessory) {
-  	  const uuid = hap.uuid.generate(`${data.deviceUUID}_LED`); // secondary UUID for LED Mode control
-	    accessory = new Accessory(`${data.name} LED Mode`, uuid);
+  	  const uuid = hap.uuid.generate(`${device.deviceUUID}_LED`); // secondary UUID for LED Mode control
+	    accessory = new Accessory(`${device.name} LED Mode`, uuid);
 			
 	    // Using 'context' property of PlatformAccessory saves information to accessory cache
-	    accessory.context.name = data.name;
-	    accessory.context.serial = data.macAddress;
-	    accessory.context.deviceType = data.deviceType;
-	    accessory.context.deviceUUID = data.deviceUUID;
-	    accessory.context.deviceId = data.deviceId;
+	    accessory.context.name = device.name;
+	    accessory.context.serial = device.macAddress;
+	    accessory.context.deviceType = device.deviceType;
+	    accessory.context.deviceUUID = device.deviceUUID;
+	    accessory.context.deviceId = device.deviceId;
 	    accessory.context.accType = 'LED'; // LED Mode accessory type
 	    accessory.context.ledMode = 'Auto'; // default for new accessory, initialize LED Mode to 'Auto'
 	    accessory.context.ledBrightness = 0; // and Brightness to '0'
 			
 	    // If you are adding more than one service of the same type to an accessory, you need to give the service a "name" and "subtype".
-	    accessory.addService(hap.Service.Switch, `${data.name}: Auto`, '0');  // displays in HomeKit at first switch position
-	    accessory.addService(hap.Service.Switch, `${data.name}: Sleep`, '1'); // remaining switches displayed alphabetically
-	    accessory.addService(hap.Service.Lightbulb, `${data.name}: Manual`);
+	    accessory.addService(hap.Service.Switch, `${device.name}: Auto`, '0');  // displays in HomeKit at first switch position
+	    accessory.addService(hap.Service.Switch, `${device.name}: Sleep`, '1'); // remaining switches displayed alphabetically
+	    accessory.addService(hap.Service.Lightbulb, `${device.name}: Manual`);
 			
 	  	this.addLEDModeServices(accessory);
 
@@ -1419,7 +1415,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
-	      this.log(`[${data.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
+	      this.log(`[${device.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
 	    }
 	  }
 	  return;

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.0
+* [Functionality] Remove support for Awair v1, Glow and Glow-C which are 'sunsetted' by Awair as of 30 Nov 2022. With this change, Awair removed iOS app and Awair Cloud support for these devices which is required by the plug-in.
+* [Housekeeping] Update README.md and Wiki for iOS 16 and removal of 'sunsetted' devices.
+* [Housekeeping] Add check to confirm that Developer Token is valid JSON Web Token (JWT) as condition to starting plugin.
+* [Housekeeping] Bump axios from 0.27.2 to 1.1.3.
+
 ## v5.9.10
 * [Security] Address potential vunerabilites by updating to `minimist ^1.2.7` and `optimist ^0.5.2`.
 * [Housekeeping] Update dependent node modules to latest versions.

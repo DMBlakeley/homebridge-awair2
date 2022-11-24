@@ -42,7 +42,7 @@ export type DeviceConfig = {
   accType: string;
 };
 
-export type UserInfoConfig = {
+export type UserConfig = {
   userTier: string;
   fifteenMin: number;
 	fiveMin: number;
@@ -52,13 +52,13 @@ export type UserInfoConfig = {
 	getTimeZone: number;
 };
 
-export type DisplayModeConfig = {
+export type DisplayConfig = {
   mode: string;  // score, temp, humid, co2, voc, pm25, clock
   clock_mode: string; // 12hr, 24hr
   temp_unit: string; // c, f
 };
 
-export type LEDModeConfig = {
+export type LEDConfig = {
   mode: string; // auto, manual, sleep
   brightness: number; // 0 -> 100 in %
 };

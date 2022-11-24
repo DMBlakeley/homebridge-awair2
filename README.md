@@ -12,33 +12,33 @@ This is a second generation Homebridge Dynamic Platform plugin for the Awair fam
 
 ---
 
-<u><h3 align=center>NOTE:</h3></u>
-When migrating from `homebridge-awair` to `homebridge-awair2` or from `v5.8.14` to `v5.9.x` please first uninstall `homebridge-awair` (copy your Developer Token first), restart Homebridge to clear 'homebridge-awair2' cached accessories, install `homebridge-awair2`, add your Developer Token to configuration, and finally restart Homebridge one more time. 
+<u><h3 align=center>NOTES:</h3></u>
 
-Alternately you may remove your Awair accessory from the Homebridge single device cache found in Homebridge Settings followed by Homebridge restart. Display and LED mode accessories do not need to be removed.
+`v5.10.x` removes support for Awair v1 (including Awair Baby), Awair Glow, and Awair Glow-C. These devices have been "sunsetted" by Awair as of 30 November 2022. These devices are no longer supported by the Awair iOS app or the Awair Cloud which the plugin relies on. Additional details can be found [here](https://support.getawair.com/hc/en-us/articles/9948422782999-How-to-identify-device-models-and-features-that-will-close-by-Nov-30-2022).
 
-With either method you will need to check that your Awair device is assigned to the correct HomeKit room and verify that HomeKit Automations which use your Awair device are correct.
+`v5.9.x` introduced binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
+
+`v5.7.x` introduced control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
 
 ---
 
-The Awair2 plugin will query your Awair account using a Developer Token to determine registered Awair devices which were setup through the Awair app on your iOS device. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair 1st Edition, Awair Glow, Awair Mint, Awair Omni, Awair 2nd Edition, Awair Glow C, or Awair Element) and provide sensor status and value (e.g. temperature, humidity, carbon dioxide, TVOC, dust/PM2.5/PM10, Omni lux, and Omni battery) to HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+The Awair2 plugin will query your Awair account using a Developer Token to determine registered Awair devices which were setup through the Awair iOS app. While running, the plugin will fetch current sensor conditions for each Awair device (e.g. Awair Mint, Awair Omni, Awair 2nd Edition, or Awair Element) and provide sensor status and value (e.g. temperature, humidity, carbon dioxide, TVOC, PM2.5, Omni lux, and Omni battery) to HomeKit. You can look at the current Awair information via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
 The plugin will fetch new data based on selected `endpoint` and User Account tier. For 'Hobbyist' tier, `15-min-avg` endpoint samples every 15 minutes, `5-min-avg` every 5 minutes, `latest` every 5 minutes and `raw` every 3.3 minutes (200 seconds). The main difference between the `latest` and `raw` endpoints is that you can define a `limit` (i.e. number of consecutive data points) for the `raw` endpoint, in order to create your own averaging (e.g. `.../raw?limit=12` for a 2 minute average.
 
-v5.7.x of the plugin introduced control of the Awair device display for Awair Omni, Awair r2, and Awair Element. Reference Wiki for details and examples of HomeKit automations for this feature.
+With iOS16, the layout, icons and status were refined in the iOS/iPadOS/macOS Home apps. Temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen. If you select this icon a screen opens with all of the Climate devices in your HomeKit.
 
-v5.9.x of the plugin introduced binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
-
-With iOS14, the icons and status have been refined in the iOS/iPadOS/macOS Home app. 
-, temperature and humidity are grouped under a single "climate" status icon at the top of the HomeKit screen (first screenshots below). If you select this icon a screen opens with all of the Climate devices in your HomeKit home (second screenshot).
-
-![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image.png)
+![iOS16 Climate](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_climate.gif)
+![iOS16 Climate](./screenshots/ios16_climate.gif)
 
 For those with multiple Awair devices, you can optionally list the macAddress of the device (found on the back or bottom of the device) which you want to exclude from HomeKit.
 
-For Awair Omni, battery charge level, charging status, low battery, light level and occupancy detection based on ambient sound level [experimental] are also provided using the Local Sensors capability which is configured in the Awair App (reference screenshot below). Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status section (see third and fourth screenshots).
+For Awair Omni, battery charge level, charging status, low battery, light level and occupancy detection based on ambient sound level [experimental] are also provided using the Local Sensors capability which is configured in the Awair App. 
 
-![iOS14 Screenshots](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/Image2.png)
+![iOS16 Local API](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_local_api.gif)
+![iOS16 Local API](./screenshots/ios16_local_api.gif)
+
+Battery Status does not appear as a separate tile in the HomeKit interface. Battery charge level and status will be found in the Status menu for each of the sensors. A low battery indication will be identified as an alert in the HomeKit status section.
 
 ---
 
@@ -52,12 +52,15 @@ Acknowledgment to @Sunoo for the homebridge-philips-air plugin which was used as
 # Installation
 
 1. Install homebridge, reference [Homebridge Wiki](https://github.com/homebridge/homebridge/wiki)
-2. Install this plugin using: `[sudo] npm install -g homebridge-awair2`
+2. The easiest way to install the Awair2 plugin is through the `homebridge` interface. Select `Plugins` at the top menu bar, search for `Awair2` and then select install. Alternately, the plugin may be installed from the command line using: `[sudo] npm install -g homebridge-awair2`. 
 3. Update your configuration file. See the sample below.
 
 The Awair2 plugin queries your Awair account to determine devices that you have registered. This is the same informaton that you have entered via the Awair app on your iOS device.
 
 You will need to request access to the [Awair Developer Console](https://developer.getawair.com) to obtain your Developer Token (`token`). You can also request your Developer Token directly through the Awair App on your iPhone. From the App, select 'Awair+' in the lower right hand corner, then select 'Awair APIs', select 'Cloud API' and finally 'Get API Token'.
+
+![iOS16 Developer Token](https://github.com/DMBlakeley/homebridge-awair2/blob/master/screenshots/ios16_developer_token.gif)
+![iOS16 Developer Token](./screenshots/ios16_developer_token.gif)
 
 The [Awair Developer API Documentation](https://docs.developer.getawair.com) explains the inner workings of the Awair Developer API, but for the most part is not necessary to use this plugin.
 
