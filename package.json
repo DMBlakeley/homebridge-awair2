@@ -61,7 +61,7 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.2.1",
     "minimist": "^1.2.7",
     "optimist": "^0.5.2"
   }
