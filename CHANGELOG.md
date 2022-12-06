@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.2
+* [Housekeeping] Add 'ambient.d.ts' src file as workaround when updating to Homebridge 1.6.0 for "node_modules/hap-nodejs/dist/lib/Advertiser.d.ts:5:29 - error TS7016: Could not find a declaration file for module '@homebridge/dbus-native'. '…/node_modules/@homebridge/dbus-native/index.js' implicitly has an 'any' type."
+
 ## v5.10.1
 * [Housekeeping] Roll back axios from 1.1.3 to 0.27.2 to address plug-in startup errors.
 
