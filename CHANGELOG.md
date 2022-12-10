@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.3
+* [Housekeeping] Update `node.js` compatible build versions. Add `18.x`, remove `12.x`, as Homebridge supports versions `14.x`, `16.x` and `18.x`.
+* [Housekeeping] Update `package.json` `engines` and `dependencies` to current supported versions.
+
 ## v5.10.2
 * [Housekeeping] Add 'ambient.d.ts' src file as workaround when updating to Homebridge 1.6.0 for "node_modules/hap-nodejs/dist/lib/Advertiser.d.ts:5:29 - error TS7016: Could not find a declaration file for module '@homebridge/dbus-native'. '…/node_modules/@homebridge/dbus-native/index.js' implicitly has an 'any' type."
 
