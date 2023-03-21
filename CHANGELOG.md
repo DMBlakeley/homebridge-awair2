@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.4
+* [Enhancement] Check if tvoc > 100,000 and if so set to 100,000.
+* [Housekeeping] Update devDependencies to latest versions.
+* [Housekeeping] Improved logging.
+
 ## v5.10.3
 * [Housekeeping] Update `node.js` compatible build versions. Add `18.x`, remove `12.x`, as Homebridge supports versions `14.x`, `16.x` and `18.x`.
 * [Housekeeping] Update `package.json` `engines` and `dependencies` to current supported versions.

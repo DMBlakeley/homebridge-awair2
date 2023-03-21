@@ -11,7 +11,7 @@ import {
   CharacteristicValue,
   DynamicPlatformPlugin,
   HAP,
-  Logging,
+  Logger,
   PlatformAccessory,
   PlatformAccessoryEvent,
   PlatformConfig,
@@ -35,7 +35,7 @@ export = (api: API): void => {
 };
 
 class AwairPlatform implements DynamicPlatformPlugin {
-  public readonly log: Logging;
+  public readonly log: Logger;
   public readonly api: API;
   public config: AwairPlatformConfig;
 	
@@ -85,7 +85,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
    * @param config  The platform's config.json section as object.
    * @param api  The homebridge API.
    */
-  constructor(log: Logging, config: PlatformConfig, api: API) {
+  constructor(log: Logger, config: PlatformConfig, api: API) {
 	  this.log = log;
 	  this.config = config as unknown as AwairPlatformConfig;
 	  this.api = api;
@@ -93,16 +93,16 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  // We need Developer token or we're not starting. Check if length of Developer token is xx characters long.
 	  if(!this.config.token) {
-	    this.log('Awair Developer token not specified. Reference installation instructions.');
+	    this.log.error('Awair Developer token not specified. Reference installation instructions.');
 	    return;
 	  }
 		
     if(!this.config.token.startsWith('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9')) {
-	    this.log('Awair Developer token is not valid. Please check that token is entered correctly with no leading spaces.');
+	    this.log.error('Awair Developer token is not valid. Please check that token is entered correctly with no leading spaces.');
 	    return;
     }
 
-    this.log('Developer token is valid, loading Awair devices from account.');
+    this.log.info('Developer token is valid, loading Awair devices from account.');
 
 	  // check for Optional entries in config.json
 	  if ('userType' in this.config) {
@@ -139,7 +139,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.limit = 1; // no 'limit' applied to 'latest' endpoint, produces exactly one value
 	        break;
 	      default:
-	        this.log('Error: Endpoint not defined in Awair account.');
+	        this.log.error('Error: Endpoint not defined in Awair account.');
 	        break;
 	    }
 	  }
@@ -153,7 +153,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  if (this.carbonDioxideThreshold < this.carbonDioxideThresholdOff) {
-	    this.log ('"Carbon Dioxide Threshold Off" must be less than "Carbon Dioxide Threshold", using defaults.');
+	    this.log.warn ('"Carbon Dioxide Threshold Off" must be less than "Carbon Dioxide Threshold", using defaults.');
 	    this.carbonDioxideThreshold = 1000;
 	    this.carbonDioxideThresholdOff = 800;
 	  }
@@ -172,7 +172,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
       }
 			
       if (this.tvocThreshold <= this.tvocThresholdOff) {
-        this.log ('"Total VOC Threshold Off" must be less than "Total VOC Threshold", using defaults.');
+        this.log.warn ('"Total VOC Threshold Off" must be less than "Total VOC Threshold", using defaults.');
         this.tvocThreshold = 1000;
         this.tvocThresholdOff = 800;
       }
@@ -186,7 +186,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
       }
 			
       if (this.pm25Threshold <= this.pm25ThresholdOff) {
-        this.log ('"PM2.5 Threshold Off" must be less than "PM2.5 Threshold", using defaults.');
+        this.log.warn ('"PM2.5 Threshold Off" must be less than "PM2.5 Threshold", using defaults.');
         this.pm25Threshold = 35;
         this.pm25ThresholdOff = 20;
       }
@@ -215,7 +215,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
      * This event can also be used to start discovery of new accessories.
      */
 	  api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
-	    this.log('homebridge-awair2 platform didFinishLaunching');
+	    this.log.info('homebridge-awair2 platform didFinishLaunching');
 	    this.didFinishLaunching();
 	  });
   }
@@ -229,7 +229,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory): void {
     if(this.config.logging){
       // eslint-disable-next-line max-len
-      this.log(`Restoring cached accessory deviceUUID: ${accessory.context.deviceUUID}, ${accessory.context.accType}, UUID: ${accessory.UUID}`);
+      this.log.info(`Restoring cached accessory deviceUUID: ${accessory.context.deviceUUID}, ${accessory.context.accType}, UUID: ${accessory.UUID}`);
     }
 		
 	  switch(accessory.context.accType) {
@@ -301,7 +301,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    } else {
 	      if (this.config.logging) {
 	        // conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
-	        this.log(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or is ` 
+	        this.log.warn(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or is ` 
 						+ 'test device (requires development mode enabled to use).');
 	      }
 	    }
@@ -326,13 +326,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 				
 	  // Get initial Air and Local data for all devices. Initialize displayMode & ledMode for Omni, Awair-r2 and Element if enabled.
     if(this.config.logging){
-      this.log('--- Initializing IAQ data, Display mode and LED mode for Awair devices ---');
+      this.log.info('--- Initializing IAQ data, Display mode and LED mode for Awair devices ---');
     }
     this.accessories.forEach(async (accessory): Promise<void> => {
       switch (accessory.context.accType) {
 	      case 'IAQ':
 	        if (this.config.logging) {
-	          this.log(`[${accessory.context.serial}] Getting initial IAQ status for ${accessory.context.deviceUUID}`);
+	          this.log.info(`[${accessory.context.serial}] Getting initial IAQ status for ${accessory.context.deviceUUID}`);
 	        }
 	        await this.updateAirQualityData(accessory); 
 				
@@ -351,7 +351,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      case 'Display': // applies to Omni, Awair-r2 and Element
           if (this.config.logging) {
             // eslint-disable-next-line max-len
-            this.log(`[${accessory.context.serial}] Setting Display Mode for ${accessory.context.deviceUUID} to ${accessory.context.displayMode}`);
+            this.log.info(`[${accessory.context.serial}] Setting Display Mode for ${accessory.context.deviceUUID} to ${accessory.context.displayMode}`);
           }
 					
           // initialize Display Mode switch array: 'Score' if new accessory (addDisplayModeAccessory), cached value if existing
@@ -375,7 +375,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      case 'LED': // applies to Omni, Awair-r2 and Element
           if (this.config.logging) {
             // eslint-disable-next-line max-len
-            this.log(`[${accessory.context.serial}] Setting LED Mode for ${accessory.context.deviceUUID} to ${accessory.context.ledMode}, brightness ${accessory.context.ledBrightness}`);
+            this.log.info(`[${accessory.context.serial}] Setting LED Mode for ${accessory.context.deviceUUID} to ${accessory.context.ledMode}, brightness ${accessory.context.ledBrightness}`);
           }
 
           // initialize LED Mode switch array: 'Auto' if new accessory (addLEDModeAccessory), cached value if existing
@@ -403,20 +403,20 @@ class AwairPlatform implements DynamicPlatformPlugin {
           });
 	        break;
 	      default:
-	        this.log('Error: Accessory not of type IAQ, Display or LED.');
+	        this.log.error('Error: Accessory not of type IAQ, Display or LED.');
 	        break;
 	    }
 	  });
 		
 	  // start Device Air and Local data collection according to 'polling_interval' settings
     if(this.config.logging){
-      this.log('--- Starting Air and Local data collection ---');
+      this.log.info('--- Starting Air and Local data collection ---');
     }
 	  setInterval(() => {
 	    this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
 	      if (accessory.context.accType === 'IAQ') { 
 	        if (this.config.logging) {
-	          this.log(`[${accessory.context.serial}] Updating status...${accessory.context.deviceUUID}`);
+	          this.log.info(`[${accessory.context.serial}] Updating status...${accessory.context.deviceUUID}`);
 	        }
 	        await this.updateAirQualityData(accessory);
 	        if (accessory.context.deviceType === 'awair-omni') {
@@ -448,15 +448,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/${this.userType}`;
 	  const options = {
 	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
     };
 
 	  await axios.get(url, options)
     	.then(response => {
 	      if(this.config.logging && this.config.verbose) {
-	        this.log(`userInfo: ${JSON.stringify(response.data)}`);
+	        this.log.info(`userInfo: ${JSON.stringify(response.data)}`);
 	      }
 	      this.userTier = response.data.tier;
 	      const permissions: any[] = response.data.permissions;
@@ -510,17 +510,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          break;
 
 	        default:
-	          this.log('getUserInfo error: Endpoint not defined.');
+	          this.log.error('getUserInfo error: Endpoint not defined.');
 	          break;
 	      }
         if(this.config.logging){
-      	this.log('getUserInfo: Completed');
+      	this.log.info('getUserInfo: Completed');
         }
 
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getUserInfo error: ${error.toJson}`);
+	        this.log.error(`getUserInfo error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -533,7 +533,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/${this.userType}/devices`;
 	  const options = {
 	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
       validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
@@ -542,7 +542,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      this.devices = response.data.devices;
 	      if(this.config.logging){
-	      	this.log(`getAwairDevices: ${this.devices.length} devices discovered, will only add Omni, Awair-r2, Element and Mint`);
+	      	this.log.warn(`getAwairDevices: ${this.devices.length} devices discovered, will only add Omni, Awair-r2, Element and Mint`);
 	      }
 	      for (let i = 0; i < this.devices.length; i++) {
 	        if(!this.devices[i].macAddress.includes('70886B')) { // check if 'end user' or 'test' device
@@ -550,13 +550,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      		this.devices[i].macAddress = devMac.substring(devMac.length - 12); // get last 12 characters
 	        }
 	        if(this.config.logging && this.config.verbose){
-	          this.log(`getAwairDevices: discovered device: [${i}] ${JSON.stringify(this.devices[i])}`);
+	          this.log.info(`getAwairDevices: discovered device: [${i}] ${JSON.stringify(this.devices[i])}`);
 	        }
 	      }
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`getAwairDevices error: ${error.toJson}`);
+	        this.log.error(`getAwairDevices error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -574,7 +574,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     }
 
 	  if (this.config.logging) {
-	    this.log(`[${device.macAddress}] Initializing platform accessory ${device.name}...`);
+	    this.log.info(`[${device.macAddress}] Initializing platform accessory ${device.name}...`);
 	  }
 		
 	  // check if IAQ accessory exists in cache
@@ -586,7 +586,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if (!accessory) {  
 	    const uuid = hap.uuid.generate(device.deviceUUID);
       if(this.config.logging){
-        this.log(`Adding deviceUUID: ${device.deviceUUID}, IAQ, UUID: ${uuid}`);
+        this.log.info(`Adding deviceUUID: ${device.deviceUUID}, IAQ, UUID: ${uuid}`);
       }
     	accessory = new Accessory(device.name, uuid);
 
@@ -641,7 +641,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, using data from cache
 	    if (this.config.logging) {
-	      this.log(`[${device.macAddress}] ${accessory.context.deviceUUID} IAQ accessory exists, using data from cache`);
+	      this.log.info(`[${device.macAddress}] ${accessory.context.deviceUUID} IAQ accessory exists, using data from cache`);
 	    }
 	    if (accessory.context.deviceType === 'awair-omni') {
 	      this.omniPresent = true; // set flag for Occupancy detected loop
@@ -674,7 +674,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   removeAwairAccessories(accessories: Array<PlatformAccessory>): void {
 	  accessories.forEach((accessory): void => {
-	    this.log(`${accessory.context.name} ${accessory.context.accType} is removed from HomeBridge.`);
+	    this.log.warn(`${accessory.context.name} ${accessory.context.accType} is removed from HomeBridge.`);
 	    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 	    this.accessories.splice(this.accessories.indexOf(accessory), 1);
 	  });
@@ -688,10 +688,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   addAirQualityServices(accessory: PlatformAccessory): void {
 	  if (this.config.logging) {
-	    this.log(`[${accessory.context.serial}] Configuring IAQ Services for ${accessory.displayName}`);
+	    this.log.info(`[${accessory.context.serial}] Configuring IAQ Services for ${accessory.displayName}`);
 	  }
 	  accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-	    this.log(`${accessory.context.name} identify requested!`);
+	    this.log.info(`${accessory.context.name} identify requested!`);
 	  });
 
 	  // Air Quality Service
@@ -796,7 +796,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  if(this.config.logging) {
-	    this.log(`[${accessory.context.serial}] addAirQualityServices completed`);
+	    this.log.info(`[${accessory.context.serial}] addAirQualityServices completed`);
 	  }
     return;
   }
@@ -832,7 +832,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/${this.userType}/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/air-data/${this.endpoint}?limit=${this.limit}&desc=true`;
 	  const options = {
 	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
       validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
@@ -841,7 +841,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      const data: any[] = response.data.data;				
 	      if(this.config.logging && this.config.verbose){
-	        this.log(`[${accessory.context.serial}] updateAirQualityData: ${JSON.stringify(response.data.data)}`);
+	        this.log.info(`[${accessory.context.serial}] updateAirQualityData: ${JSON.stringify(response.data.data)}`);
 	      }
 				
 	      // compute time weighted average for each sensor's data
@@ -911,26 +911,26 @@ class AwairPlatform implements DynamicPlatformPlugin {
                     // CO2 HIGH
                     co2Detected = 1;
                     if(this.config.logging){
-                      this.log(`[${accessory.context.serial}] CO2 HIGH: ${co2} > ${this.carbonDioxideThreshold}`);
+                      this.log.warn(`[${accessory.context.serial}] CO2 HIGH: ${co2} > ${this.carbonDioxideThreshold}`);
                     }
                   } else if (co2 <= this.carbonDioxideThresholdOff) {
                     // CO2 LOW
                     co2Detected = 0;
                     if(this.config.logging){
-                      this.log(`[${accessory.context.serial}] CO2 NORMAL: ${co2} < ${this.carbonDioxideThresholdOff}`);
+                      this.log.warn(`[${accessory.context.serial}] CO2 NORMAL: ${co2} < ${this.carbonDioxideThresholdOff}`);
                     }
                   } else if ((co2 > this.carbonDioxideThresholdOff) && (co2 < this.carbonDioxideThreshold)) {
                     // CO2 inbetween, no change
                     if(this.config.logging){
                       // eslint-disable-next-line max-len
-                      this.log(`[${accessory.context.serial}] CO2 INBETWEEN: ${this.carbonDioxideThreshold} > ${co2} > ${this.carbonDioxideThresholdOff}`);
+                      this.log.warn(`[${accessory.context.serial}] CO2 INBETWEEN: ${this.carbonDioxideThreshold} > ${co2} > ${this.carbonDioxideThresholdOff}`);
                     }
                     co2Detected = co2Before;
                   } else {
                     // threshold NOT set
                     co2Detected = 0;
                     if(this.config.logging){
-                      this.log(`[${accessory.context.serial}] CO2: ${co2}`);
+                      this.log.info(`[${accessory.context.serial}] CO2: ${co2}`);
                     }
                   }
 			
@@ -942,7 +942,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                     carbonDioxideService
                       .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
                     if(this.config.logging){
-                      this.log(`[${accessory.context.serial}] Carbon Dioxide low to high.`);
+                      this.log.warn(`[${accessory.context.serial}] Carbon Dioxide low to high.`);
                     }
                   } else if ((co2Before === 1) && (co2Detected === 1)) {
                     // CO2 already high, don't update
@@ -951,11 +951,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
                     carbonDioxideService
                       .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
                     if(this.config.logging){
-                      this.log(`[${accessory.context.serial}] Carbon Dioxide high to low.`);
+                      this.log.warn(`[${accessory.context.serial}] Carbon Dioxide high to low.`);
                     } else {
                       // CO2 unknown...
                       if(this.config.logging){
-                        this.log(`[${accessory.context.serial}] Carbon Dioxide state unknown.`);
+                        this.log.warn(`[${accessory.context.serial}] Carbon Dioxide state unknown.`);
                       }
                     }
                   }
@@ -964,10 +964,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
               case 'voc':
                 const voc = parseFloat(sensors[sensor]);
-                const tvoc = this.convertChemicals( accessory, voc, atmos, temp );
+                let tvoc = this.convertChemicals( accessory, voc, atmos, temp );
+
+                if (tvoc > 100000) {
+                  tvoc = 100000;
+                  this.log.warn(`[${accessory.context.serial}] tvoc > 100000, setting to 100000`);
+                }
 
                 if(this.config.logging){
-                  this.log(`[${accessory.context.serial}] VOC: (${voc} ppb) => TVOC: (${tvoc} ug/m^3)`);
+                  this.log.info(`[${accessory.context.serial}] VOC: (${voc} ppb) => TVOC: (${tvoc} ug/m^3)`);
                 }		
                 airQualityService
                   .updateCharacteristic(hap.Characteristic.VOCDensity, tvoc);
@@ -988,7 +993,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                     }
 
                     if (this.config.logging) {
-                      this.log(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
+                      this.log.info(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
                     }
                     vocService
                       .updateCharacteristic(hap.Characteristic.OccupancyDetected, tvocLimit);
@@ -999,7 +1004,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
               case 'pm25': // PM2.5 (ug/m^3)
                 const pm25 = parseFloat(sensors[sensor]);
                 if(this.config.logging){
-                  this.log(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
+                  this.log.info(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
                 }
                 airQualityService
                   .updateCharacteristic(hap.Characteristic.PM2_5Density, pm25);
@@ -1020,7 +1025,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                     }
 
                     if (this.config.logging) {
-                      this.log(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
+                      this.log.info(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
                     }
                     pm25Service
                       .updateCharacteristic(hap.Characteristic.OccupancyDetected, pm25Limit);
@@ -1041,7 +1046,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
               default:
                 if(this.config.logging){
                   // eslint-disable-next-line max-len
-                  this.log(`[${accessory.context.serial}] updateAirQualityData ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
+                  this.log.warn(`[${accessory.context.serial}] updateAirQualityData ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
                 }
                 break;
             	}
@@ -1050,7 +1055,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     		})
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] updateAirQualityData error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] updateAirQualityData error: ${error.toJson}`);
 	      }
 	  	});
     return;
@@ -1074,7 +1079,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 				
 	      if(this.config.logging && this.config.verbose) {
 	        // eslint-disable-next-line max-len
-	        this.log(`[${accessory.context.serial}] batteryLevel: ${batteryLevel} batteryPlugged: ${batteryPlugged} lowBattery: ${lowBattery}`);
+	        this.log.info(`[${accessory.context.serial}] batteryLevel: ${batteryLevel} batteryPlugged: ${batteryPlugged} lowBattery: ${lowBattery}`);
 	      }
 
 	      const batteryService = accessory.getService(`${accessory.context.name} Battery`);
@@ -1090,7 +1095,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getBatteryStatus error: ${error}`);
+	        this.log.error(`[${accessory.context.serial}] getBatteryStatus error: ${error}`);
 	      }
 	    });
     return;
@@ -1108,7 +1113,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      const omniSpl_a: number = response.data.spl_a;
 	      if(this.config.logging && this.config.verbose) {	
-	        this.log(`[${accessory.context.serial}] spl_a: ${omniSpl_a}`);
+	        this.log.info(`[${accessory.context.serial}] spl_a: ${omniSpl_a}`);
 	      }
 				
 	      if(omniSpl_a > 48.0 && omniSpl_a < accessory.context.minSoundLevel) { // Omni ambient sound level range 48 - 90dBA 
@@ -1117,7 +1122,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        accessory.context.occDetectedNotLevel = accessory.context.minSoundLevel + this.occupancyOffset; // dBA
 	        if(this.config.logging && this.config.verbose) {
 	          // eslint-disable-next-line max-len
-	          this.log(`[${accessory.context.serial}] min spl_a: ${omniSpl_a}dBA -> notDetectedLevel: ${accessory.context.occDetectedNotLevel}dBA, DetectedLevel: ${accessory.context.occDetectedLevel}dBA`);
+	          this.log.info(`[${accessory.context.serial}] min spl_a: ${omniSpl_a}dBA -> notDetectedLevel: ${accessory.context.occDetectedNotLevel}dBA, DetectedLevel: ${accessory.context.occDetectedLevel}dBA`);
 	        }
 	      }
 			
@@ -1131,20 +1136,20 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          // occupancy detected
 	          occupancyStatus = 1;
 	          if(this.config.logging){
-	            this.log(`[${accessory.context.serial}] Occupied: ${omniSpl_a}dBA > ${accessory.context.occDetectedLevel}dBA`);
+	            this.log.info(`[${accessory.context.serial}] Occupied: ${omniSpl_a}dBA > ${accessory.context.occDetectedLevel}dBA`);
 	          }
 	        } else if (omniSpl_a <= accessory.context.occDetectedNotLevel) { 
 	          // unoccupied
 	          occupancyStatus = 0;
 	          if(this.config.logging){
 	            // eslint-disable-next-line max-len
-	            this.log(`[${accessory.context.serial}] Not Occupied: ${omniSpl_a}dBA < ${accessory.context.occDetectedNotLevel}dBA`);
+	            this.log.info(`[${accessory.context.serial}] Not Occupied: ${omniSpl_a}dBA < ${accessory.context.occDetectedNotLevel}dBA`);
 	          }
 	        } else if ((omniSpl_a > accessory.context.occDetectedNotLevel) && (omniSpl_a < accessory.context.occDetectedLevel)) {
 	          // inbetween ... no change, use current state
 	          if(this.config.logging){
 	            // eslint-disable-next-line max-len
-	            this.log(`[${accessory.context.serial}] Occupancy Inbetween: ${accessory.context.occDetectedNotLevel}dBA < ${omniSpl_a} < ${accessory.context.occDetectedLevel}dBA`);
+	            this.log.info(`[${accessory.context.serial}] Occupancy Inbetween: ${accessory.context.occDetectedNotLevel}dBA < ${omniSpl_a} < ${accessory.context.occDetectedLevel}dBA`);
 	          }
 	        }
 	        occupancyService
@@ -1153,7 +1158,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getOccupancyStatus error: ${error}`);
+	        this.log.error(`[${accessory.context.serial}] getOccupancyStatus error: ${error}`);
 	      }
 	    });
 	  return;
@@ -1171,7 +1176,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     	.then(response => {
 	      const omniLux = (response.data.lux < 0.0001) ? 0.0001 : response.data.lux; // lux is 'latest' value averaged over 10 seconds
 	      if(this.config.logging && this.config.verbose) {	
-	        this.log(`[${accessory.context.serial}] lux: ${omniLux}`);
+	        this.log.info(`[${accessory.context.serial}] lux: ${omniLux}`);
 	      }
 			
 	      const lightLevelSensor = accessory.getService(hap.Service.LightSensor);
@@ -1182,7 +1187,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
     	.catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getLightLevel error: ${error}`);
+	        this.log.error(`[${accessory.context.serial}] getLightLevel error: ${error}`);
 	      }
 	    });
     return;
@@ -1195,7 +1200,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   addDisplayModeAccessory(device: DeviceConfig): void {
 	  if (this.config.logging) {
-	    this.log(`[${device.macAddress}] Initializing Display Mode accessory for ${device.deviceUUID}...`);
+	    this.log.info(`[${device.macAddress}] Initializing Display Mode accessory for ${device.deviceUUID}...`);
 	  }
 		
 	  // check if Awair device 'displayMode' accessory exists
@@ -1235,7 +1240,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
-	      this.log(`[${device.macAddress}] ${accessory.context.deviceUUID} Display Mode accessory exists, using data from cache`);
+	      this.log.warn(`[${device.macAddress}] ${accessory.context.deviceUUID} Display Mode accessory exists, using data from cache`);
 	    }
 	  }
 	  return;
@@ -1248,10 +1253,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   addDisplayModeServices(accessory: PlatformAccessory): void {
 	  if (this.config.logging) {
-	    this.log(`[${accessory.context.serial}] Configuring Display Mode Services for ${accessory.context.deviceUUID}`);
+	    this.log.info(`[${accessory.context.serial}] Configuring Display Mode Services for ${accessory.context.deviceUUID}`);
 	  }
 	  accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-	    this.log(`${accessory.context.name} identify requested!`);
+	    this.log.info(`${accessory.context.name} identify requested!`);
 	  });
 		
 	  this.displayModes.forEach((displayMode): void => {
@@ -1263,7 +1268,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  });
 
 	  if(this.config.logging) {
-	    this.log(`[${accessory.context.serial}] addDisplayModeServices completed for ${accessory.context.deviceUUID}`);
+	    this.log.info(`[${accessory.context.serial}] addDisplayModeServices completed for ${accessory.context.deviceUUID}`);
 	  }
     return;	
   }
@@ -1290,7 +1295,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if (newDisplayMode !== oldDisplayMode) {
 	    if (this.config.logging) {
 	      // eslint-disable-next-line max-len
-	      this.log(`[${accessory.context.serial}] Changing Display Mode for ${accessory.context.deviceUUID} from ${oldDisplayMode} to ${newDisplayMode}`);
+	      this.log.info(`[${accessory.context.serial}] Changing Display Mode for ${accessory.context.deviceUUID} from ${oldDisplayMode} to ${newDisplayMode}`);
 	    }
 			
 	    // turn OFF old switch
@@ -1320,7 +1325,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/display`;
 	  const options = {
 	    headers: {
-	      Authorization: `Bearer ${this.config.token}`,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
       validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
@@ -1328,7 +1333,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  await axios.get(url, options)
 	    .then(response => {
 	      if (this.config.logging && this.config.verbose) {
-	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} response: ${response.data.mode}`);
+	        this.log.info(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} response: ${response.data.mode}`);
 	      }			
 	      this.displayModes.forEach(mode => {
 	        if (mode.toLowerCase() === response.data.mode) {
@@ -1339,7 +1344,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -1361,12 +1366,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  await axios.put<any>(url, body, options)
 	    .then(response => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putDisplayMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
+	        // eslint-disable-next-line max-len
+	        this.log.info(`[${accessory.context.serial}] putDisplayMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
 	      }
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putDisplayMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
+	        this.log.error(`[${accessory.context.serial}] putDisplayMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 	  accessory.context.displayMode = mode; // 'context.displayMode' is Mixed case
@@ -1378,7 +1384,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   addLEDModeAccessory(device: DeviceConfig): void {
 	  if (this.config.logging) {
-	    this.log(`[${device.macAddress}] Initializing LED Mode accessory for ${device.deviceUUID}...`);
+	    this.log.info(`[${device.macAddress}] Initializing LED Mode accessory for ${device.deviceUUID}...`);
 	  }
 		
 	  // check if Awair device 'ledMode' accessory exists
@@ -1415,7 +1421,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
-	      this.log(`[${device.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
+	      this.log.error(`[${device.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
 	    }
 	  }
 	  return;
@@ -1426,10 +1432,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   addLEDModeServices(accessory: PlatformAccessory): void {
 	  if (this.config.logging) {
-	    this.log(`[${accessory.context.serial}] Configuring LED Mode Services for ${accessory.context.deviceUUID}`);
+	    this.log.info(`[${accessory.context.serial}] Configuring LED Mode Services for ${accessory.context.deviceUUID}`);
 	  }
 	  accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-	    this.log(`${accessory.context.name} identify requested!`);
+	    this.log.info(`${accessory.context.name} identify requested!`);
 	  });
 		
 		// Auto
@@ -1451,14 +1457,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		  .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
 		    const brightness = parseInt(JSON.stringify(value));
 		    if (this.config.logging) {
-		      this.log(`[${accessory.context.serial}] LED brightness for ${accessory.context.deviceUUID} was set to: ${value}`);
+		      this.log.info(`[${accessory.context.serial}] LED brightness for ${accessory.context.deviceUUID} was set to: ${value}`);
 		    }
 		    this.changeLEDMode(accessory, 'Manual', brightness);
 		    callback();
 		  });
 			
 	  if(this.config.logging) {
-	    this.log(`[${accessory.context.serial}] addLEDModeServices completed for ${accessory.context.deviceUUID}`);
+	    this.log.info(`[${accessory.context.serial}] addLEDModeServices completed for ${accessory.context.deviceUUID}`);
 	  }
 		return;
   }
@@ -1472,7 +1478,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Auto or Sleep mode active and reselected which changes mode to OFF -> reset switch to ON, return
 	  if (((newLEDMode === 'Auto') && (oldLEDMode === 'Auto')) || ((newLEDMode === 'Sleep') && (oldLEDMode === 'Sleep'))) {
 	    if (this.config.logging) {
-	      this.log(`[${accessory.context.serial}] No change, resetting ${oldLEDMode} switch`);
+	      this.log.info(`[${accessory.context.serial}] No change, resetting ${oldLEDMode} switch`);
 	    }
 	    const currentSwitch = accessory.getService(`${accessory.context.name}: ${oldLEDMode}`);		
 	    setTimeout(() => { // need short delay before your can reset the switch
@@ -1487,7 +1493,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Manual mode already active and reselected -> assume Brightness change, return
 	  if ((newLEDMode === 'Manual') && (oldLEDMode === 'Manual')) {
 	    if (this.config.logging) {
-	      this.log(`[${accessory.context.serial}] Updating brightness for ${accessory.context.deviceUUID} to ${newBrightness}`);
+	      this.log.info(`[${accessory.context.serial}] Updating brightness for ${accessory.context.deviceUUID} to ${newBrightness}`);
 	    }
 	    const oldSwitch = accessory.getService(`${accessory.context.name}: ${oldLEDMode}`);
 	    if (oldSwitch) {
@@ -1507,7 +1513,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if (newLEDMode !== oldLEDMode) { 
 	    if (this.config.logging) {
 	      // eslint-disable-next-line max-len
-	      this.log(`[${accessory.context.serial}] Changing LED Mode for ${accessory.context.deviceUUID} to ${newLEDMode}, brightness ${newBrightness}`);
+	      this.log.info(`[${accessory.context.serial}] Changing LED Mode for ${accessory.context.deviceUUID} to ${newLEDMode}, brightness ${newBrightness}`);
 	    }
 			
 	    // turn OFF old switch
@@ -1545,7 +1551,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/led`;
 	  const options = {
 	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
       validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
@@ -1554,7 +1560,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    .then(response => {
 	      if (this.config.logging && this.config.verbose) {
 	        // eslint-disable-next-line max-len
-	        this.log(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} response: ${response.data.mode}, brightness: ${response.data.brightness}`);
+	        this.log.info(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} response: ${response.data.mode}, brightness: ${response.data.brightness}`);
 	      }
 
 	      this.ledModes.forEach(mode => { 
@@ -1566,7 +1572,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error.toJson}`);
 	      }
 	    });
     return;
@@ -1583,7 +1589,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	  const options = {
 	    headers: {
-	      'Authorization': 'Bearer ' + this.config.token,
+	      'Authorization': `Bearer ${this.config.token}`,
 	    },
       validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
 	  };
@@ -1591,12 +1597,13 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  await axios.put<any>(url, body, options)
 	    .then(response => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putLEDMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
+	        // eslint-disable-next-line max-len
+	        this.log.info(`[${accessory.context.serial}] putLEDMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
 	      }
 	    })
 	    .catch(error => {
 	      if(this.config.logging){
-	        this.log(`[${accessory.context.serial}] putLEDMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
+	        this.log.error(`[${accessory.context.serial}] putLEDMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 
@@ -1610,7 +1617,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const vocString = '(' + voc + ' * ' + this.vocMw + ' * ' + atmos + ' * 101.32) / ((273.15 + ' + temp + ') * 8.3144)';
 	  const tvoc = (voc * this.vocMw * atmos * 101.32) / ((273.15 + temp) * 8.3144);
 	  if(this.config.logging && this.config.verbose){
-	    this.log(`[${accessory.context.serial}] ppb => ug/m^3 equation: ${vocString}`);
+	    this.log.info(`[${accessory.context.serial}] ppb => ug/m^3 equation: ${vocString}`);
 	  }
 	  return tvoc;
   }
@@ -1688,14 +1695,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        break;
 	      default:
 	        if(this.config.logging && this.config.verbose){
-	          this.log(`[${accessory.context.serial}] convertAwairAqi ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
+	          // eslint-disable-next-line max-len
+	          this.log.info(`[${accessory.context.serial}] convertAwairAqi ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
 	        }
 	        aqiArray.push(0);
 	        break;
 	    }
 	  }
 	  if(this.config.logging && this.config.verbose){
-	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
+	    this.log.info(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
 	  return Math.max(...aqiArray); // aqi is maximum value of voc, pm25 and dust
   }
@@ -1740,14 +1748,15 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        break;
 	      default:
 	        if(this.config.logging && this.config.verbose){
-	          this.log(`[${accessory.context.serial}] convertAwairAqi ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
+	          // eslint-disable-next-line max-len
+	          this.log.info(`[${accessory.context.serial}] convertAwairAqi ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
 	        }
 	        aqiArray.push(0);
 	        break;
 	    }
 	  }
 	  if(this.config.logging && this.config.verbose){
-	    this.log(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
+	    this.log.info(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
 	  // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
 	  return Math.max(...aqiArray); 
@@ -1761,7 +1770,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    .map((pmValue: { value: number; }) => pmValue.value); // return just pm value
 			
 	  if(this.config.logging && this.config.verbose){
-	    this.log(`[${accessory.context.serial}] pmRawData`, pmRawData);
+	    this.log.info(`[${accessory.context.serial}] pmRawData`, pmRawData);
 	  }
 
 	  // calculate weightFactor of full 48 points
@@ -1781,7 +1790,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  if(this.config.logging && this.config.verbose){
-	    this.log(`[${accessory.context.serial}] pmData`, pmData);
+	    this.log.info(`[${accessory.context.serial}] pmData`, pmData);
 	  }
 		
 	  // calculate NowCast value
@@ -1795,7 +1804,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 	  const nowCast: number = nowCastNumerator / nowCastDenominator; // in ug/m3		
 	  if(this.config.logging){
-	    this.log(`[${accessory.context.serial}] pmMax: ${pmMax}, pmMin: ${pmMin}, weightFactor: ${weightFactor}, nowCast: ${nowCast}`);
+	    this.log.info(`[${accessory.context.serial}] pmMax: ${pmMax}, pmMin: ${pmMin}, weightFactor: ${weightFactor}, nowCast: ${nowCast}`);
 	  }
 
 	  // determine nowCast level
