@@ -6,7 +6,7 @@
 </table>
 
 # homebridge-awair2
-[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) ![npm-version](https://badgen.net/npm/v/homebridge-awair2?icon=npm&label) ![npm-downloads](https://badgen.net/npm/dt/homebridge-awair2?icon=npm&label) 
 
 This is a second generation Homebridge Dynamic Platform plugin for the Awair family of air quality monitors implemented in TypeScript for Nfarina's [Homebridge project](https://github.com/nfarina/homebridge). The Awair2 plugin is based on the [homebridge-awair](https://github.com/deanlyoung/homebridge-awair#readme) plugin developed by Dean L. Young.
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.5
+* [Housekeeping] Additional logging improvements.
+* [Housekeeping] Update README.md to include npm version and number of npm downloads.
+
 ## v5.10.4
 * [Enhancement] Check if tvoc > 100,000 and if so set to 100,000.
 * [Housekeeping] Update devDependencies to latest versions.

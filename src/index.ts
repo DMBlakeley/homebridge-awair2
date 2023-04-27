@@ -42,7 +42,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   // PlaftformAccessory defaults
   private readonly manufacturer = 'Awair';
   private readonly accessories: PlatformAccessory[] = [];
-  private devices: any[] = []; // array of Awair devices
+  private devices: any [] = []; // array of Awair devices
   private ignoredDevices: string [] = []; // array of ignored Awair devices
 
   // default values when not defined in config.json
@@ -1046,7 +1046,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
               default:
                 if(this.config.logging){
                   // eslint-disable-next-line max-len
-                  this.log.warn(`[${accessory.context.serial}] updateAirQualityData ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
+                  this.log.info(`[${accessory.context.serial}] updateAirQualityData ignoring ${JSON.stringify(sensor)}: ${parseFloat(sensors[sensor])}`);
                 }
                 break;
             	}
