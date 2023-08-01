@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.7
+* [Housekeeping] Update devDependencies for "@typescript-eslint/eslint-plugin": "^6.1.0", and "@typescript-eslint/parser": "^6.1.0".
+
 ## v5.10.6
 * [Housekeeping] Update supported node-versions to [16.x, 18.x, 20.x] dropping 14.x which is end-of-life.
 
