@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.8
+* Update node-version: [18.x, 20.x, 22.x], remove 16.x which is no longer supported by homebridge.
+
 ## v5.10.7
 * [Housekeeping] Update devDependencies for "@typescript-eslint/eslint-plugin": "^6.1.0", and "@typescript-eslint/parser": "^6.1.0".
 
