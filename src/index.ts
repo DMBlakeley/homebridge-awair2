@@ -77,6 +77,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private displayModes: string[] = ['Score', 'Temp', 'Humid', 'CO2', 'VOC', 'PM25', 'Clock'];
   private ledModes: string[] = ['Auto', 'Sleep', 'Manual'];
   private enableModes = false;
+  private temperatureUnits = 'c'; // default
+  private timeFormat = '12hr'; // default
 
   /**
    * The platform class constructor used when registering a plugin.
@@ -203,6 +205,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if ('enableModes' in this.config) {
 	    this.enableModes = this.config.enableModes;
 	  }
+
+    if ('modeTemp' in this.config) {
+      if (this.config.modeTemp === true) {
+        this.temperatureUnits = 'f';
+      }
+    }
+	  
+    if ('modeTime' in this.config) {
+      if (this.config.modeTime === true) {
+        this.timeFormat = '24hr';
+      }
+    }
 	  
 	  if ('ignoredDevices' in this.config) {
 	    this.ignoredDevices = this.config.ignoredDevices;
@@ -1355,7 +1369,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 */
   async putDisplayMode(accessory: PlatformAccessory, mode: string): Promise<void> {
 	  const url = `https://developer-apis.awair.is/v1/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/display`;
-	  const body = {'mode': mode.toLowerCase()};
+	  const body = {'mode': mode.toLowerCase(), 'temp_unit': this.temperatureUnits, 'clock_mode': this.timeFormat};
 	  const options = {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,

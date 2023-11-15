@@ -23,6 +23,7 @@ export type AwairPlatformConfig = {
   logging: boolean;
   verbose: boolean;
   development: boolean;
+  modeTemp: boolean;
   ignoredDevices: [string];
 };
 
@@ -54,8 +55,8 @@ export type UserConfig = {
 
 export type DisplayConfig = {
   mode: string;  // score, temp, humid, co2, voc, pm25, clock
-  clock_mode: string; // 12hr, 24hr
-  temp_unit: string; // c, f
+  clock_mode: string; // 12hr, 24hr (default = 12hr)
+  temp_unit: string; // c, f (default = c)
 };
 
 export type LEDConfig = {

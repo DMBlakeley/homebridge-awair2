@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.10.9
+* Add plug-in Setting option to select temperature units (C or F) and time format (12hr or 24hr) when Display Modes are enabled.
+
 ## v5.10.8
 * Update node-version: [18.x, 20.x], remove 16.x which is no longer supported by homebridge.
 

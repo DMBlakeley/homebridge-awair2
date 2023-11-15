@@ -148,6 +148,22 @@
         "type": "boolean",
         "default": false
       },
+      "modeTemp": {
+        "title": "Select to display 'F' for Display Mode temperature (Default = 'C')",
+        "type": "boolean",
+        "default": false,
+        "condition": {
+          "functionBody": "return model.enableModes === true;"
+        }
+      },
+      "modeTime": {
+        "title": "Select to display '24hr' for Display Mode time (Default = '12hr')",
+        "type": "boolean",
+        "default": false,
+        "condition": {
+          "functionBody": "return model.enableModes === true;"
+        }
+      },
       "development": {
         "title": "Development Mode - Whether to enable Development mode to allow use of 'test' Awair devices lacking production/Awair OUI formatted Serial numbers.",
         "type": "boolean",
@@ -198,6 +214,8 @@
         "logging",
         "verbose",
         "enableModes",
+        "modeTemp",
+        "modeTime",
         "development"
       ]
     },
