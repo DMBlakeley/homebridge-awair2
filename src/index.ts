@@ -47,7 +47,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
   // default values when not defined in config.json
   private userType = 'users/self';
-  private airQualityMethod = 'awair-aqi';
+  private airQualityMethod = 'awair-score';
   private endpoint = '15-min-avg';
   private limit = 1;
   private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
@@ -79,6 +79,10 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private enableModes = false;
   private temperatureUnits = 'c'; // default
   private timeFormat = '12hr'; // default
+
+  // HomeKit API score definitions and new Awair score definitions
+  private homekitScore: string[] = ['Error', 'Excellent', 'Good', 'Fair', 'Inferior', 'Poor'];
+  private awairScore: string[] = ['Error', 'Good', 'Acceptable', 'Moderate', 'Poor', 'Hazardous'];
 
   /**
    * The platform class constructor used when registering a plugin.
@@ -883,11 +887,19 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertNowcastAqi(accessory, data)); // pass response data
 	        } else if (this.airQualityMethod === 'awair-score') {
 		  			airQualityService
-		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
+		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
 	        } else {
 	          airQualityService
-	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(score));
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
 	        }
+
+          // Add new Awair descriptor to Homebridge tile as part of device name.
+          // eslint-disable-next-line max-len
+          if (this.airQualityMethod === 'awair-score' && ((accessory.context.deviceType === 'awair-element') || (accessory.context.deviceType === 'awair-omni'))) {
+            airQualityService
+              // eslint-disable-next-line max-len
+              .updateCharacteristic(hap.Characteristic.Name, accessory.context.name + ' ' + this.awairScore[this.convertScore(accessory, score)] );
+          }
 
           const temp: number = sensors.temp;
           const atmos = 1;
@@ -1636,20 +1648,37 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  return tvoc;
   }
 
-  convertScore(score: number): number {
-	  if (score >= 90) {
-	    return 1; // EXCELLENT
-	  } else if (score >= 80 && score < 90) {
-	    return 2; // GOOD
-	  } else if (score >= 60 && score < 80) {
-	    return 3; // FAIR
-	  } else if (score >= 50 && score < 60) {
-	    return 4; // INFERIOR
-	  } else if (score < 50) {
-	    return 5; // POOR
-	  } else {
-	    return 0; // Error
-	  }
+  convertScore(accessory: PlatformAccessory, score: number): number {
+    // new Score for Awair Element as of Dec 2024
+    if ((accessory.context.deviceType === 'awair-element') || (accessory.context.deviceType === 'awair-omni')) { 
+      if (score >= 81) {
+        return 1; // GOOD but displayed as EXCELLENT in HomeKit
+      } else if (score >= 61 && score < 80) {
+        return 2; // ACCEPTABLE but displayed as GOOD in HomeKit
+      } else if (score >= 41 && score < 60) {
+        return 3; // MODERATE but displayed as FAIR in HomeKit
+      } else if (score >= 21 && score < 40) {
+        return 4; // POOR but displayed as INFERIOR in HomeKit
+      } else if (score < 20) {
+        return 5; // HAZADAROUS but displayed as POOR in HomeKit
+      } else {
+        return 0; // Error
+      }
+    } else { // no change for Awair-r2
+      if (score >= 90) {
+        return 1; // EXCELLENT
+      } else if (score >= 80 && score < 90) {
+        return 2; // GOOD
+      } else if (score >= 60 && score < 80) {
+        return 3; // FAIR
+      } else if (score >= 50 && score < 60) {
+        return 4; // INFERIOR
+      } else if (score < 50) {
+        return 5; // POOR
+      } else {
+        return 0; // Error
+      }
+    }
   }
 
   convertAwairAqi(accessory: PlatformAccessory, sensors: any[]): number {

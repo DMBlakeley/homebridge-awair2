@@ -14,6 +14,22 @@ This is a second generation Homebridge Dynamic Platform plugin for the Awair fam
 
 <u><h3 align=center>NOTES:</h3></u>
 
+`v5.11.x` Incorporates updated Awair Score methodology for Awair Element (Firmware v1.4.0) and Awair Omni (Firmware v1.8.0) introduced by Awair in Dec 2023. See [Reference](https://support.getawair.com/hc/en-us/articles/19504367520023#h_01HE1QVJ85K55N7QS8NAVBXWJM).
+
+The IAQ Score System integrates readings from five sensors: Temperature, Humidity, Volatile Organic Compounds (VOC), Carbon Dioxide (CO2), and Particulate Matter (PM2.5). In the previous system, each factor contributed equally (approximately 20%) to the total score. The new air quality scoring system begins with normalizing sensor data to a scale where 0 represents good quality and 1 indicates the worst, assigning values that correspond to a range of scores. The final Indoor Air Quality (IAQ) score is a composite of the highest normalized values from CO2, VOC, and PM2.5 readings.
+
+The new Awair Score level is displayed in Homebridge on the Accessory tile for Awair Element and Awair Omni in addition to the Homekit level. Awair r2 only displays the Homekit level. Unfortunately, HomeKit levels are defined by the HomeKit API and cannot be customized.
+
+Score | new Awair level | HomeKit level
+:-: | :----: | :---:
+1 | GOOD | EXCELLENT
+2 | ACCEPTABLE | GOOD
+3 | MODERATE | FAIR
+4 | POOR | INFERIOR
+5 | HAZADAROUS | POOR
+
+iOS Awair app version 4.7.3 is required to view the updated scores.
+
 `v5.10.x` removes support for Awair v1 (including Awair Baby), Awair Glow, and Awair Glow-C. These devices have been "sunsetted" by Awair as of 30 November 2022. These devices are no longer supported by the Awair iOS app or the Awair Cloud which the plugin relies on. Additional details can be found [here](https://support.getawair.com/hc/en-us/articles/9948422782999-How-to-identify-device-models-and-features-that-will-close-by-Nov-30-2022).
 
 `v5.9.x` introduced binary limit switches for VOC and PM2.5. The switches are implemented as dummy `occupancy sensors` and can be used to trigger HomeKit automations.
@@ -80,7 +96,7 @@ Parameter | Optional? | Description
 `platform` |  | The Homebridge Accessory (REQUIRED, must be exactly: `Awair2`)
 `token` |  | Developer Token (REQUIRED, see [Installation](#installation)) above.
 `userType` | Y | The type of user account (Default = `users/self`, options: `users/self` or `orgs/###`, where ### is the Awair Organization `orgId`)
-`airQualityMethod` | Y | Air quality calculation method used to define the Air Quality Chracteristic (Default = `awair-aqi`, options: `awair-aqi`, `awair-pm`, `awair-score` or `nowcast-aqi`)
+`airQualityMethod` | Y | Air quality calculation method used to define the Air Quality Chracteristic (Default = `awair-score`, options: `awair-aqi`, `awair-pm`, `awair-score` or `nowcast-aqi`)
 `endpoint` | Y | The `/air-data/` endpoint to use (Default = `15-min-avg`, options: `15-min-avg`, `5-min-avg`, `raw` or `latest`)
 `limit` | Y | Number of consecutive data points returned per request, used for custom averaging of sensor values (Default = `1` i.e. one `15-min-avg`). Defaults to 1 for  `latest`.
 `carbonDioxideThreshold` | Y | The level at which HomeKit will trigger an alert for the CO2 in ppm. (Default = `1000`)

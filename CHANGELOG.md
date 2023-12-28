@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.11.0
+* Incorporates updated Awair Score methodology for Awair Element (Firmware v1.4.0) and Awair Omni (Firmware v1.8.0) introduced by Awair in Dec 2023. NOTE that updated methology does not apply to Awair R2. See Awair [Reference](https://support.getawair.com/hc/en-us/articles/19504367520023#h_01HE1QVJ85K55N7QS8NAVBXWJM) and plugin README for additional details.
+* Change default IAQ method to `awair-score`.
+
 ## v5.10.9
 * Add plug-in Setting option to select temperature units (C or F) and time format (12hr or 24hr) when Display Modes are enabled.
 
