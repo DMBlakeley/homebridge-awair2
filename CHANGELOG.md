@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.0
+* Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
+
 ## v5.11.0
 * Incorporates updated Awair Score methodology for Awair Element (Firmware v1.4.0) and Awair Omni (Firmware v1.8.0) introduced by Awair in Dec 2023. NOTE that updated methology does not apply to Awair R2. See Awair [Reference](https://support.getawair.com/hc/en-us/articles/19504367520023#h_01HE1QVJ85K55N7QS8NAVBXWJM) and plugin README for additional details.
 * Change default IAQ method to `awair-score`.
