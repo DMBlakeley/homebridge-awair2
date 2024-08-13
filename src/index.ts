@@ -1447,7 +1447,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
 	  } else { // acessory exists, use data from cache
 	    if (this.config.logging) {
-	      this.log.error(`[${device.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
+	      this.log.warn(`[${device.macAddress}] ${accessory.context.deviceUUID} LED Mode accessory exists, using data from cache`);
 	    }
 	  }
 	  return;

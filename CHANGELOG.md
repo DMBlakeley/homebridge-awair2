@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.1
+* Housekeeping of error warning levels for consistency.
+* Address Server-Side Request Forgery in axios by making minimum axios revision level 1.7.3 - https://github.com/advisories/GHSA-8hc4-vh64-cxmj
+
 ## v5.12.0
 * Confirm plug-in operation with Homebridge 2.0.0. Updated package.json per homebridge instructions.
 
