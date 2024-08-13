@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.2
+* Update @typescript-eslint/eslint-plugin to "^8.0.0", and @typescript-eslint/parser: "^8.0.1".
+* Update eslint to "^9.0.0".
+
 ## v5.12.1
 * Housekeeping of error warning levels for consistency.
 * Address Server-Side Request Forgery in axios by making minimum axios revision level 1.7.3 - https://github.com/advisories/GHSA-8hc4-vh64-cxmj
