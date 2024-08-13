@@ -58,8 +58,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   private tvocThresholdOff = 800;
   private pm25Threshold = 35;
   private pm25ThresholdOff = 20;	
-  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-  private vocMw = 72.66578273019740; // Molecular Weight (g/mol) of a reference VOC gas or mixture
+  private vocMw = 72.6657827301974; // Molecular Weight (g/mol) of a reference VOC gas or mixture
   private occupancyOffset = 2.0;
   private occDetectedNotLevel = 55; // min level is 50dBA  +/- 3dBA due to dust sensor fan noise in Omni
   private occDetectedLevel = 60;
@@ -1168,7 +1167,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          // unoccupied
 	          occupancyStatus = 0;
 	          if(this.config.logging){
-	            // eslint-disable-next-line max-len
 	            this.log.info(`[${accessory.context.serial}] Not Occupied: ${omniSpl_a}dBA < ${accessory.context.occDetectedNotLevel}dBA`);
 	          }
 	        } else if ((omniSpl_a > accessory.context.occDetectedNotLevel) && (omniSpl_a < accessory.context.occDetectedLevel)) {
