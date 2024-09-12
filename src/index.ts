@@ -102,7 +102,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    return;
 	  }
 		
-    if(!this.config.token.startsWith('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9')) {
+    // eslint-disable-next-line max-len
+    if(!(this.config.token.startsWith('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9') || this.config.token.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'))) {
 	    this.log.error('Awair Developer token is not valid. Please check that token is entered correctly with no leading spaces.');
 	    return;
     }

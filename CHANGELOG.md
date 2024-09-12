@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.3
+* Add support for updated Developer Token preamble text."
+
 ## v5.12.2
 * Update @typescript-eslint/eslint-plugin to "^8.0.0", and @typescript-eslint/parser: "^8.0.1".
 * Update eslint to "^9.0.0".
