@@ -16,7 +16,11 @@
     "resolveJsonModule": true,
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "paths": {
+        "*": ["types/*"]
+    }
   },
   "include": [
     "src/**/*"
