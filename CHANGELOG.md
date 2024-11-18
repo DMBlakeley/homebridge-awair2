@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.5
+* Update eslint rules to include `'@typescript-eslint/no-unused-expressions': 'off'` for compatibility with eslint v9.15.0. 
+
 ## v5.12.4
 * Updates for compatibility with Homebridge v1.8.5.
 
