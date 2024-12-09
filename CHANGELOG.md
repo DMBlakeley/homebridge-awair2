@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.6
+* Update node revisions to: [18.x, 20.x, 22.x]
+* Housekeeping
+
 ## v5.12.5
 * Update eslint rules to include `'@typescript-eslint/no-unused-expressions': 'off'` for compatibility with eslint v9.15.0. 
 
