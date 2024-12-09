@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.12.7
+* Correct operation with node v20.x
+
 ## v5.12.6
 * Update node revisions to: [18.x, 20.x, 22.x]
 * Housekeeping
