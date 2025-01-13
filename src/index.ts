@@ -47,10 +47,12 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
   // default values when not defined in config.json
   private userType = 'users/self';
+  private apiMethod = 'cloudAPI';
   private airQualityMethod = 'awair-score';
   private endpoint = '15-min-avg';
   private limit = 1;
   private polling_interval = 900; // default, will be adjusted by account type Tier Quota and endpoint
+  private localPollingInterval = 30;
   private carbonDioxideThreshold = 1000;
   private carbonDioxideThresholdOff = 800;
   private enableTvocPm25 = false;
@@ -115,6 +117,14 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.userType = this.config.userType;
 	  }
 	  
+    if ('apiMethod' in this.config) {
+      this.apiMethod = this.config.apiMethod;
+    }
+
+    if ('localPollingInterval' in this.config) {
+      this.localPollingInterval = (this.config.localPollingInterval < 10) ? 10 : this.config.localPollingInterval; // 10 seconds minimum
+    }
+
 	  if ('airQualityMethod' in this.config) {
 	    this.airQualityMethod = this.config.airQualityMethod;
 	  }
@@ -126,6 +136,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.endpoint = this.config.endpoint;
 	  }
 		
+    if (this.config.apiMethod === 'localAPI') {
+      this.endpoint = 'latest';
+      this.limit = 1;
+    }
+
 	  /* config.limit used for averaging of 'raw', '5-min', and '15-min' data, most recent sample used for 'latest'
 	   * Useful for all endpoints in case you want to rely on a different averaging scheme, for example, a 24 hour average (often used 
 	   * for IAQ calculation) would be easier with the '15-min'avg' endpoint.
@@ -428,8 +443,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  // start Device Air and Local data collection according to 'polling_interval' settings
     if(this.config.logging){
-      this.log.info('--- Starting Air and Local data collection ---');
+      this.log.info('--- Starting Cloud and Local data collection ---');
     }
+
 	  setInterval(() => {
 	    this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
 	      if (accessory.context.accType === 'IAQ') { 
@@ -525,6 +541,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          } else {
 	            this.polling_interval = (this.polling_interval < 60) ? 60 : this.polling_interval; // 60 seconds min for other tiers
 	          }
+            if (this.apiMethod === 'localAPI') {
+              this.polling_interval = this.localPollingInterval;
+            }
 	          break;
 
 	        default:
@@ -839,13 +858,21 @@ class AwairPlatform implements DynamicPlatformPlugin {
     return;
   }
 
+  async updateAirQualityData(accessory: PlatformAccessory): Promise<void> {
+    if (this.apiMethod === 'cloudAPI') {
+      await this.updateCloudAirQualityData(accessory);
+    } else {
+      await this.updateLocalAirQualityData(accessory);
+    }
+  }
+
   /**
 	 * Method to update Awair IAQ data using CloudAPI
 	 * 
 	 * @param {object} accessory - accessory to be updated
 	 */
-  async updateAirQualityData(accessory: PlatformAccessory): Promise<void> {
-	  // Update status for accessory of deviceId
+  async updateCloudAirQualityData(accessory: PlatformAccessory): Promise<void> {
+	  // Update air quality data for accessory of deviceId
 	  // eslint-disable-next-line max-len
 	  const url = `https://developer-apis.awair.is/v1/${this.userType}/devices/${accessory.context.deviceType}/${accessory.context.deviceId}/air-data/${this.endpoint}?limit=${this.limit}&desc=true`;
 	  const options = {
@@ -1086,7 +1113,227 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  	});
     return;
   }
-		
+
+	  /**
+	 * Method to get air quality data using LocalAPI
+	 *
+	 * * @param {object} accessory - accessory to be updated
+	 */
+  
+  async updateLocalAirQualityData(accessory: PlatformAccessory): Promise<void> {
+    // Update air quality data for accessory of deviceId
+    const url = `http://${accessory.context.deviceType.substr(0, 10)}-${accessory.context.serial.substr(6)}/air-data/latest`;
+			
+    await axios.get(url)
+      .then(response => {
+        const data: any = response.data;
+        const score: number = response.data.score;
+
+        const airQualityService = accessory.getService(`${accessory.context.name} IAQ`);
+	      if (airQualityService) {
+	        if (this.airQualityMethod === 'awair-aqi') {
+	          airQualityService
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairAqi(accessory, data));
+	        } else if (this.airQualityMethod === 'awair-pm') {
+	          airQualityService
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertAwairPm(accessory, data)); // pass response data
+	        } else if (this.airQualityMethod === 'awair-score') {
+		  			airQualityService
+		    			.updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
+	        } else {
+	          airQualityService
+	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
+	        }
+
+          // Add new Awair descriptor to Homebridge tile as part of device name.
+          // eslint-disable-next-line max-len
+          if (this.airQualityMethod === 'awair-score' && ((accessory.context.deviceType === 'awair-element') || (accessory.context.deviceType === 'awair-omni'))) {
+            airQualityService
+              // eslint-disable-next-line max-len
+              .updateCharacteristic(hap.Characteristic.Name, accessory.context.name + ' ' + this.awairScore[this.convertScore(accessory, score)] );
+          }
+
+          const temp: number = data.temp;
+          const atmos = 1;
+
+          for (const sensor in data) {
+            switch (sensor) {
+              case 'temp': // Temperature (C)
+                const temperatureService = accessory.getService(`${accessory.context.name} Temp`);
+                if (temperatureService) {
+                  temperatureService
+                    .updateCharacteristic(hap.Characteristic.CurrentTemperature, parseFloat(data[sensor]));
+                }
+                break;
+			
+              case 'humid': // Humidity (%)
+                const humidityService = accessory.getService(`${accessory.context.name} Humidity`);
+                if (humidityService) {
+                  humidityService
+                    .updateCharacteristic(hap.Characteristic.CurrentRelativeHumidity, parseFloat(data[sensor]));
+                }
+                break;
+			
+              case 'co2': // Carbon Dioxide (ppm)
+                const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
+                const co2 = data[sensor];
+                let co2Detected: any;
+			
+                if (carbonDioxideService) {
+                  const co2Before = carbonDioxideService.getCharacteristic(hap.Characteristic.CarbonDioxideDetected).value;
+			
+                  // Logic to determine if Carbon Dioxide should change in Detected state
+                  carbonDioxideService
+                    .updateCharacteristic(hap.Characteristic.CarbonDioxideLevel, parseFloat(co2));
+                  if (co2 >= this.carbonDioxideThreshold) {
+                    // CO2 HIGH
+                    co2Detected = 1;
+                    if(this.config.logging){
+                      this.log.warn(`[${accessory.context.serial}] CO2 HIGH: ${co2} > ${this.carbonDioxideThreshold}`);
+                    }
+                  } else if (co2 <= this.carbonDioxideThresholdOff) {
+                    // CO2 LOW
+                    co2Detected = 0;
+                    if(this.config.logging){
+                      this.log.warn(`[${accessory.context.serial}] CO2 NORMAL: ${co2} < ${this.carbonDioxideThresholdOff}`);
+                    }
+                  } else if ((co2 > this.carbonDioxideThresholdOff) && (co2 < this.carbonDioxideThreshold)) {
+                    // CO2 inbetween, no change
+                    if(this.config.logging){
+                      // eslint-disable-next-line max-len
+                      this.log.warn(`[${accessory.context.serial}] CO2 INBETWEEN: ${this.carbonDioxideThreshold} > ${co2} > ${this.carbonDioxideThresholdOff}`);
+                    }
+                    co2Detected = co2Before;
+                  } else {
+                    // threshold NOT set
+                    co2Detected = 0;
+                    if(this.config.logging){
+                      this.log.info(`[${accessory.context.serial}] CO2: ${co2}`);
+                    }
+                  }
+			
+                  // Prevent sending a Carbon Dioxide detected update if one has not occured
+                  if ((co2Before === 0) && (co2Detected === 0)) {
+                    // CO2 low already, don't update
+                  } else if ((co2Before === 0) && (co2Detected === 1)) {
+                    // CO2 low to high, update
+                    carbonDioxideService
+                      .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
+                    if(this.config.logging){
+                      this.log.warn(`[${accessory.context.serial}] Carbon Dioxide low to high.`);
+                    }
+                  } else if ((co2Before === 1) && (co2Detected === 1)) {
+                    // CO2 already high, don't update
+                  } else if ((co2Before === 1) && (co2Detected === 0)) {
+                    // CO2 high to low, update
+                    carbonDioxideService
+                      .updateCharacteristic(hap.Characteristic.CarbonDioxideDetected, co2Detected);
+                    if(this.config.logging){
+                      this.log.warn(`[${accessory.context.serial}] Carbon Dioxide high to low.`);
+                    } else {
+                      // CO2 unknown...
+                      if(this.config.logging){
+                        this.log.warn(`[${accessory.context.serial}] Carbon Dioxide state unknown.`);
+                      }
+                    }
+                  }
+                }
+                break;
+			
+              case 'voc':
+                const voc = parseFloat(data[sensor]);
+                let tvoc = this.convertChemicals( accessory, voc, atmos, temp );
+
+                if (tvoc > 100000) {
+                  tvoc = 100000;
+                  this.log.warn(`[${accessory.context.serial}] tvoc > 100000, setting to 100000`);
+                }
+
+                if(this.config.logging){
+                  this.log.info(`[${accessory.context.serial}] VOC: (${voc} ppb) => TVOC: (${tvoc} ug/m^3)`);
+                }		
+                airQualityService
+                  .updateCharacteristic(hap.Characteristic.VOCDensity, tvoc);
+
+                // If enabled, set or clear TVOC Limit flag based on Threshold levels
+                if (this.enableTvocPm25) {
+                  const vocService = accessory.getService(`${accessory.context.name}: TVOC Limit`);							
+                  if (vocService) {
+                  // get current tvocLimit state
+                    let tvocLimit: any = vocService.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
+
+                    if ((tvoc >= this.tvocThreshold) && (tvocLimit !== 1)) {  // low -> high
+                      tvocLimit = 1;
+                    } else if ((tvoc <= this.tvocThresholdOff) && (tvocLimit !== 0)) {  // high -> low
+                      tvocLimit = 0;
+                    } else if ((tvoc > this.tvocThresholdOff) && (tvoc < this.tvocThreshold)){
+                    // TVOC inbetween, no change
+                    }
+
+                    if (this.config.logging) {
+                      this.log.info(`[${accessory.context.serial}] tvocLimit: ${tvocLimit}`);
+                    }
+                    vocService
+                      .updateCharacteristic(hap.Characteristic.OccupancyDetected, tvocLimit);
+                  }
+                }
+                break;
+			
+              case 'pm25': // PM2.5 (ug/m^3)
+                const pm25 = parseFloat(data[sensor]);
+                if(this.config.logging){
+                  this.log.info(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
+                }
+                airQualityService
+                  .updateCharacteristic(hap.Characteristic.PM2_5Density, pm25);
+
+                // If enabled, set or clear PM2.5 limit flag based on Threshold levels
+                if (this.enableTvocPm25) {
+                  const pm25Service = accessory.getService(`${accessory.context.name}: PM2.5 Limit`);
+                  if (pm25Service) {
+                  // get current pm25Limit state
+                    let pm25Limit: any = pm25Service.getCharacteristic(hap.Characteristic.OccupancyDetected).value;
+
+                    if ((pm25 >= this.pm25Threshold) && (pm25Limit !== 1)) {  // low -> high
+                      pm25Limit = 1;
+                    } else if ((pm25 <= this.pm25ThresholdOff) && (pm25Limit !== 0)) { // high -> low
+                      pm25Limit = 0;
+                    } else if ((pm25 > this.pm25ThresholdOff) && (pm25 < this.pm25Threshold)){
+                    // PM2.5 inbetween, no change
+                    }
+
+                    if (this.config.logging) {
+                      this.log.info(`[${accessory.context.serial}] pm25Limit: ${pm25Limit}`);
+                    }
+                    pm25Service
+                      .updateCharacteristic(hap.Characteristic.OccupancyDetected, pm25Limit);
+                  }
+                }
+                break;
+			
+              case 'pm10_est': // PM10 (ug/m^3), Element and R2
+                airQualityService
+                  .updateCharacteristic(hap.Characteristic.PM10Density, parseFloat(data[sensor]));
+                break;
+			
+              default:
+                if(this.config.logging){
+                  // eslint-disable-next-line max-len
+                  this.log.info(`[${accessory.context.serial}] updateAirQualityData ignoring ${JSON.stringify(sensor)}: ${parseFloat(data[sensor])}`);
+                }
+                break;
+            	}
+          	}
+	        }					
+      })
+      .catch(error => {
+        if(this.config.logging){
+          this.log.error(`[${accessory.context.serial}] getLocalAirQualityData error: ${error}`);
+        }
+      });
+    return;
+  }
+
   /**
 	 * Method to get Omni battery level and charging status using LocalAPI (must enable in Awair App, firmware v1.3.0 and below)
 	 * 

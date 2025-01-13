@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.13.0
+* Add `localAPI` data collection option for Awair R2, Awair Element and Awair Omni.
+* Update `README.md` with additional information on use of `localAPI`.
+* Update `config.schema.json` to provide configuration for use of `localAPI`.
+
 ## v5.12.7
 * Correct operation with node v20.x
 

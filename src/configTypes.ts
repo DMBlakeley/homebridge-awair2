@@ -2,6 +2,8 @@ export type AwairPlatformConfig = {
   platform: string;
   token: string;
   userType: string;
+  apiMethod: string;
+  localPollingInterval: number;
   airQualityMethod: string;
   endpoint: string;
   polling_interval: number;

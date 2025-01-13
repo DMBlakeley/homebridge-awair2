@@ -20,12 +20,28 @@
         "default": "users/self",
         "description": "The type of User Account. Default = 'users/self', Options: 'users/self' or 'orgs/###', where ### is the Awair Organization 'orgId'."
       },
+      "apiMethod": {
+        "title": "API used for data sampling",
+        "type": "string",
+        "default": "cloudAPI",
+        "enum": ["cloudAPI", "localAPI"],
+        "description": "The type of API used. Default = 'cloudAPI', Option: 'localAPI'."
+      },
+      "localPollingInterval": {
+        "title": "Sampling interval used for local data sampling",
+        "type": "integer",
+        "default": "30",
+        "description": "Sampling interval in seconds when 'localAPI' selected. 10 seconds minimum, 30 seconds recommended.",
+        "condition": {
+          "functionBody": "return model.apiMethod === 'localAPI';"
+        }
+      },
       "airQualityMethod": {
         "title": "Air quality calculation method",
         "type": "string",
         "default": "awair-score",
         "enum": ["awair-aqi", "awair-pm", "awair-score", "nowcast-aqi"],
-        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-score', Options: 'awair-aqi', 'awair-pm', 'awair-score' and 'nowcast-aqi'. Awair-pm and Nowcast-aqi are only available for Omni, Mint, Awair-R2 and Element. When 'awair-pm' selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers. When 'nowcast-api' selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48. The 'awair-score' method maps the Awair Score to an Air Quality value."
+        "description": "Air quality calculation method used to define the Air Quality Chracteristic. Default = 'awair-score', Options: 'awair-aqi', 'awair-pm', 'awair-score' and 'nowcast-aqi'. <br>- The 'awair-score' method maps the Awair Score to an Air Quality value. <br>- When 'awair-pm' is selected, the HomeKit Air Quality tile only reflects the particulates value, which is useful for automating air purifiers. <br>- When 'nowcast-api' is selected, 'endpoint' defaults to '15-min-avg' and 'data points returned' to '48'.<br>- <B>NOTE: 'nowcast-aqi' not supported on localAPI.</B>"
       },
       "endpoint": {
         "title": "The 'air-data' endpoint",
@@ -34,7 +50,7 @@
         "enum": ["15-min-avg", "5-min-avg", "raw", "latest"],
         "description": "The 'air-data' endpoint to use. Default = '15-min-avg', Options: '15-min-avg', '5-min-avg', 'raw', or 'latest'.",
         "condition": {
-          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi';"
+          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi' && model.apiMethod === 'cloudAPI';"
         }
       },
       "limit": {
@@ -43,7 +59,7 @@
         "default": 1,
         "description": "Number of consecutive data points returned per request. Used for custom averaging of sensor values from 'raw' Endpoint. Endpoint of 'latest' defaults to '1'. Default = '1'.",
         "condition": {
-          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi';"
+          "functionBody": "return model.airQualityMethod !== 'nowcast-aqi' && model.apiMethod === 'cloudAPI' && model.endpoint === 'raw';"
         }
       },
       "carbonDioxideThreshold": {
@@ -197,6 +213,8 @@
       "expanded": false,
       "items": [
         "userType",
+        "apiMethod",
+        "localPollingInterval",
         "airQualityMethod",
         "endpoint",
         "limit",
