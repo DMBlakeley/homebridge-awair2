@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.13.1
+* Append .local domain suffix to localAPI calls (credit to Brent Comnes for submission).
+
 ## v5.13.0
 * Add `localAPI` data collection option for Awair R2, Awair Element and Awair Omni.
 * Update `README.md` with additional information on use of `localAPI`.

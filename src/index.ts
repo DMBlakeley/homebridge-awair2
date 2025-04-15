@@ -1122,7 +1122,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   
   async updateLocalAirQualityData(accessory: PlatformAccessory): Promise<void> {
     // Update air quality data for accessory of deviceId
-    const url = `http://${accessory.context.deviceType.substr(0, 10)}-${accessory.context.serial.substr(6)}/air-data/latest`;
+    const url = `http://${accessory.context.deviceType.substr(0, 10)}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
 			
     await axios.get(url)
       .then(response => {
@@ -1340,7 +1340,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain battery status
 	 */
   async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/settings/config/data`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/settings/config/data`;
 
 	  await axios.get(url)
     	.then(response => {
@@ -1380,7 +1380,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
   async getOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/air-data/latest`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
 
     await axios.get(url)
     	.then(response => {
@@ -1442,7 +1442,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * * @param {object} accessory - accessory to obtain light level status
 	 */
   async getLightLevel(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}/air-data/latest`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
 		
 	  await axios.get(url)
     	.then(response => {
