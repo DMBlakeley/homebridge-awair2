@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.13.2
+* Upgrade form-data to version 4.0.4 or later to address Math.random() vunerability.
+
 ## v5.13.1
 * Append .local domain suffix to localAPI calls (credit to Brent Comnes for submission).
 
