@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge Awair2",
   "name": "homebridge-awair2",
-  "version": "5.13.2",
+  "version": "5.13.3",
   "description": "HomeKit integration of Awair air quality monitor as Dynamic Platform.",
   "main": "dist/index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   ],
   "author": "Douglas M. Blakeley",
   "engines": {
-    "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
+    "node": "^20.18.0 || ^22.10.0 || ^24.11.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
   "license": "ISC",

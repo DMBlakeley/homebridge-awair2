@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.13.3
+* Update supported node.js versions to: [20.x, 22.x, 24.x]
+
 ## v5.13.2
 * Upgrade form-data to version 4.0.4 or later to address Math.random() vunerability.
 
