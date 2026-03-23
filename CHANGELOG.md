@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
-## v5.14.4
+## v5.13.4
 * Updates to address minimatch security vulnerabilities.
 
 ## v5.13.3
