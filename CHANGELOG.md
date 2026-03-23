@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.14.4
+* Updates to address minimatch security vulnerabilities.
+
 ## v5.13.3
 * Update supported node.js versions to: [20.x, 22.x, 24.x]
 
