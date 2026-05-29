@@ -6,8 +6,6 @@
 import {
   API,
   APIEvent,
-  CharacteristicEventTypes,
-  CharacteristicSetCallback,
   CharacteristicValue,
   DynamicPlatformPlugin,
   HAP,
@@ -734,8 +732,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  // Air Quality Service
 	  const airQualityService = accessory.getService(`${accessory.context.name} IAQ`);
 	  if (airQualityService) {
-      if ((accessory.context.devType === 'awair-mint') || (accessory.context.devType === 'awair-omni') || 
-					(accessory.context.devType === 'awair-r2') || (accessory.context.devType === 'awair-element')) {
+      if ((accessory.context.deviceType === 'awair-mint') || (accessory.context.deviceType === 'awair-omni') || 
+					(accessory.context.deviceType === 'awair-r2') || (accessory.context.deviceType === 'awair-element')) {
 	      airQualityService
 	        .setCharacteristic(hap.Characteristic.AirQuality, 100)
 	        .setCharacteristic(hap.Characteristic.VOCDensity, 0)
@@ -770,7 +768,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 
 	  // Carbon Dioxide Service
-	  if (accessory.context.devType !== 'awair-mint') {
+	  if (accessory.context.deviceType !== 'awair-mint') {
 	    const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
 	    if (carbonDioxideService) {
 	      carbonDioxideService
@@ -796,7 +794,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     }
 
     // Omni & Mint Ambient Light Service
-	  if ((accessory.context.devType === 'awair-omni') || (accessory.context.devType === 'awair-mint')) {
+	  if ((accessory.context.deviceType === 'awair-omni') || (accessory.context.deviceType === 'awair-mint')) {
 	    const lightLevelSensor = accessory.getService(`${accessory.context.name} Light`);
 	    if (lightLevelSensor) {
 	      lightLevelSensor
@@ -811,7 +809,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // Omni Battery Service
-	  if (accessory.context.devType === 'awair-omni') {
+	  if (accessory.context.deviceType === 'awair-omni') {
 	    const batteryService = accessory.getService(`${accessory.context.name} Battery`);
 	    if (batteryService) {
 	      batteryService
@@ -824,7 +822,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  }
 		
 	  // Omni Occupancy Sensor Service
-	  if (accessory.context.devType === 'awair-omni') {
+	  if (accessory.context.deviceType === 'awair-omni') {
 	    const occupancyService = accessory.getService(`${accessory.context.name} Occupancy`);
 	    if (occupancyService) {
 	      occupancyService
@@ -1544,9 +1542,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 	  this.displayModes.forEach((displayMode): void => {
 	    accessory.getService(`${accessory.context.name}: ${displayMode}`)!.getCharacteristic(hap.Characteristic.On)
-	      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-	        this.changeDisplayMode(accessory, displayMode);
-	        callback();
+	      .onSet(async (_value: CharacteristicValue) => {
+	        await this.changeDisplayMode(accessory, displayMode);
 	      });
 	  });
 
@@ -1725,27 +1722,24 @@ class AwairPlatform implements DynamicPlatformPlugin {
 		
 		// Auto
 		accessory.getService(`${accessory.context.name}: Auto`)!.getCharacteristic(hap.Characteristic.On)
-		  .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-		    this.changeLEDMode(accessory, 'Auto', 0); // 0 is dummy brightness for Auto and Sleep
-		    callback();
+		  .onSet(async (_value: CharacteristicValue) => {
+		    await this.changeLEDMode(accessory, 'Auto', 0); // 0 is dummy brightness for Auto and Sleep
 		  });
 
 		// Sleep
 		accessory.getService(`${accessory.context.name}: Sleep`)!.getCharacteristic(hap.Characteristic.On)
-		  .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-		    this.changeLEDMode(accessory, 'Sleep', 0); // 0 is dummy brightness for Auto and Sleep
-		    callback();
+		  .onSet(async (_value: CharacteristicValue) => {
+		    await this.changeLEDMode(accessory, 'Sleep', 0); // 0 is dummy brightness for Auto and Sleep
 		  });
 
 		// Manual
 		accessory.getService(`${accessory.context.name}: Manual`)!.getCharacteristic(hap.Characteristic.Brightness)
-		  .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-		    const brightness = parseInt(JSON.stringify(value));
+		  .onSet(async (value: CharacteristicValue) => {
+		    const brightness = typeof value === 'number' ? Math.round(value) : 0;
 		    if (this.config.logging) {
 		      this.log.info(`[${accessory.context.serial}] LED brightness for ${accessory.context.deviceUUID} was set to: ${value}`);
 		    }
-		    this.changeLEDMode(accessory, 'Manual', brightness);
-		    callback();
+		    await this.changeLEDMode(accessory, 'Manual', brightness);
 		  });
 			
 	  if(this.config.logging) {
