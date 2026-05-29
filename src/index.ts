@@ -1113,6 +1113,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
     		})
 	    .catch((error: unknown) => {
 	      if(this.config.logging){
+	        // eslint-disable-next-line max-len
 	        this.log.error(`[${accessory.context.serial}] updateAirQualityData error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	  	});
@@ -1626,6 +1627,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 			
 	    .catch((error: unknown) => {
 	      if(this.config.logging){
+	        // eslint-disable-next-line max-len
 	        this.log.error(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
@@ -1654,6 +1656,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch((error: unknown) => {
 	      if(this.config.logging){
+	        // eslint-disable-next-line max-len
 	        this.log.error(`[${accessory.context.serial}] putDisplayMode error: ${error instanceof Error ? error.message : String(error)} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
@@ -1854,6 +1857,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch((error: unknown) => {
 	      if(this.config.logging){
+	        // eslint-disable-next-line max-len
 	        this.log.error(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
@@ -1885,6 +1889,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    })
 	    .catch((error: unknown) => {
 	      if(this.config.logging){
+	        // eslint-disable-next-line max-len
 	        this.log.error(`[${accessory.context.serial}] putLEDMode error: ${error instanceof Error ? error.message : String(error)} for ${accessory.context.deviceUUID}`);
 	      }
 	    });

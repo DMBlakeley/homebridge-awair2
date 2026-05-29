@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.14.0
+* Updates to conform to Typescript 6.0 as determined by Claude Pro code review. Reference PR #1049 for full list of changes.
+
 ## v5.13.5
 * Update supported node.js versions to: [22.x, 24.x, 26.x]
 * Updates to conform to Typescript 6.0.
