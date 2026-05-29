@@ -555,9 +555,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
         }
 
 	    })
-    	.catch(error => {
+    	.catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`getUserInfo error: ${error.toJson}`);
+	        this.log.error(`getUserInfo error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
     return;
@@ -572,7 +572,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -591,9 +591,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	      }
 	    })
-    	.catch(error => {
+    	.catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`getAwairDevices error: ${error.toJson}`);
+	        this.log.error(`getAwairDevices error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
     return;
@@ -879,7 +879,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -892,7 +892,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      // compute time weighted average for each sensor's data
 	      const sensors: any = data
 	        .map(sensor => sensor.sensors) // create sensors data array of length 'this.limit'
-	        .reduce((a, b) => a.concat(b)) // flatten array of sensors (which is an array) to single-level array
+	        .reduce((a: any[], b: any[]) => a.concat(b), []) // flatten array of sensors (which is an array) to single-level array
 	        .reduce((a: any, b: any) => {
 	          a[b.comp] = a[b.comp] ? 0.5*(a[b.comp] + b.value) : b.value; 
 	          return a; // return time weighted average
@@ -933,23 +933,25 @@ class AwairPlatform implements DynamicPlatformPlugin {
 				
           for (const sensor in sensors) {
             switch (sensor) {
-              case 'temp': // Temperature (C)
+              case 'temp': { // Temperature (C)
                 const temperatureService = accessory.getService(`${accessory.context.name} Temp`);
                 if (temperatureService) {
                   temperatureService
                     .updateCharacteristic(hap.Characteristic.CurrentTemperature, parseFloat(sensors[sensor]));
                 }
                 break;
+              }
 			
-              case 'humid': // Humidity (%)
+              case 'humid': { // Humidity (%)
                 const humidityService = accessory.getService(`${accessory.context.name} Humidity`);
                 if (humidityService) {
                   humidityService
                     .updateCharacteristic(hap.Characteristic.CurrentRelativeHumidity, parseFloat(sensors[sensor]));
                 }
                 break;
+              }
 			
-              case 'co2': // Carbon Dioxide (ppm)
+              case 'co2': { // Carbon Dioxide (ppm)
                 const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
                 const co2 = sensors[sensor];
                 let co2Detected: any;
@@ -1014,8 +1016,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
-              case 'voc':
+              case 'voc': {
                 const voc = parseFloat(sensors[sensor]);
                 let tvoc = this.convertChemicals( accessory, voc, atmos, temp );
 
@@ -1053,8 +1056,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
-              case 'pm25': // PM2.5 (ug/m^3)
+              case 'pm25': { // PM2.5 (ug/m^3)
                 const pm25 = parseFloat(sensors[sensor]);
                 if(this.config.logging){
                   this.log.info(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
@@ -1085,6 +1089,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
               case 'pm10': // PM10 (ug/m^3)
                 airQualityService
@@ -1106,9 +1111,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
           	}
 	        }
     		})
-	    .catch(error => {
+	    .catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`[${accessory.context.serial}] updateAirQualityData error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] updateAirQualityData error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	  	});
     return;
@@ -1122,7 +1127,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   
   async updateLocalAirQualityData(accessory: PlatformAccessory): Promise<void> {
     // Update air quality data for accessory of deviceId
-    const url = `http://${accessory.context.deviceType.substr(0, 10)}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
+    const url = `http://${accessory.context.deviceType.slice(0, 10)}-${accessory.context.serial.slice(6)}.local/air-data/latest`;
 			
     await axios.get(url)
       .then(response => {
@@ -1158,23 +1163,25 @@ class AwairPlatform implements DynamicPlatformPlugin {
 
           for (const sensor in data) {
             switch (sensor) {
-              case 'temp': // Temperature (C)
+              case 'temp': { // Temperature (C)
                 const temperatureService = accessory.getService(`${accessory.context.name} Temp`);
                 if (temperatureService) {
                   temperatureService
                     .updateCharacteristic(hap.Characteristic.CurrentTemperature, parseFloat(data[sensor]));
                 }
                 break;
+              }
 			
-              case 'humid': // Humidity (%)
+              case 'humid': { // Humidity (%)
                 const humidityService = accessory.getService(`${accessory.context.name} Humidity`);
                 if (humidityService) {
                   humidityService
                     .updateCharacteristic(hap.Characteristic.CurrentRelativeHumidity, parseFloat(data[sensor]));
                 }
                 break;
+              }
 			
-              case 'co2': // Carbon Dioxide (ppm)
+              case 'co2': { // Carbon Dioxide (ppm)
                 const carbonDioxideService = accessory.getService(`${accessory.context.name} CO2`);
                 const co2 = data[sensor];
                 let co2Detected: any;
@@ -1239,8 +1246,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
-              case 'voc':
+              case 'voc': {
                 const voc = parseFloat(data[sensor]);
                 let tvoc = this.convertChemicals( accessory, voc, atmos, temp );
 
@@ -1278,8 +1286,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
-              case 'pm25': // PM2.5 (ug/m^3)
+              case 'pm25': { // PM2.5 (ug/m^3)
                 const pm25 = parseFloat(data[sensor]);
                 if(this.config.logging){
                   this.log.info(`[${accessory.context.serial}] PM2.5: ${pm25} ug/m^3)`);
@@ -1310,6 +1319,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   }
                 }
                 break;
+              }
 			
               case 'pm10_est': // PM10 (ug/m^3), Element and R2
                 airQualityService
@@ -1326,7 +1336,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
           	}
 	        }					
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         if(this.config.logging){
           this.log.error(`[${accessory.context.serial}] getLocalAirQualityData error: ${error}`);
         }
@@ -1340,7 +1350,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain battery status
 	 */
   async getBatteryStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/settings/config/data`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.slice(6)}.local/settings/config/data`;
 
 	  await axios.get(url)
     	.then(response => {
@@ -1366,7 +1376,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          .updateCharacteristic(hap.Characteristic.StatusLowBattery, lowBattery); // <30%
 	      }
 	    })
-    	.catch(error => {
+    	.catch((error: unknown) => {
 	      if(this.config.logging){
 	        this.log.error(`[${accessory.context.serial}] getBatteryStatus error: ${error}`);
 	      }
@@ -1380,7 +1390,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * @param {object} accessory - accessory to obtain occupancy status
 	 */
   async getOccupancyStatus(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.slice(6)}.local/air-data/latest`;
 
     await axios.get(url)
     	.then(response => {
@@ -1428,7 +1438,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          .updateCharacteristic(hap.Characteristic.OccupancyDetected, occupancyStatus);
 	      }
 	    })
-    	.catch(error => {
+    	.catch((error: unknown) => {
 	      if(this.config.logging){
 	        this.log.error(`[${accessory.context.serial}] getOccupancyStatus error: ${error}`);
 	      }
@@ -1442,7 +1452,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	 * * @param {object} accessory - accessory to obtain light level status
 	 */
   async getLightLevel(accessory: PlatformAccessory): Promise<void> {
-	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.substr(6)}.local/air-data/latest`;
+	  const url = `http://${accessory.context.deviceType}-${accessory.context.serial.slice(6)}.local/air-data/latest`;
 		
 	  await axios.get(url)
     	.then(response => {
@@ -1457,7 +1467,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          .updateCharacteristic(hap.Characteristic.CurrentAmbientLightLevel, omniLux);
 	      }
 	    })
-    	.catch(error => {
+    	.catch((error: unknown) => {
 	      if(this.config.logging){
 	        this.log.error(`[${accessory.context.serial}] getLightLevel error: ${error}`);
 	      }
@@ -1599,7 +1609,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -1614,9 +1624,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      });
 	    })
 			
-	    .catch(error => {
+	    .catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] getDisplayMode ${accessory.context.deviceUUID} error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
     return;
@@ -1632,7 +1642,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 		
 	  await axios.put<any>(url, body, options)
@@ -1642,9 +1652,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log.info(`[${accessory.context.serial}] putDisplayMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
 	      }
 	    })
-	    .catch(error => {
+	    .catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`[${accessory.context.serial}] putDisplayMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
+	        this.log.error(`[${accessory.context.serial}] putDisplayMode error: ${error instanceof Error ? error.message : String(error)} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 	  accessory.context.displayMode = mode; // 'context.displayMode' is Mixed case
@@ -1825,7 +1835,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.get(url, options)
@@ -1842,9 +1852,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      });
 	      accessory.context.ledBrightness = response.data.brightness;
 	    })
-	    .catch(error => {
+	    .catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error.toJson}`);
+	        this.log.error(`[${accessory.context.serial}] getLEDMode  ${accessory.context.deviceUUID} error: ${error instanceof Error ? error.message : String(error)}`);
 	      }
 	    });
     return;
@@ -1863,7 +1873,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    headers: {
 	      'Authorization': `Bearer ${this.config.token}`,
 	    },
-      validateStatus: (status: any) => status < 500, // Resolve only if the status code is less than 500
+      validateStatus: (status: number) => status < 500, // Resolve only if the status code is less than 500
 	  };
 
 	  await axios.put<any>(url, body, options)
@@ -1873,9 +1883,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        this.log.info(`[${accessory.context.serial}] putLEDMode response: ${response.data.message} for ${accessory.context.deviceUUID}`);
 	      }
 	    })
-	    .catch(error => {
+	    .catch((error: unknown) => {
 	      if(this.config.logging){
-	        this.log.error(`[${accessory.context.serial}] putLEDMode error: ${error.toJson} for ${accessory.context.deviceUUID}`);
+	        this.log.error(`[${accessory.context.serial}] putLEDMode error: ${error instanceof Error ? error.message : String(error)} for ${accessory.context.deviceUUID}`);
 	      }
 	    });
 
@@ -1931,7 +1941,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const aqiArray = [];
 	  for (const sensor in sensors) {
 	    switch (sensor) {
-	      case 'voc':
+	      case 'voc': {
 	        let aqiVoc = parseFloat(sensors[sensor]);
 	        if (aqiVoc >= 0 && aqiVoc < 333) {
 	          aqiVoc = 1; // EXCELLENT
@@ -1948,7 +1958,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	        aqiArray.push(aqiVoc);
 	        break;
-	      case 'pm25':
+	      }
+	      case 'pm25': {
 	        let aqiPm25 = parseFloat(sensors[sensor]);
 	        if (aqiPm25 >= 0 && aqiPm25 < 15) {
 	          aqiPm25 = 1; // EXCELLENT
@@ -1965,7 +1976,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	        aqiArray.push(aqiPm25);
 	        break;
-	      case 'dust':
+	      }
+	      case 'dust': {
 	        let aqiDust = parseFloat(sensors[sensor]);
 	        if (aqiDust >= 0 && aqiDust < 50) {
 	          aqiDust = 1; // EXCELLENT
@@ -1982,6 +1994,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	        aqiArray.push(aqiDust);
 	        break;
+	      }
 	      default:
 	        if(this.config.logging && this.config.verbose){
 	          // eslint-disable-next-line max-len
@@ -2001,7 +2014,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const aqiArray = [];
 	  for (const sensor in sensors) {
 	    switch (sensor) {
-	      case 'pm25':
+	      case 'pm25': {
 	        let aqiPm25 = parseFloat(sensors[sensor]);
 	        if (aqiPm25 >= 0 && aqiPm25 < 15) {
 	          aqiPm25 = 1; // EXCELLENT
@@ -2018,7 +2031,8 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	        aqiArray.push(aqiPm25);
 	        break;
-	      case 'dust':
+	      }
+	      case 'dust': {
 	        let aqiDust = parseFloat(sensors[sensor]);
 	        if (aqiDust >= 0 && aqiDust < 50) {
 	          aqiDust = 1; // EXCELLENT
@@ -2035,6 +2049,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        }
 	        aqiArray.push(aqiDust);
 	        break;
+	      }
 	      default:
 	        if(this.config.logging && this.config.verbose){
 	          // eslint-disable-next-line max-len

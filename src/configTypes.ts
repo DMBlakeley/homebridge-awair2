@@ -18,7 +18,7 @@ export type AwairPlatformConfig = {
   vocMw: number;
   occupancyDetection: boolean;
   occupancyOffset: number;
-  occupancyRestart: false;
+  occupancyRestart: boolean;
   occDetectedLevel: number;
   occNotDetectedLevel: number;
   enableModes: boolean;
@@ -26,6 +26,7 @@ export type AwairPlatformConfig = {
   verbose: boolean;
   development: boolean;
   modeTemp: boolean;
+  modeTime: boolean;
   ignoredDevices: [string];
 };
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.13.5
+* Update supported node.js versions to: [22.x, 24.x, 26.x]
+* Update `tsconfig.json` to conform to Typescript 6.0.
+
 ## v5.13.4
 * Updates to address minimatch security vulnerabilities.
 
