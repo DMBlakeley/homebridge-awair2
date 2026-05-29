@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2018",
     "module": "commonjs",
     "lib": [
@@ -10,6 +11,7 @@
       "dom"
     ],
     "baseUrl": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
     "allowJs": true,
@@ -23,6 +25,6 @@
     }
   },
   "include": [
-    "src/**/*"
+    "./src/**/*"
   ]
 }
