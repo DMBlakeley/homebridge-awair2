@@ -305,7 +305,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  const serNums: string[] = [];
 
 	  // Add accessories for each Awair device (IAQ, Display Mode, LED Mode)
-	  this.devices.forEach(async (device): Promise<void> => {
+	  for (const device of this.devices) {
 
 	    // determine if device supports Display and LED modes - Omni, R2 and Element, not available on Mint
 	    // eslint-disable-next-line max-len
@@ -318,7 +318,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      if (modeDevice && this.enableModes) {
 	        this.addDisplayModeAccessory(device);
 	        this.addLEDModeAccessory(device);
-	      }	
+	      }
 	      serNums.push(device.macAddress);
 
 	    // 'test' device must NOT be on ignored list AND will contain '000000' AND Development enabled to use
@@ -328,17 +328,17 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	      if (modeDevice && this.enableModes) {
 	        this.addDisplayModeAccessory(device);
 	        this.addLEDModeAccessory(device);
-	      }	
+	      }
 	      serNums.push(device.macAddress);
 
 	    } else {
 	      if (this.config.logging) {
 	        // conditions above _should_ be satisfied, unless the MAC is missing (contact Awair), incorrect, or a testing device
-	        this.log.warn(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or is ` 
+	        this.log.warn(`Error with Serial ${device.macAddress} on ignore list, does not match Awair OUI "70886B" or is `
 						+ 'test device (requires development mode enabled to use).');
 	      }
 	    }
-	  });
+	  }
 		
 	  const badAccessories: Array<PlatformAccessory> = [];
 	  this.accessories.forEach((cachedAccessory): void => {
@@ -361,34 +361,34 @@ class AwairPlatform implements DynamicPlatformPlugin {
     if(this.config.logging){
       this.log.info('--- Initializing IAQ data, Display mode and LED mode for Awair devices ---');
     }
-    this.accessories.forEach(async (accessory): Promise<void> => {
+    for (const accessory of this.accessories) {
       switch (accessory.context.accType) {
 	      case 'IAQ':
 	        if (this.config.logging) {
 	          this.log.info(`[${accessory.context.serial}] Getting initial IAQ status for ${accessory.context.deviceUUID}`);
 	        }
-	        await this.updateAirQualityData(accessory); 
-				
+	        await this.updateAirQualityData(accessory);
+
 	        if (accessory.context.deviceType === 'awair-omni') {
 	          await this.getBatteryStatus(accessory);
 	        }
-					
+
 	        if ((accessory.context.deviceType === 'awair-omni') && this.config.occupancyDetection) {
 	          await this.getOccupancyStatus(accessory);
 	        }
-					
+
 	        if ((accessory.context.deviceType === 'awair-omni') || (accessory.context.deviceType === 'awair-mint')) {
 	          await this.getLightLevel(accessory);
-	        }	
+	        }
 	        break;
 	      case 'Display': // applies to Omni, Awair-r2 and Element
           if (this.config.logging) {
             // eslint-disable-next-line max-len
             this.log.info(`[${accessory.context.serial}] Setting Display Mode for ${accessory.context.deviceUUID} to ${accessory.context.displayMode}`);
           }
-					
+
           // initialize Display Mode switch array: 'Score' if new accessory (addDisplayModeAccessory), cached value if existing
-          this.displayModes.forEach(async (displayMode): Promise<void> => {
+          for (const displayMode of this.displayModes) {
             if (accessory.context.displayMode === displayMode) { // set switch 'on'
               await this.putDisplayMode(accessory, accessory.context.displayMode); // update device mode to match
               const activeSwitch = accessory.getService(`${accessory.context.name}: ${displayMode}`);
@@ -403,7 +403,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
                   .updateCharacteristic(hap.Characteristic.On, false);
               }
             }
-          });
+          }
 	        break;
 	      case 'LED': // applies to Omni, Awair-r2 and Element
           if (this.config.logging) {
@@ -412,11 +412,11 @@ class AwairPlatform implements DynamicPlatformPlugin {
           }
 
           // initialize LED Mode switch array: 'Auto' if new accessory (addLEDModeAccessory), cached value if existing
-          this.ledModes.forEach(async (ledMode): Promise<void> => {
+          for (const ledMode of this.ledModes) {
             if (accessory.context.ledMode === ledMode) { // set switch 'on'
               await this.putLEDMode(accessory, accessory.context.ledMode, accessory.context.ledBrightness); // update device LED mode
               const activeSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
-              if (activeSwitch && ledMode !== 'Manual"') { // 'Auto' or 'Sleep'
+              if (activeSwitch && ledMode !== 'Manual') { // 'Auto' or 'Sleep'
                 activeSwitch
                   .updateCharacteristic(hap.Characteristic.On, true);
               }
@@ -426,29 +426,29 @@ class AwairPlatform implements DynamicPlatformPlugin {
                 activeSwitch // only set brightness on active switch
                   .updateCharacteristic(hap.Characteristic.Brightness, accessory.context.ledBrightness);
               }
-            } else { // set switch to 'off
+            } else { // set switch to 'off'
               const inactiveSwitch = accessory.getService(`${accessory.context.name}: ${ledMode}`);
               if (inactiveSwitch) {
                 inactiveSwitch
                   .updateCharacteristic(hap.Characteristic.On, false);
               }
             }
-          });
+          }
 	        break;
 	      default:
 	        this.log.error('Error: Accessory not of type IAQ, Display or LED.');
 	        break;
 	    }
-	  });
+	  }
 		
 	  // start Device Air and Local data collection according to 'polling_interval' settings
     if(this.config.logging){
       this.log.info('--- Starting Cloud and Local data collection ---');
     }
 
-	  setInterval(() => {
-	    this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
-	      if (accessory.context.accType === 'IAQ') { 
+	  setInterval(async () => {
+	    for (const accessory of this.accessories) { // only applies to IAQ accessory type
+	      if (accessory.context.accType === 'IAQ') {
 	        if (this.config.logging) {
 	          this.log.info(`[${accessory.context.serial}] Updating status...${accessory.context.deviceUUID}`);
 	        }
@@ -460,18 +460,18 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          await this.getLightLevel(accessory); // fetch averaged 'lux' value (Omni/Mint updates value every 10 seconds)
 	        }
 	      }
-	    });
+	    }
 	  }, this.polling_interval * 1000);
-		
+
 	  // if Omni device exists in account & detection enabled, start 30 second loop to test for Omni occupancy status
 	  if(this.omniPresent && this.config.occupancyDetection) {
-	    setInterval(() => {
-	      this.accessories.forEach(async (accessory): Promise<void> => { // only applies to IAQ accessory type
+	    setInterval(async () => {
+	      for (const accessory of this.accessories) { // only applies to IAQ accessory type
 	        if ((accessory.context.deviceType === 'awair-omni') && (accessory.context.accType === 'IAQ')) {
 	          await this.getOccupancyStatus(accessory);
 	        }
-	      });
-	    }, 30000); // check every 30 seconds, 10 seconds is updata interval for LocalAPI data, spl_a is 'smoothed' value
+	      }
+	    }, 30000); // check every 30 seconds, 10 seconds is update interval for LocalAPI data, spl_a is 'smoothed' value
 	  }
   }
 
@@ -737,7 +737,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
       if ((accessory.context.devType === 'awair-mint') || (accessory.context.devType === 'awair-omni') || 
 					(accessory.context.devType === 'awair-r2') || (accessory.context.devType === 'awair-element')) {
 	      airQualityService
-	        .setCharacteristic(hap.Characteristic.AirQuality, 100)
+	        .setCharacteristic(hap.Characteristic.AirQuality, 0) // 0 = Unknown, valid HAP range is 0-5
 	        .setCharacteristic(hap.Characteristic.VOCDensity, 0)
 	        .setCharacteristic(hap.Characteristic.PM2_5Density, 0);
 	    }
@@ -919,14 +919,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	          airQualityService
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
 	        }
-
-          // Add new Awair descriptor to Homebridge tile as part of device name.
-          // eslint-disable-next-line max-len
-          if (this.airQualityMethod === 'awair-score' && ((accessory.context.deviceType === 'awair-element') || (accessory.context.deviceType === 'awair-omni'))) {
-            airQualityService
-              // eslint-disable-next-line max-len
-              .updateCharacteristic(hap.Characteristic.Name, accessory.context.name + ' ' + this.awairScore[this.convertScore(accessory, score)] );
-          }
 
           const temp: number = sensors.temp;
           const atmos = 1;
@@ -1151,14 +1143,6 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	            .updateCharacteristic(hap.Characteristic.AirQuality, this.convertScore(accessory, score));
 	        }
 
-          // Add new Awair descriptor to Homebridge tile as part of device name.
-          // eslint-disable-next-line max-len
-          if (this.airQualityMethod === 'awair-score' && ((accessory.context.deviceType === 'awair-element') || (accessory.context.deviceType === 'awair-omni'))) {
-            airQualityService
-              // eslint-disable-next-line max-len
-              .updateCharacteristic(hap.Characteristic.Name, accessory.context.name + ' ' + this.awairScore[this.convertScore(accessory, score)] );
-          }
-
           const temp: number = data.temp;
           const atmos = 1;
 
@@ -1372,9 +1356,9 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	        batteryService
 	          .updateCharacteristic(hap.Characteristic.BatteryLevel, batteryLevel); // 0 -> 100%
 	        batteryService
-	          .updateCharacteristic(hap.Characteristic.ChargingState, batteryPlugged); // NOT_CHARGING=0, CHARGING=1
+	          .updateCharacteristic(hap.Characteristic.ChargingState, batteryPlugged ? 1 : 0); // NOT_CHARGING=0, CHARGING=1
 	        batteryService
-	          .updateCharacteristic(hap.Characteristic.StatusLowBattery, lowBattery); // <30%
+	          .updateCharacteristic(hap.Characteristic.StatusLowBattery, lowBattery ? 1 : 0); // Normal=0, Low=1
 	      }
 	    })
     	.catch((error: unknown) => {
