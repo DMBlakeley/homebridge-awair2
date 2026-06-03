@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.14.2
+* Bump @types/node from 24.12.4 to 25.9.1
+* Bump homebridge from 1.11.4 to 2.0.2
+* Bump eslint from 9.39.4 to 10.4.1
+* Bump optimist from 0.5.2 to 0.6.1
+
 ## v5.14.1
 * Fix HAP-NodeJS / Apple Home compatibility issues as determined by Claude Pro code review.
 
