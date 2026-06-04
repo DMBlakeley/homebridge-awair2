@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.14.3
+* Remove `optimist` and `minimist` from `devDependencies` in `package.json` which had introduced CVE prototype pollution vulnerability. Neither `optimist` nor `minimist` are used anywhere in src/ or dist/. They appear to be leftover entries in devDependencies from an earlier version of the plugin. Credits to Claude for determining solution.
+
 ## v5.14.2
 * Bump @types/node from 24.12.4 to 25.9.1
 * Bump homebridge from 1.11.4 to 2.0.2
