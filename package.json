@@ -67,5 +67,8 @@
     "axios": "^1.7.3",
     "form-data": ">=4.0.4",
     "minimatch": ">=3.1.4 || >=10.2.3"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }
