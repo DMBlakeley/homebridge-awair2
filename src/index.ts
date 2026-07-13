@@ -4,22 +4,25 @@
 // Author: 			Douglas M. Blakeley
 
 import {
-  API,
   APIEvent,
   CharacteristicEventTypes,
   CharacteristicSetCallback,
+  PlatformAccessoryEvent,
+} from 'homebridge';
+
+import type {
+  API,
   CharacteristicValue,
   DynamicPlatformPlugin,
   HAP,
   Logger,
   PlatformAccessory,
-  PlatformAccessoryEvent,
   PlatformConfig,
 } from 'homebridge';
 
-import { AwairPlatformConfig, DeviceConfig } from './configTypes';
+import type { AwairPlatformConfig, DeviceConfig } from './configTypes';
 import axios from 'axios';
-import * as packageJSON from '../package.json';
+import { version as pluginVersion } from '../package.json';
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -28,7 +31,7 @@ const PLUGIN_NAME = 'homebridge-awair2';
 const PLATFORM_NAME = 'Awair2';
 
 // Register Awair Platform
-export = (api: API): void => {
+export default (api: API): void => {
   hap = api.hap;
   Accessory = api.platformAccessory;
   api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, AwairPlatform);
@@ -853,7 +856,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    accInfo
 	      .updateCharacteristic(hap.Characteristic.SerialNumber, accessory.context.serial);
 	    accInfo
-	      .updateCharacteristic(hap.Characteristic.FirmwareRevision, packageJSON.version);
+	      .updateCharacteristic(hap.Characteristic.FirmwareRevision, pluginVersion);
 	  }
     return;
   }
@@ -2058,7 +2061,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
   convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
 	  const pmRawData: number[] = data
 	    .map(sensor => sensor.sensors) // create sensor array of sensors with length 'this.limit'
-	    .reduce((a, b) => a.concat(b)) // flatten array of sensors (which is an array) to single-level array
+	    .reduce((a: any[], b: any[]) => a.concat(b), []) // flatten array of sensors (which is an array) to single-level array
 	    .filter((pmEntry: { comp: string; }) => (pmEntry.comp === 'pm25') || (pmEntry.comp === 'dust')) // get just pm25 & dust entries
 	    .map((pmValue: { value: number; }) => pmValue.value); // return just pm value
 			

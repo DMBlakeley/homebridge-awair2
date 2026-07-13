@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "7.0",
     "target": "ES2018",
-    "module": "commonjs",
+    "module": "node16",
+    "moduleResolution": "node16",
     "lib": [
       "ES2015",
       "ES2016",
@@ -19,10 +20,7 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "paths": {
-        "*": ["types/*"]
-    }
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*"
