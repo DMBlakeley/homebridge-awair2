@@ -2,8 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
-## v5.14.4
-* Reverse v15.5.0 change for Typescript 7.0 until all dependencies are updated. 
+## v5.15.1
+* Reverse v15.5.0 change for Typescript 7.0 until all dependencies are updated. Same as v5.14.3 release.
+
+## v5.15.0
+* Prepare for Typescript 7.0.
 
 ## v5.14.3
 * Remove `optimist` and `minimist` from `devDependencies` in `package.json` which had introduced CVE prototype pollution vulnerability. Neither `optimist` nor `minimist` are used anywhere in src/ or dist/. They appear to be leftover entries in devDependencies from an earlier version of the plugin. Credits to Claude for determining solution.
