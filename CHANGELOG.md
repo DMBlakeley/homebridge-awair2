@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.15.2
+* Housekeeping in `package.json`.
+* Removed unused `form-data` and `minimatch` from `dependencies` as only needed in `devDependencies` as not at run time..
+* Move `@eslint/eslintrc` and `@eslint/js` from `dependencies` to `devDependencies` as not used at run time.
+* Add `overrides": {"brace-expansion": "^5.0.8"}` to allow use of `@eslint/eslintrc": "^3.3.6"`.
+
 ## v5.15.1
 * Reverse v15.5.0 change for Typescript 7.0 until all dependencies are updated. Same as v5.14.3 release.
 

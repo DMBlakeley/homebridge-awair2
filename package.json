@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge Awair2",
   "name": "homebridge-awair2",
-  "version": "5.15.1",
+  "version": "5.15.2",
   "description": "HomeKit integration of Awair air quality monitor as Dynamic Platform.",
   "main": "dist/index.js",
   "scripts": {
@@ -48,6 +48,8 @@
   },
   "homepage": "https://github.com/DMBlakeley/homebridge-awair2#readme",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.0.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.1",
@@ -62,13 +64,12 @@
     "typescript": "^6.0.0"
   },
   "dependencies": {
-    "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^10.0.1",
-    "axios": "^1.7.3",
-    "form-data": ">=4.0.4",
-    "minimatch": ">=3.1.4 || >=10.2.3"
+    "axios": "^1.7.3"
   },
   "allowScripts": {
     "fsevents@2.3.3": true
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.8"
   }
 }
