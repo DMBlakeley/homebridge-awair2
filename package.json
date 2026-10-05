@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint src/**.ts",
-    "watch": "npm run build && npm link && nodemon",
+    "watch": "npm run build && npm link && (tsc --watch --preserveWatchOutput & NODE_OPTIONS=--trace-warnings node --watch-path=./dist --watch-preserve-output ./node_modules/homebridge/bin/homebridge.js -I -D)",
     "build": "rimraf ./dist && tsc",
     "prepublishOnly": "npm run lint && npm run build",
     "clean": "rimraf ./dist",
@@ -58,16 +58,15 @@
     "form-data": ">=4.0.4",
     "homebridge": "^2.0.2",
     "minimatch": ">=3.1.4 || >=10.2.3",
-    "nodemon": "^3.0.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.0.0",
     "typescript": "^6.0.0"
   },
   "dependencies": {
-    "axios": "^1.7.3"
+    "axios": "^1.20.0"
   },
   "allowScripts": {
-    "fsevents@2.3.3": true
+    "fsevents@1.2.13": true
   },
   "overrides": {
     "brace-expansion": "^5.0.8"
