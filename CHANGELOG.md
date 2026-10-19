@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v5.15.3
+* Incorporate PR #1094 from algal (Alexis Gallagher).
+* Empty sensor readings produce `-Infinity` and repeated Homebridge warnings. Return 0 (Unknown) from both AQI conversions when no readings are available.
+* Adds regression tests for empty and valid readings, run in CI.
+
 ## v5.15.2
 * Housekeeping in `package.json`.
 * Removed unused `form-data` and `minimatch` from `dependencies` as only needed in `devDependencies` as not at run time..
