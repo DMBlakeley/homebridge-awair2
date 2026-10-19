@@ -9,6 +9,7 @@
     "lint": "eslint src/**.ts",
     "watch": "npm run build && npm link && (tsc --watch --preserveWatchOutput & NODE_OPTIONS=--trace-warnings node --watch-path=./dist --watch-preserve-output ./node_modules/homebridge/bin/homebridge.js -I -D)",
     "build": "rimraf ./dist && tsc",
+    "test": "npm run build && node --test test/*.test.js",
     "prepublishOnly": "npm run lint && npm run build",
     "clean": "rimraf ./dist",
     "postpublish": "npm run clean"

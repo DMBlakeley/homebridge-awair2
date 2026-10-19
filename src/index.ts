@@ -1996,7 +1996,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	  if(this.config.logging && this.config.verbose){
 	    this.log.info(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
-	  return Math.max(...aqiArray); // aqi is maximum value of voc, pm25 and dust
+	  return Math.max(0, ...aqiArray); // 0 = Unknown when no readings are available
   }
 	
   convertAwairPm(accessory: PlatformAccessory, sensors: any[]): number {
@@ -2052,7 +2052,7 @@ class AwairPlatform implements DynamicPlatformPlugin {
 	    this.log.info(`[${accessory.context.serial}] aqi array: ${JSON.stringify(aqiArray)}`);
 	  }
 	  // aqi is maximum value of pm25 and dust, leaving the implementation flexible for additional PM parameters
-	  return Math.max(...aqiArray); 
+	  return Math.max(0, ...aqiArray); // 0 = Unknown when no readings are available
   }
 	
   convertNowcastAqi(accessory: PlatformAccessory, data: any[]): number {
